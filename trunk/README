@@ -1,9 +1,13 @@
-NXT_Python
+NXT_Python/NXT-Python
 
 NXT_Python is a package for controlling a LEGO NXT robot using the Python
 programming language. It can communicate using either USB or Bluetooth. It is
 available under the Free Software Foundation's GPL license. It was developed on
-Fedora Core (Linux), but it has been tested on Windows as well.
+Fedora Core (Linux), but has been tested on Windows as well.
+Releases halted in May 2007.
+
+NXT-Python is based on NXT_Python, but is significantly newer, and, as time
+goes on, different/better. This is NXT-Python.
 
 Requirements:
 
@@ -23,5 +27,7 @@ Create file at /etc/udev/rules.d/70-lego.rules, containing one line:
 BUS=="usb", SYSFS{idVendor}=="0694", GROUP="lego", MODE="0660"
 
 Contact:
-
-	Douglas P Lau (dplau@comcast.net)
+	NXT_Python's Author:
+		Douglas P Lau (dplau@comcast.net)
+	NXT-Python developer:
+		Marcus Wanner (marcusw@cox.net)
