@@ -1,4 +1,5 @@
 #summary Installation Insructions
+#labels Featured
 =Installation Instructions=
 
 ==Linux==
@@ -9,9 +10,9 @@ Extract the .zip (or .tar.gz) file into a directory of your choice. Open a termi
 
             For USB communications, download and install [http://sourceforge.net/projects/pyusb/ PyUSB] according to the instructions included in it. Run the command “sudo gorupadd lego”, then “sudo usermod –a –G lego username” (where username is the name of the user account that you will be using to program your NXT). Then make a file at /etc/udev/rules.d/70-lego.rules containing exactly:
 
-BUS=="usb", SYSFS{idVendor}=="0694", GROUP="lego", MODE="0660"
+            BUS=="usb", SYSFS{idVendor}=="0694", GROUP="lego", MODE="0660"
 
-Note: You will need root (sudo) priveliges to do this.
+            Note: You will need root (sudo) priveliges to do this.
 
             For Bluetooth communications, download and install (according to instructions included in the package) [http://code.google.com/p/pybluez/downloads/list PyBluez]. You will also need a compatible Bluetooth dongle, if your computer doesn’t already support Bluetooth.
 
@@ -22,5 +23,9 @@ Download and extract the zipfile (again, available on the downloads page) to a l
             For USB communications, you need to install [http://sourceforge.net/projects/pyusb/ PyUSB]. It is nearly impossible to install it on Python 2.6 (without MS Visual Studio 2003), so I have only tested this on Linux.
 
             For Bluetooth communications, download and install [http://code.google.com/p/pybluez/downloads/list PyBluez]. You will also need a compatible Bluetooth dongle, if your computer doesn’t already support Bluetooth.
+
+==Mac==
+
+I have not tested this on Mac, though it is reported to work, except that instead of pybluez, you would install the python lightblue glue package.
 
 Now that you have successfully installed NXT_python and one or both of the communication drivers, you can start using your nxt brick.
