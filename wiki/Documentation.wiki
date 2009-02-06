@@ -1,4 +1,5 @@
 #summary Documentation (not finished)
+#labels Featured
 =Documentation (not finished)=
 
 The documentation is a HUGE task...every line of code has to be analysed and put together into one big (understandable) chunk of text, so it will take a while. If anyone wants to help, just make a patch file for the svn. This is what I have so far:
@@ -14,9 +15,9 @@ Objects (incomplete):
 			connect()
 				Try to connect to the brick.
 			close()
-				Close connection to brick.*
+				Close connection to brick.
 			host
-				Returns the address of the brick.
+				Returns the address of the brick.†
 	generator object find_bricks
 		The object returned by find_bricks().
 		Methods (incomplete):
@@ -41,4 +42,4 @@ brick.close()
 
 
 
-*Returns an error on my system (may have something to do with me running it in 2.6).
+†Returns an error on my system (may have something to do with me running it in 2.6).
