@@ -1,0 +1,44 @@
+#summary Documentation (not finished)
+=Documentation (not finished)=
+
+The documentation is a HUGE task...every line of code has to be analysed and put together into one big (understandable) chunk of text, so it will take a while. If anyone wants to help, just make a patch file for the svn. This is what I have so far:
+
+==nxt.locator (incomplete)==
+
+The locator module. The function of this module is to locate nxt brick(s). Usage is in the examples section
+
+Objects (incomplete):
+	nxt.bluesock.BlueSock object 
+		The object returned by find_one_brick() when a brick is found on a Bluetooth connection.
+		Methods (incomplete):
+			connect()
+				Try to connect to the brick.
+			close()
+				Close connection to brick.*
+			host
+				Returns the address of the brick.
+	generator object find_bricks
+		The object returned by find_bricks().
+		Methods (incomplete):
+			next()
+				Find the next brick in the sequence. Returns the same thing as find_one_brick().
+Methods: (incomplete)
+	find_one_brick(host=None, name=None) (incomplete)
+		Use to find your Lego Mindstorms NXT brick. Returns an nxt.bluesock.BlueSock object for robots connected by Bluetooth, a ???????? for robot connected by USB, and nxt.locator.BrickNotFoundError if none can be found.
+	find_bricks(host=None, name=None)
+		Use to find all the bricks in the area. Returns a generator object find_bricks.
+
+Example:
+import nxt.locator
+sock = nxt.locator.find_one_brick()
+brick = sock.connect()
+print brick.host
+brick.close()
+
+==nxt.motor (incomplete)==
+==nxt.sensor (incomplete)==
+
+
+
+
+*Returns an error on my system (may have something to do with me running it in 2.6).
