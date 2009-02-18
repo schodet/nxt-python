@@ -1,5 +1,6 @@
 # nxt.motor module -- Class to control LEGO Mindstorms NXT motors
 # Copyright (C) 2006  Douglas P Lau
+# Copyright (C) 2009  Marcus Wanner ("Icodepython")
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -61,3 +62,9 @@ class Motor(object):
 
 	def reset_position(self, relative):
 		self.brick.reset_motor_position(self.port, relative)
+
+	def update(power, tacholim, self=self):
+		#use this to run a motor. power is a value between -127 and 128, tacholim is the number of degrees to apply power for.
+		self.power = power
+		self.tacho_limit = tacholim
+		self.brick.set_output_state()
