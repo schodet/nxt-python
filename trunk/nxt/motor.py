@@ -63,8 +63,10 @@ class Motor(object):
 	def reset_position(self, relative):
 		self.brick.reset_motor_position(self.port, relative)
 
-	def update(power, tacholim, self=self):
+	def update(self, power, tacholim):
 		#use this to run a motor. power is a value between -127 and 128, tacholim is the number of degrees to apply power for.
+                self.mode = MODE_MOTOR_ON
+                self.run_state = RUN_STATE_RUNNING
 		self.power = power
 		self.tacho_limit = tacholim
-		self.brick.set_output_state()
+		self.set_output_state()
