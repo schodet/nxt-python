@@ -29,3 +29,5 @@ Download and extract the zipfile (again, available on the downloads page) to a l
 I have not tested this on Mac, though it is reported to work, except that instead of pybluez, you would install the python lightblue glue package.
 
 Now that you have successfully installed NXT_python and one or both of the communication drivers, you can start using your nxt brick.
+
+See [[Documentation]] or the examples in the svn repository for usage instructions.
