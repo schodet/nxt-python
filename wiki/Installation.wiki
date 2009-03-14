@@ -1,5 +1,5 @@
 #summary Installation Insructions
-#labels Featured Phase-Deploy
+#labels Featured,Phase-Deploy
 =Installation Instructions=
 
 ==Linux==
