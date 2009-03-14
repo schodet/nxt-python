@@ -1,5 +1,6 @@
 # nxt.usbsock module -- USB socket communication with LEGO Minstorms NXT
 # Copyright (C) 2006-2007  Douglas P Lau
+# Copyright (C) 2009  Marcus Wanner ("Icodepython")
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,6 +31,8 @@ class USBSock(object):
 		return 'USB (%s)' % (self.device.filename)
 
 	def connect(self):
+                if self.debug:
+                        print 'Connecting via USB...'
 		config = self.device.configurations[0]
 		iface = config.interfaces[0][0]
 		self.blk_out, self.blk_in = iface.endpoints
@@ -37,13 +40,19 @@ class USBSock(object):
 		self.handle.setConfiguration(1)
 		self.handle.claimInterface(0)
 		self.handle.reset()
+		if self.debug:
+                        print 'Connected.'
 		return Brick(self)
 
 	def close(self):
+                if self.debug:
+                        print 'Closing USB connection...'
 		self.device = None
 		self.handle = None
 		self.blk_out = None
 		self.blk_in = None
+		if self.debug:
+                        print 'USB connection closed.'
 
 	def send(self, data):
 		if self.debug:

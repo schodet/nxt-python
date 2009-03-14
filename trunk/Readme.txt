@@ -11,7 +11,7 @@ goes on, different/better. This is NXT-Python.
 
 Requirements:
 
-	* Python 2.4 (http://www.python.org)
+	* Python 2.6 (http://www.python.org)
 	* PyBluez (Bluetooth library) (http://org.csail.mit.edu/pybluez/)
 		and / or
 	* PyUSB (USB library) (http://sourceforge.net/projects/pyusb/)
@@ -19,8 +19,10 @@ Requirements:
 Installation:
 
 	* Untar/unzip source package
-	* In package directory, run "python setup.py install" (as root)
-	* For USB on Linux, create udev rule
+	* In package directory, run "python setup.py install" (as root), or if
+		under windows, copy the nxt folder to the site-packages
+		directory in your python installation.
+	* For USB on Linux, create udev rule:
 
 Create file at /etc/udev/rules.d/70-lego.rules, containing one line:
 

@@ -1,5 +1,5 @@
 #summary Installation Insructions
-#labels Featured
+#labels Featured Phase-Deploy
 =Installation Instructions=
 
 ==Linux==
@@ -20,7 +20,7 @@ Extract the .zip (or .tar.gz) file into a directory of your choice. Open a termi
 
 Download and extract the zipfile (again, available on the downloads page) to a location to your choice. Copy the folder ‘nxt’ into C:\python26\Lib\site-packages\ (or your python installation directory). 
 
-            For USB communications, you need to install [http://sourceforge.net/projects/pyusb/ PyUSB]. It is nearly impossible to install it on Python 2.6 (without MS Visual Studio 2003), so I have only tested this on Linux.
+            For USB communications, you need to install [http://sourceforge.net/projects/pyusb/ PyUSB]. An PyUSB executable installer for Python 2.6 (compiled by me!) is available [http://nxt-python.googlecode.com/files/pyusb-0.4.1.win32-py2.6.exe here].
 
             For Bluetooth communications, download and install [http://code.google.com/p/pybluez/downloads/list PyBluez]. You will also need a compatible Bluetooth dongle, if your computer doesn’t already support Bluetooth.
 
