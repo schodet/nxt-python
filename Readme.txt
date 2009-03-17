@@ -31,5 +31,5 @@ BUS=="usb", SYSFS{idVendor}=="0694", GROUP="lego", MODE="0660"
 Contact:
 	NXT_Python's Author:
 		Douglas P Lau (dplau@comcast.net)
-	NXT-Python developer:
+	NXT-Python's Developer:
 		Marcus Wanner (marcusw@cox.net)
