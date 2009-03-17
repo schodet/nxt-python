@@ -1,6 +1,6 @@
 # nxt.usbsock module -- USB socket communication with LEGO Minstorms NXT
 # Copyright (C) 2006-2007  Douglas P Lau
-# Copyright (C) 2009  Marcus Wanner ("Icodepython")
+# Copyright (C) 2009  Marcus Wanner
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@ ID_VENDOR_LEGO = 0x0694
 ID_PRODUCT_NXT = 0x0002
 
 class USBSock(object):
+        'Object for USB connection to NXT'
 
 	bsize = 60	# USB socket block size
 
@@ -31,6 +32,7 @@ class USBSock(object):
 		return 'USB (%s)' % (self.device.filename)
 
 	def connect(self):
+                'Use to connect to NXT.'
                 if self.debug:
                         print 'Connecting via USB...'
 		config = self.device.configurations[0]
@@ -45,6 +47,7 @@ class USBSock(object):
 		return Brick(self)
 
 	def close(self):
+                'Use to close the connection.'
                 if self.debug:
                         print 'Closing USB connection...'
 		self.device = None
@@ -55,12 +58,14 @@ class USBSock(object):
                         print 'USB connection closed.'
 
 	def send(self, data):
+                'Use to send raw data over USB connection ***ADVANCED USERS ONLY***'
 		if self.debug:
 			print 'Send:',
 			print ':'.join('%02x' % ord(c) for c in data)
 		self.handle.bulkWrite(self.blk_out.address, data)
 
 	def recv(self):
+                'Use to recieve raw data over USB connection ***ADVANCED USERS ONLY***'
 		data = self.handle.bulkRead(self.blk_in.address, 64)
 		if self.debug:
 			print 'Recv:',
@@ -69,6 +74,7 @@ class USBSock(object):
 		return ''.join(chr(d & 0xFF) for d in data)
 
 def find_bricks(host=None, name=None):
+        'Use to look for NXTs connected by USB only. ***ADVANCED USERS ONLY***'
 	# FIXME: probably should check host and name
 	for bus in usb.busses():
 		for device in bus.devices:

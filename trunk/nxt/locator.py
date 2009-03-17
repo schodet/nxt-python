@@ -1,5 +1,6 @@
 # nxt.locator module -- Locate LEGO Minstorms NXT bricks via USB or Bluetooth
 # Copyright (C) 2006-2007  Douglas P Lau
+# Copyright (C) 2009  Marcus Wanner
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,6 +16,7 @@ class BrickNotFoundError(Exception):
 	pass
 
 def find_bricks(host=None, name=None):
+        'Used by find_one_brick to look for bricks ***ADVANCED USERS ONLY***'
 	try:
 		import usbsock
 		socks = usbsock.find_bricks(host, name)
@@ -35,6 +37,7 @@ def find_bricks(host=None, name=None):
 		pass
 
 def find_one_brick(host=None, name=None):
+        'Use to find one brick. After it returns a usbsock object or a bluesock object, use .connect() to connect to the brick, which returns a brick object.'
 	for s in find_bricks(host, name):
 		return s
 	raise BrickNotFoundError

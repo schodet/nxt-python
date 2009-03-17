@@ -1,5 +1,6 @@
 # nxt.telegram module -- LEGO Mindstorms NXT telegram formatting and parsing
 # Copyright (C) 2006  Douglas P Lau
+# Copyright (C) 2009  Marcus Wanner
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -10,6 +11,8 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+
+'Used by nxt.system for sending telegrams to the NXT'
 
 from cStringIO import StringIO
 from struct import pack, unpack

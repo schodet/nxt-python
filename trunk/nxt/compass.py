@@ -1,5 +1,6 @@
 # nxt.compass module -- Classes to read Mindsensors Compass sensors
-# Copyright (C) 2007  Douglas P Lau
+# Copyright (C) 2006  Douglas P Lau
+# Copyright (C) 2009  Marcus Wanner
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,6 +16,7 @@ import sensor
 from time import sleep
 
 class Command(object):
+        'Namespace for enumeration compass sensor commands'
 	# NOTE: just a namespace (enumeration)
 	AUTO_TRIG_ON = (0x41, 0x02)
 	AUTO_TRIG_OFF = (0x53, 0x01)

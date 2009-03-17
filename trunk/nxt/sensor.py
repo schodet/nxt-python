@@ -1,5 +1,6 @@
 # nxt.sensor module -- Classes to read LEGO Mindstorms NXT sensors
 # Copyright (C) 2006,2007  Douglas P Lau
+# Copyright (C) 2009  Marcus Wanner
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,6 +21,7 @@ PORT_3 = 0x02
 PORT_4 = 0x03
 
 class Type(object):
+        'Namespace for enumeration of the type of sensor'
 	# NOTE: just a namespace (enumeration)
 	NO_SENSOR = 0x00
 	SWITCH = 0x01		# Touch sensor
@@ -35,6 +37,7 @@ class Type(object):
 	LOW_SPEED_9V = 0x0B	# Low-speed I2C (Ultrasonic sensor)
 
 class Mode(object):
+        'Namespace for enumeration of the mode of sensor'
 	# NOTE: just a namespace (enumeration)
 	RAW = 0x00
 	BOOLEAN = 0x20
@@ -48,6 +51,7 @@ class Mode(object):
 	MASK_SLOPE = 0x1F	# Why isn't this slope thing documented?
 
 class Sensor(object):
+        'Main sensor object'
 
 	def __init__(self, brick, port):
 		self.brick = brick
@@ -60,6 +64,7 @@ class Sensor(object):
 			self.mode)
 
 class AnalogSensor(Sensor):
+        'Object for analog sensors'
 
 	def __init__(self, brick, port):
 		super(AnalogSensor, self).__init__(brick, port)
@@ -85,6 +90,7 @@ class AnalogSensor(Sensor):
 		return self.scaled_value
 
 class TouchSensor(AnalogSensor):
+        'Object for touch sensors'
 
 	def __init__(self, brick, port):
 		super(TouchSensor, self).__init__(brick, port)
@@ -100,6 +106,7 @@ class TouchSensor(AnalogSensor):
 		return self.is_pressed()
 
 class LightSensor(AnalogSensor):
+        'Object for light sensors'
 
 	def __init__(self, brick, port):
 		super(LightSensor, self).__init__(brick, port)
@@ -113,6 +120,7 @@ class LightSensor(AnalogSensor):
 		self.set_input_mode()
 
 class SoundSensor(AnalogSensor):
+        'Object for sound sensors'
 
 	def __init__(self, brick, port):
 		super(SoundSensor, self).__init__(brick, port)
@@ -155,6 +163,7 @@ class _Meta(type):
 			setattr(cls, 'get_' + name, q)
 
 class DigitalSensor(Sensor):
+        'Object for digital sensors'
 
 	__metaclass__ = _Meta
 
@@ -187,6 +196,7 @@ class DigitalSensor(Sensor):
 		return data[-n_bytes:]
 
 class CommandState(object):
+        'Namespace for enumeration of the command state of sensors'
 	# NOTE: just a namespace (enumeration)
 	OFF = 0x00
 	SINGLE_SHOT = 0x01
@@ -230,6 +240,7 @@ class _MetaUS(_Meta):
 				setattr(cls, 'set_' + name, c)
 
 class UltrasonicSensor(DigitalSensor):
+        'Object for ultrasonic sensors'
 
 	__metaclass__ = _MetaUS
 
@@ -241,6 +252,7 @@ class UltrasonicSensor(DigitalSensor):
 		sleep(0.1)	# Give I2C time to initialize
 
 	def get_single_shot_measurement(self):
+                'Function to get data from ultrasonic sensors, synonmous to self.get_sample()'
 		self.set_command_state(CommandState.SINGLE_SHOT)
 		return self.get_measurement_byte_0()
 
