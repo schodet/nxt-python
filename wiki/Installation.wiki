@@ -6,19 +6,19 @@
 
 Note: This guide assumes basic knowledge terminal commands.
 
-Extract the .zip (or .tar.gz) file into a directory of your choice. Open a terminal window, and cd to the directory that you put it in, and then to the directory in the package that contains setup.py (the toplevel one). Then type “python setup.py install” and press enter. If the word ‘error’ is not anywhere in the text that is printed, then great. If it is, then follow the error instructions to resolve the issue. 
+Use the svn command to download the source. Open a terminal window, and cd to the directory that you put it in. Then type “python setup.py install” and press enter. If the word ‘error’ is not anywhere in the text that is printed, then great. If it is, then follow the error instructions to resolve the issue. 
 
-            For USB communications, download and install [http://sourceforge.net/projects/pyusb/ PyUSB] according to the instructions included in it. Run the command “sudo gorupadd lego”, then “sudo usermod –a –G lego username” (where username is the name of the user account that you will be using to program your NXT). Then make a file at /etc/udev/rules.d/70-lego.rules containing exactly:
-
-            BUS=="usb", SYSFS{idVendor}=="0694", GROUP="lego", MODE="0660"
-
+            For USB communications, download and install [http://sourceforge.net/projects/pyusb/ PyUSB] according to the instructions included in it. Run the command “sudo gorupadd lego”, then “sudo usermod –a –G lego username” (where username is the name of the user account that you will be using to program your NXT). Then make a file at /etc/udev/rules.d/70-lego.rules containing exactly: 
+{{{
+BUS=="usb", SYSFS{idVendor}=="0694", GROUP="lego", MODE="0660"
+}}}
             Note: You will need root (sudo) priveliges to do this.
 
             For Bluetooth communications, download and install (according to instructions included in the package) [http://code.google.com/p/pybluez/downloads/list PyBluez]. You will also need a compatible Bluetooth dongle, if your computer doesn’t already support Bluetooth.
 
 ==Windows==
 
-Download and extract the zipfile (again, available on the downloads page) to a location to your choice. Copy the folder ‘nxt’ into C:\python26\Lib\site-packages\ (or your python installation directory). 
+Install [http://tortoisesvn.net/downloads TortiseSVN]. Create a new folder and call it something meaningful, like "nxt-python". Right click on the folder and click SVN Checkout. Copy and Paste "http://nxt-python.googlecode.com/svn/trunk/" to the top text box and click OK. After it finishes, double click on the folder to open it. Copy the folder named "nxt" to C:\Python26\Lib\site-packages.
 
             For USB communications, you need to install [http://sourceforge.net/projects/pyusb/ PyUSB]. An PyUSB executable installer for Python 2.6 (compiled by me!) is available [http://nxt-python.googlecode.com/files/pyusb-0.4.1.win32-py2.6.exe here].
 
@@ -30,4 +30,4 @@ I have not tested this on Mac, though it is reported to work, except that instea
 
 Now that you have successfully installed NXT_python and one or both of the communication drivers, you can start using your nxt brick.
 
-See [[Documentation]] or the examples in the svn repository for usage instructions.
+See [http://code.google.com/p/nxt-python/wiki/Documentation the documentation page] or the examples in the examples folder for usage instructions.
