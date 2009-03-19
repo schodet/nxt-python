@@ -10,62 +10,112 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-'Use for socked-driven communications with the NXT. Not done yet.'
+'''Use for socked-driven communications with the NXT. Functional, but not
+complete.'''
 
 import nxt.locator
 from nxt.motor import *
 from nxt.sensor import *
-import socket, thread
+import socket, thread, sys
 
-def SENDRESULT(csock,ip,result):
+host = ''
+port = 54174
+outport = 54374
+
+def _process_command(cmd):
+    retcode = 0
+    retmsg = ''
+    #act on messages, these conditions can be in no particular order
+    #it should send a return code on port 54374. 0 for success, 1 for failure
+    #then maybe an error message?
+    #find_brick
+    if cmd == 'find_brick':
         try:
-            csock.send(result)
+            brick = nxt.locator.find_one_brick()
+            brick.connect()
+            retcode = 0
         except:
-            print 'connection to '+ip+' terminated. unable to send command result code.'
+            retcode = 1
+            retmsg = str(sys.exc_info()[1])
 
-def SERVECLIENT(csock,info,ip):
-    exitcode = 0
+    #get_light_sample
+    elif cmd == 'get_light_sample':
+        try:
+            retmsg = str(LightSensor(brick, PORT_3).get_sample())
+            retcode = 0
+        except:
+            retcode = 1
+            retmsg = str(sys.exc_info()[1])
+        
+    #get_sound_sample
+    elif cmd == 'get_sound_sample':
+        try:
+            retmsg = str(SoundSensor(brick, PORT_2).get_sample())
+            retcode = 0
+        except:
+            retcode = 1
+            retmsg = str(sys.exc_info()[1])
     
-    try:
-        csock.send('0')
-    except:
-        print 'connection to '+ip+' terminated. unable to send connection success code.'
-        csock.close()
-        thread.exit_thread()
-
-    while exitcode = 0:
+    #get_ultrasonic_sample
+    elif cmd == 'get_ultrasonic_sample':
         try:
-            cmd = csock.recv(100)
+            retmsg = str(UltrasonicSensor(brick, PORT_4).get_sample())
+            retcode = 0
         except:
-            print 'connection to '+ip+' terminated. unable to recieve command data.'
-            exitcode = 1
-        if cmd == 'find_brick':
-            try:
-                b = nxt.locator.find_one_brick()
-                b.connect()
-            except:
-        elif cmd == 'close_brick':
-            try:
-                b.close()
-                try:
-                    csock.send('0')
-                except:
-                    print 'connection to '+ip+' terminated. unable to send command success code.'
-            except:
-                try:
-                    csock.send('1')
-                except:
-                    print 'connection to '+ip+' terminated. unable to send command failure code.'
-            
+            retcode = 1
+            retmsg = str(sys.exc_info()[1])
+    
+    #get_touch_sample
+    elif cmd == 'get_touch_sample':
+        try:
+            retmsg = str(TouchSensor(brick, PORT_1).get_sample())
+            retcode = 0
+        except:
+            retcode = 1
+            retmsg = str(sys.exc_info()[1])
+    
+    #set_motor This one will require some extra complexity...
+    elif cmd == 'get_touch_sample':
+        retmsg = 'Not imlemented yet.'
+        retcode = 1
+    
+    #play_tone This one too...it will return after the tone function does
+    elif cmd == 'get_touch_sample':
+        retmsg = 'Not imlemented yet.'
+        retcode = 1
 
-def NEWCLIENTS(sock):
-    while 1:
-        client, info = sock.accept()
-        print 'new client with info: ' + info
-        thread.start_new_thread(SERVECLIENT,(client,info,info[0]))
+    #close_brick
+    elif cmd == 'close_brick':
+        try:
+            brick.close()
+            retcode = 0
+        except:
+            retcode = 1
+            retmsg = str(sys.exc_info()[1])
+    
+    #command not recognised
+    else:
+        retmsg = 'Command not found.'
+        retcode = 1
+    
+    #then return 1 or 0 and a message
+    return retcode, retmsg
 
 def serve_forever():
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.bind(('', 54174))
-    sock.listen(5)
-    thread.start_new_thread(NEWCLIENTS, (sock,))
+    'Serve clients until the window is closed or there is an unhandled error.'
+    #make sockets
+    rsock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.bind((host, port))
+    while 1:
+        #get a message from port on any host
+        inmsg, addr = sock.recvfrom(100) #no commands can be longer than 100 chars
+        print addr
+        
+        #process it
+        code, message = _process_command(inmsg)
+        
+        #send return code to the computer that send the request
+        rsock.sendto(str(code) + message, addr[1])
+        
+        #do again
