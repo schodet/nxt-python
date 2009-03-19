@@ -18,7 +18,7 @@ BUS=="usb", SYSFS{idVendor}=="0694", GROUP="lego", MODE="0660"
 
 ==Windows==
 
-Install [http://tortoisesvn.net/downloads TortiseSVN]. Create a new folder and call it something meaningful, like "nxt-python". Right click on the folder and click SVN Checkout. Copy and Paste "http://nxt-python.googlecode.com/svn/trunk/" to the top text box and click OK. After it finishes, double click on the folder to open it. Copy the folder named "nxt" to C:\Python26\Lib\site-packages.
+Install [http://tortoisesvn.net/downloads TortiseSVN]. Create a new folder somewhere and call it something meaningful, like "nxt-python". Right click on the folder and click SVN Checkout. Copy and Paste "http://nxt-python.googlecode.com/svn/trunk/" to the top text box and click OK. After it finishes, double click on the folder to open it. Then double click on install.bat. If a black window appears, flashes some data, then disappears, it worked. If it doesn't disappear, follow the instructions on the screen.
 
             For USB communications, you need to install [http://sourceforge.net/projects/pyusb/ PyUSB]. An PyUSB executable installer for Python 2.6 (compiled by me!) is available [http://nxt-python.googlecode.com/files/pyusb-0.4.1.win32-py2.6.exe here].
 
@@ -27,6 +27,8 @@ Install [http://tortoisesvn.net/downloads TortiseSVN]. Create a new folder and c
 ==Mac==
 
 I have not tested this on Mac, though it is reported to work, except that instead of pybluez, you would install the python lightblue glue package.
+
+==Then What?==
 
 Now that you have successfully installed NXT_python and one or both of the communication drivers, you can start using your nxt brick.
 
