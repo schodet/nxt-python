@@ -28,7 +28,7 @@ Install [http://tortoisesvn.net/downloads TortiseSVN]. Create a new folder somew
 
 I have not tested this on Mac, though it is reported to work, except that instead of pybluez, you would install the python lightblue glue package.
 
-==Then What?==
+=Then What?=
 
 Now that you have successfully installed NXT_python and one or both of the communication drivers, you can start using your nxt brick.
 
