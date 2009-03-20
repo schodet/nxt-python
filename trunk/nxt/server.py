@@ -16,73 +16,128 @@ complete.'''
 import nxt.locator
 from nxt.motor import *
 from nxt.sensor import *
-import socket, thread, sys
+import socket, string, sys
+global brick
 
 host = ''
 port = 54174
 outport = 54374
 
+def _process_port(port):
+    if port == 'A' or port == 'a':
+        port = PORT_A
+    elif port == 'B' or port == 'b':
+        port = PORT_B
+    elif port == 'C' or port == 'c':
+        port = PORT_C
+
+    elif port == '1':
+        port = PORT_1
+    elif port == '2':
+        port = PORT_2
+    elif port == '3':
+        port = PORT_3
+    elif port == '4':
+        port = PORT_4
+
+    else:
+        raise ValueError, 'Invalid port.'
+
+    return port
+
 def _process_command(cmd):
+    global brick
     retcode = 0
     retmsg = ''
     #act on messages, these conditions can be in no particular order
     #it should send a return code on port 54374. 0 for success, 1 for failure
-    #then maybe an error message?
+    #then an error message
     #find_brick
-    if cmd == 'find_brick':
+    if cmd.startswith('find_brick'):
         try:
             brick = nxt.locator.find_one_brick()
-            brick.connect()
-            retcode = 0
-        except:
-            retcode = 1
-            retmsg = str(sys.exc_info()[1])
-
-    #get_light_sample
-    elif cmd == 'get_light_sample':
-        try:
-            retmsg = str(LightSensor(brick, PORT_3).get_sample())
-            retcode = 0
-        except:
-            retcode = 1
-            retmsg = str(sys.exc_info()[1])
-        
-    #get_sound_sample
-    elif cmd == 'get_sound_sample':
-        try:
-            retmsg = str(SoundSensor(brick, PORT_2).get_sample())
-            retcode = 0
-        except:
-            retcode = 1
-            retmsg = str(sys.exc_info()[1])
-    
-    #get_ultrasonic_sample
-    elif cmd == 'get_ultrasonic_sample':
-        try:
-            retmsg = str(UltrasonicSensor(brick, PORT_4).get_sample())
+            brick = brick.connect()
             retcode = 0
         except:
             retcode = 1
             retmsg = str(sys.exc_info()[1])
     
     #get_touch_sample
-    elif cmd == 'get_touch_sample':
+    elif cmd.startswith('get_touch_sample'):
         try:
-            retmsg = str(TouchSensor(brick, PORT_1).get_sample())
+            port = string.split(cmd, ':')[1]
+            port = _process_port(port)
+            retmsg = str(TouchSensor(brick, port).get_sample())
+            retcode = 0
+        except:
+            retcode = 1
+            retmsg = str(sys.exc_info()[1])
+        
+    #get_sound_sample
+    elif cmd.startswith('get_sound_sample'):
+        try:
+            port = string.split(cmd, ':')[1]
+            port = _process_port(port)
+            retmsg = str(SoundSensor(brick, port).get_sample())
+            retcode = 0
+        except:
+            retcode = 1
+            retmsg = str(sys.exc_info()[1])
+
+    #get_light_sample
+    elif cmd.startswith('get_light_sample'):
+        try:
+            port = string.split(cmd, ':')[1]
+            port = _process_port(port)
+            retmsg = str(LightSensor(brick, port).get_sample())
             retcode = 0
         except:
             retcode = 1
             retmsg = str(sys.exc_info()[1])
     
-    #set_motor This one will require some extra complexity...
-    elif cmd == 'get_touch_sample':
-        retmsg = 'Not imlemented yet.'
-        retcode = 1
+    #get_ultrasonic_sample
+    elif cmd.startswith('get_ultrasonic_sample'):
+        try:
+            port = string.split(cmd, ':')[1]
+            port = _process_port(port)
+            retmsg = str(UltrasonicSensor(brick, port).get_sample())
+            retcode = 0
+        except:
+            retcode = 1
+            retmsg = str(sys.exc_info()[1])
     
-    #play_tone This one too...it will return after the tone function does
-    elif cmd == 'get_touch_sample':
-        retmsg = 'Not imlemented yet.'
-        retcode = 1
+    #update_motor
+    elif cmd.startswith('update_motor:'):
+        try:
+            #separate the information from the command keyword
+            info = string.split(cmd, ':')[1]
+            [port, power, tacholim] = string.split(info, ',')
+        
+            #process the port
+            port = _process_port(port)
+
+            Motor(brick, port).update(int(power), int(tacholim))
+            retmsg = 'Motor command succeded.'
+            retcode = 0
+        except:
+            retcode = 1
+            retmsg = str(sys.exc_info()[1])
+    
+    #play_tone
+    elif cmd.startswith('play_tone:'):
+        
+        #separate the information from the command keyword
+        info = string.split(cmd, ':')[1]
+        [freq, dur] = string.split(info, ',')
+
+        #call the function
+        try:
+            brick.play_tone_and_wait(int(freq), int(dur))
+            retmsg = 'Tone command succeded.'
+            retcode = 0
+        except:
+            retcode = 1
+            retmsg = str(sys.exc_info()[1])
 
     #close_brick
     elif cmd == 'close_brick':
@@ -104,18 +159,21 @@ def _process_command(cmd):
 def serve_forever():
     'Serve clients until the window is closed or there is an unhandled error.'
     #make sockets
-    rsock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.bind((host, port))
+    outsock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    insock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    insock.bind((host, port))
     while 1:
         #get a message from port on any host
-        inmsg, addr = sock.recvfrom(100) #no commands can be longer than 100 chars
+        inmsg, addr = insock.recvfrom(100) #no commands can be longer than 100 chars
         print addr
         
         #process it
         code, message = _process_command(inmsg)
         
         #send return code to the computer that send the request
-        rsock.sendto(str(code) + message, addr[1])
+        outsock.sendto(str(code) + message + '~', (addr[0], 54374))
         
         #do again
+
+if __name__ == '__main__':
+    serve_forever()
