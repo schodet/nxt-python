@@ -10,8 +10,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-'''Use for socked-driven communications with the NXT. Functional, but not
-complete.'''
+'''Use for a socket interface NXT driver.'''
 
 import nxt.locator
 from nxt.motor import *
@@ -165,13 +164,19 @@ def serve_forever():
     while 1:
         #get a message from port on any host
         inmsg, addr = insock.recvfrom(100) #no commands can be longer than 100 chars
-        print addr
+
+        #print a helpful message to the console.
+        print 'Got command '+inmsg+' from '+addr[0]
         
         #process it
         code, message = _process_command(inmsg)
         
         #send return code to the computer that send the request
         outsock.sendto(str(code) + message + '~', (addr[0], 54374))
+
+        #print a summany of the response
+        print 'Send return code '+str(code)+' with message "'+message+'" to '+addr[0]
+        print ''
         
         #do again
 
