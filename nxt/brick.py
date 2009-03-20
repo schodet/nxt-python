@@ -43,12 +43,8 @@ class Brick(object):
 		self.sock = sock
 
 	def play_tone_and_wait(self, frequency, duration):
-                if self.debug:
-                        print 'Sending tone to brick.'
 		self.play_tone(frequency, duration)
 		sleep(duration / 1000.0)
-		if self.debug:
-                        print 'Tone finished.'
 
 class FileFinder(object):
 	'Context manager to find files on a NXT brick'
