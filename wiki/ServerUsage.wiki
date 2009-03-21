@@ -9,18 +9,30 @@ or just double click on server.py in site-packages.
 
 This is an example that uses the server:
 {{{
-import socket
+#This script is an example for the nxt.server module. You need to run
+#nxt.server.serve_forever() in another window. Or, if you want to use
+#this across a network, pass the IP of the computer running the server
+#as an argument in the command line.
+
+import socket, sys
+
+try:
+    server = sys.argv[1]
+    bindto = ''
+except:
+    server = 'localhost'
+    bindto = 'localhost'
 
 insock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 outsock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-insock.bind(('localhost', 54374)) #If you are running the server on a different computer, change localhost to the IP of that computer.
+insock.bind((bindto, 54374))
 
 while 1:
     command = raw_input('nxt> ')
-    outsock.sendto(command, ('localhost', 54174)) #change it here, too
+    outsock.sendto(command, (server, 54174))
     retvals, addr = insock.recvfrom(1024)
     retcode = retvals[0]
-    retmsg = retvals[1:retvals.index('~')]
+    retmsg = retvals[1:len(retvals)]
     print 'Return code: '+retcode
     print 'Return message: '+retmsg
 }}}
@@ -35,4 +47,11 @@ This will bring up a prompt (`nxt>`). These are the available commands:
 || play_tone || Plays a tone of the frequency and duration specified || play_tone:500,100 ||
 || close_brick || Closes the connection to the brick || close_brick ||
 
-For each command, it returns a datagram in the syntax of errorcode (0 is success, 1 is failure), then a message with '~' at the end of it. For everything except sensors, there is no success message. All error messages are gotten from `str(sys.exc_info()[1])`. You will get an error if you do anything before you do find_brick.
+For each command, it returns a datagram in the syntax of errorcode (0 is success, 1 is failure), then a message. For everything except sensors, there is no success message. All error messages are gotten straight from the error traceback (using `sys.exc_info()`).
+
+Notes:
+  * It's all datagram sockets.
+  * You will get an error if you do anything before you do find_brick.
+  * If you get a failure code and a return message of "need more than x values to unpack.", it's because you forgot a parameter (or two or three) in a command that requires them.
+  * Because of the universal nature of sockets, you can use this driver in just about any programming language that supports (datagram) sockets. Use your imagination!
+  * If you have any questions, post a comment below \/.
