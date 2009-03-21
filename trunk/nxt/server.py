@@ -10,7 +10,8 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-'''Use for a socket interface NXT driver.'''
+'''Use for a socket-interface NXT driver. Command and protocol docs at:
+http://code.google.com/p/nxt-python/wiki/ServerUsage.'''
 
 import nxt.locator
 from nxt.motor import *
@@ -56,6 +57,7 @@ def _process_command(cmd):
         try:
             brick = nxt.locator.find_one_brick()
             brick = brick.connect()
+            retmsg = 'Connected to brick.'
             retcode = 0
         except:
             retcode = 1
@@ -172,7 +174,7 @@ def serve_forever():
         code, message = _process_command(inmsg)
         
         #send return code to the computer that send the request
-        outsock.sendto(str(code) + message + '~', (addr[0], 54374))
+        outsock.sendto(str(code) + message, (addr[0], 54374))
 
         #print a summany of the response
         print 'Send return code '+str(code)+' with message "'+message+'" to '+addr[0]
