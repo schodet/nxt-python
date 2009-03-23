@@ -1,6 +1,5 @@
 # nxt.direct module -- LEGO Mindstorms NXT direct telegrams
 # Copyright (C) 2006-2007  Douglas P Lau
-# Copyright (C) 2009  Marcus Wanner
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -11,8 +10,6 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-
-'Use for direct communication with the NXT ***EXTREMELY ADVANCED USERS ONLY***'
 
 def _create(opcode):
 	'Create a simple direct telegram'

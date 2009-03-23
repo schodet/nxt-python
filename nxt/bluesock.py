@@ -1,6 +1,5 @@
 # nxt.bluesock module -- Bluetooth socket communication with LEGO Minstorms NXT
 # Copyright (C) 2006-2007  Douglas P Lau
-# Copyright (C) 2009  Marcus Wanner
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,21 +29,13 @@ class BlueSock(object):
 		return 'Bluetooth (%s)' % self.host
 
 	def connect(self):
-                if self.debug:
-                        print 'Connecting via USB...'
 		sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
 		sock.connect((self.host, BlueSock.PORT))
 		self.sock = sock
-		if self.debug:
-                        print 'Connected.'
 		return Brick(self)
 
 	def close(self):
-                if self.debug:
-                        print 'Closing USB connection...'
 		self.sock.close()
-		if self.debug:
-                        print 'USB connection closed.'
 
 	def send(self, data):
 		if self.debug:

@@ -3,13 +3,11 @@
 from distutils.core import setup
 
 setup(
-	name='NXT-Python',
-	version='0.8',
-	author='Douglas Lau, Marcus Wanner',
-	author_email='dplau@comcast.net, marcusw@cox.net',
+	name='NXT_Master',
+	version='0.7',
+	author='Douglas Lau',
+	author_email='dplau@comcast.net',
 	description='LEGO Mindstorms NXT Control Package',
-        url='http://home.comcast.net/~dplau/nxt_python/, http://code.google.com/p/nxt-python/',
-        license='Gnu GPL v2',
 	packages=['nxt'],
 	scripts=['scripts/nxt_push', 'scripts/nxt_test', 'scripts/nxt_filer']
 )

@@ -1,6 +1,5 @@
 # nxt.system module -- LEGO Mindstorms NXT system telegrams
 # Copyright (C) 2006  Douglas P Lau
-# Copyright (C) 2009  Marcus Wanner
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -11,8 +10,6 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-
-'Use for communications regarding the NXT filesystem and such ***ADVANCED USERS ONLY***'
 
 def _create(opcode):
 	'Create a simple system telegram'

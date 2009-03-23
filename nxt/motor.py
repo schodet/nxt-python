@@ -1,6 +1,5 @@
 # nxt.motor module -- Class to control LEGO Mindstorms NXT motors
 # Copyright (C) 2006  Douglas P Lau
-# Copyright (C) 2009  Marcus Wanner
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -11,8 +10,6 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-
-'Use for motor control'
 
 PORT_A = 0x00
 PORT_B = 0x01
@@ -49,39 +46,18 @@ class Motor(object):
 		self.tacho_count = 0
 		self.block_tacho_count = 0
 		self.rotation_count = 0
-		self.debug = 0
 
 	def set_output_state(self):
-                if self.debug:
-                        print 'Setting brick output state...'
 		self.brick.set_output_state(self.port, self.power, self.mode,
 			self.regulation, self.turn_ratio, self.run_state,
 			self.tacho_limit)
-		if self.debug:
-                        print 'State set.'
 
 	def get_output_state(self):
-                if self.debug:
-                        print 'Getting brick output state...'
 		values = self.brick.get_output_state(self.port)
 		(self.port, self.power, self.mode, self.regulation,
 			self.turn_ratio, self.run_state, self.tacho_limit,
 			tacho_count, block_tacho_count, rotation_count) = values
-		if self.debug:
-                        print 'State got.'
 		return values
 
 	def reset_position(self, relative):
 		self.brick.reset_motor_position(self.port, relative)
-
-	def update(self, power, tacholim):
-		'Use this to run a motor. power is a value between -127 and 128, tacholim is the number of degrees to apply power for.'
-                self.mode = MODE_MOTOR_ON
-                self.run_state = RUN_STATE_RUNNING
-		self.power = power
-		self.tacho_limit = tacholim
-		if self.debug:
-                        print 'Updating motor information...'
-		self.set_output_state()
-		if self.debug:
-                        print 'Updating finished.'

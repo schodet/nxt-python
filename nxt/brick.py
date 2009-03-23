@@ -1,6 +1,5 @@
 # nxt.brick module -- Classes to represent LEGO Mindstorms NXT bricks
 # Copyright (C) 2006  Douglas P Lau
-# Copyright (C) 2009  Marcus Wanner
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,7 +34,6 @@ class _Meta(type):
 			setattr(cls, poll_func.__name__, m)
 
 class Brick(object):
-        'Main object for NXT Control'
 
 	__metaclass__ = _Meta
 
