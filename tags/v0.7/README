@@ -1,0 +1,27 @@
+NXT_Python
+
+NXT_Python is a package for controlling a LEGO NXT robot using the Python
+programming language. It can communicate using either USB or Bluetooth. It is
+available under the Free Software Foundation's GPL license. It was developed on
+Fedora Core (Linux), but it has been tested on Windows as well.
+
+Requirements:
+
+	* Python 2.4 (http://www.python.org)
+	* PyBluez (Bluetooth library) (http://org.csail.mit.edu/pybluez/)
+		and / or
+	* PyUSB (USB library) (http://sourceforge.net/projects/pyusb/)
+
+Installation:
+
+	* Untar/unzip source package
+	* In package directory, run "python setup.py install" (as root)
+	* For USB on Linux, create udev rule
+
+Create file at /etc/udev/rules.d/70-lego.rules, containing one line:
+
+BUS=="usb", SYSFS{idVendor}=="0694", GROUP="lego", MODE="0660"
+
+Contact:
+
+	Douglas P Lau (dplau@comcast.net)
