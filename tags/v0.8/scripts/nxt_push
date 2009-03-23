@@ -1,0 +1,53 @@
+#!/usr/bin/env python
+#
+# nxt_push program -- Push a file to a LEGO Mindstorms NXT brick
+# Copyright (C) 2006  Douglas P Lau
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+import sys
+import nxt.locator
+from nxt.brick import FileWriter
+from nxt.error import FileExistsError
+
+def _write_file(b, fname, f):
+	# FIXME: change to "with" syntax for python 2.5
+	w = FileWriter(b, fname, f)
+	w.__enter__()
+	try:
+		print 'Pushing %s (%d bytes) ...' % (fname, w.size),
+		sys.stdout.flush()
+		size = 0
+		for n_bytes in w:
+			size += n_bytes
+		print 'wrote %d bytes' % size
+	finally:
+		w.__exit__(None, None, None)
+
+def write_file(b, fname):
+	# FIXME: change to "with" syntax for python 2.5
+	f = open(fname)
+	try:
+		try:
+			_write_file(b, fname, f)
+		except FileExistsError:
+			print 'Overwriting %s on NXT' % fname
+			b.delete(fname)
+			_write_file(b, fname, f)
+	finally:
+		f.close()
+
+if __name__ == '__main__':
+	sock = nxt.locator.find_one_brick()
+	if sock:
+		b = sock.connect()
+		write_file(b, sys.argv[1])
+		sock.close()
