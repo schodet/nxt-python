@@ -1,6 +1,6 @@
 # nxt.sensor module -- Classes to read LEGO Mindstorms NXT sensors
 # Copyright (C) 2006,2007  Douglas P Lau
-# Copyright (C) 2009  Marcus Wanner
+# Copyright (C) 2009  Marcus Wanner, Paulo Vieira
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -257,12 +257,12 @@ class UltrasonicSensor(DigitalSensor):
 		return self.get_measurement_byte_0()
 
 class AccelerometerSensor(DigitalSensor):
-	'Object for Accelerometer sensors'
+	'Object for Accelerometer sensors. Thanks to Paulo Vieira.'
 
 	__metaclass__ = _MetaUS
 
 	def __init__(self, brick, port):
-		super(Accelerometer, self).__init__(brick, port)
+		super(AccelerometerSensor, self).__init__(brick, port)
 		self.sensor_type = Type.LOW_SPEED_9V
 		self.mode = Mode.RAW
 		self.set_input_mode()

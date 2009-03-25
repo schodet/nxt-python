@@ -108,6 +108,16 @@ def _process_command(cmd):
             retcode = 1
             retmsg = str(sys.exc_info()[1])
 
+    elif cmd.startswith('get_accelerometer_sample'):
+        try:
+            port = string.split(cmd, ':')[1]
+            port = _process_port(port)
+            retmsg = str(AccelerometerSensor(brick, port).get_sample())
+            retcode = 0
+        except:
+            retcode = 1
+            retmsg = str(sys.exc_info()[1])
+
     #get_compass_sample
     elif elif cmd.startswith('get_compass_sample'):
         try:
