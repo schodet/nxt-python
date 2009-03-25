@@ -257,3 +257,48 @@ class UltrasonicSensor(DigitalSensor):
 		return self.get_measurement_byte_0()
 
 UltrasonicSensor.get_sample = UltrasonicSensor.get_measurement_byte_0
+
+class Accelerometer(DigitalSensor):
+        'Object for Accelerometer sensors'
+
+	__metaclass__ = _MetaUS
+
+	def __init__(self, brick, port):
+		super(Accelerometer, self).__init__(brick, port)
+		self.sensor_type = Type.LOW_SPEED_9V
+		self.mode = Mode.RAW
+		self.set_input_mode()
+		sleep(0.1)	# Give I2C time to initialize
+
+        def get_single_shot_measurement(self):
+            self.set_command_state(CommandState.SINGLE_SHOT)
+            # Upper X, Y, Z
+            outbuf0 = self.get_measurement_byte_0()
+            outbuf1 = self.get_measurement_byte_1()
+            outbuf2 = self.get_measurement_byte_2()
+            # Lower X, Y, Z
+            outbuf3 = self.get_measurement_byte_3()
+            outbuf4 = self.get_measurement_byte_4()
+            outbuf5 = self.get_measurement_byte_5()
+            self.xval = outbuf0
+            if self.xval > 127:
+                self.xval -= 256
+            self.xval = self.xval * 4 + outbuf3
+
+            self.yval = outbuf1
+            if self.yval > 127:
+                self.yval -= 256
+            self.yval = self.yval * 4 + outbuf4
+
+            self.zval = outbuf2
+            if self.zval > 127:
+                self.zval -= 256
+            self.zval = self.zval * 4 + outbuf5
+
+            self.xval = float(self.xval)/200
+            self.yval = float(self.yval)/200
+            self.zval = float(self.zval)/200
+
+            return self.xval, self.yval, self.zval
+
+Accelerometer.get_sample = Accelerometer.get_single_shot_measurement
