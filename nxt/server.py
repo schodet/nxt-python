@@ -16,6 +16,7 @@ http://code.google.com/p/nxt-python/wiki/ServerUsage'''
 import nxt.locator
 from nxt.motor import *
 from nxt.sensor import *
+from nxt.compass import *
 import socket, string, sys
 global brick
 
@@ -102,6 +103,17 @@ def _process_command(cmd):
             port = string.split(cmd, ':')[1]
             port = _process_port(port)
             retmsg = str(UltrasonicSensor(brick, port).get_sample())
+            retcode = 0
+        except:
+            retcode = 1
+            retmsg = str(sys.exc_info()[1])
+
+    #get_compass_sample
+    elif elif cmd.startswith('get_compass_sample'):
+        try:
+            port = string.split(cmd, ':')[1]
+            port = _process_port(port)
+            retmsg = str(CompassSensor(brick, port).get_sample())
             retcode = 0
         except:
             retcode = 1
