@@ -43,6 +43,7 @@ This will bring up a prompt (`nxt>`). These are the available commands:
 || get_sound_sample || Gets a sample from the port specified || get_sound_sample:1 ||
 || get_light_sample || Gets a sample from the port specified || get_light_sample:1 ||
 || get_ultrasonic_sample || Gets a sample from the port specified || get_ultrasonic_sample:1 ||
+|| get_compass_sample || Gets a sample from the port specified || get_compass_sample:1 ||
 || update_motor || Updates a motor with the port, power, and tacholimit specified || update_motor:a,100,300 ||
 || play_tone || Plays a tone of the frequency and duration specified || play_tone:500,100 ||
 || close_brick || Closes the connection to the brick || close_brick ||
