@@ -21,23 +21,23 @@ PORT_3 = 0x02
 PORT_4 = 0x03
 
 class Type(object):
-        'Namespace for enumeration of the type of sensor'
+	'Namespace for enumeration of the type of sensor'
 	# NOTE: just a namespace (enumeration)
 	NO_SENSOR = 0x00
-	SWITCH = 0x01		# Touch sensor
+	SWITCH = 0x01       # Touch sensor
 	TEMPERATURE = 0x02
 	REFLECTION = 0x03
 	ANGLE = 0x04
-	LIGHT_ACTIVE = 0x05	# Light sensor (illuminated)
-	LIGHT_INACTIVE = 0x06	# Light sensor (ambient)
-	SOUND_DB = 0x07		# Sound sensor (unadjusted)
-	SOUND_DBA = 0x08	# Sound sensor (adjusted)
+	LIGHT_ACTIVE = 0x05 # Light sensor (illuminated)
+	LIGHT_INACTIVE = 0x06   # Light sensor (ambient)
+	SOUND_DB = 0x07     # Sound sensor (unadjusted)
+	SOUND_DBA = 0x08    # Sound sensor (adjusted)
 	CUSTOM = 0x09
 	LOW_SPEED = 0x0A
-	LOW_SPEED_9V = 0x0B	# Low-speed I2C (Ultrasonic sensor)
+	LOW_SPEED_9V = 0x0B # Low-speed I2C (Ultrasonic sensor)
 
 class Mode(object):
-        'Namespace for enumeration of the mode of sensor'
+	'Namespace for enumeration of the mode of sensor'
 	# NOTE: just a namespace (enumeration)
 	RAW = 0x00
 	BOOLEAN = 0x20
@@ -48,10 +48,10 @@ class Mode(object):
 	FAHRENHEIT = 0xC0
 	ANGLE_STEPS = 0xE0
 	MASK = 0xE0
-	MASK_SLOPE = 0x1F	# Why isn't this slope thing documented?
+	MASK_SLOPE = 0x1F   # Why isn't this slope thing documented?
 
 class Sensor(object):
-        'Main sensor object'
+	'Main sensor object'
 
 	def __init__(self, brick, port):
 		self.brick = brick
@@ -64,7 +64,7 @@ class Sensor(object):
 			self.mode)
 
 class AnalogSensor(Sensor):
-        'Object for analog sensors'
+	'Object for analog sensors'
 
 	def __init__(self, brick, port):
 		super(AnalogSensor, self).__init__(brick, port)
@@ -90,7 +90,7 @@ class AnalogSensor(Sensor):
 		return self.scaled_value
 
 class TouchSensor(AnalogSensor):
-        'Object for touch sensors'
+	'Object for touch sensors'
 
 	def __init__(self, brick, port):
 		super(TouchSensor, self).__init__(brick, port)
@@ -106,7 +106,7 @@ class TouchSensor(AnalogSensor):
 		return self.is_pressed()
 
 class LightSensor(AnalogSensor):
-        'Object for light sensors'
+	'Object for light sensors'
 
 	def __init__(self, brick, port):
 		super(LightSensor, self).__init__(brick, port)
@@ -120,7 +120,7 @@ class LightSensor(AnalogSensor):
 		self.set_input_mode()
 
 class SoundSensor(AnalogSensor):
-        'Object for sound sensors'
+	'Object for sound sensors'
 
 	def __init__(self, brick, port):
 		super(SoundSensor, self).__init__(brick, port)
@@ -137,7 +137,7 @@ I2C_ADDRESS = {
 	0x00: ('version', 8),
 	0x08: ('product_id', 8),
 	0x10: ('sensor_type', 8),
-	0x11: ('factory_zero', 1),		# is this really correct?
+	0x11: ('factory_zero', 1),      # is this really correct?
 	0x12: ('factory_scale_factor', 1),
 	0x13: ('factory_scale_divisor', 1),
 	0x14: ('measurement_units', 1),
@@ -163,7 +163,7 @@ class _Meta(type):
 			setattr(cls, 'get_' + name, q)
 
 class DigitalSensor(Sensor):
-        'Object for digital sensors'
+	'Object for digital sensors'
 
 	__metaclass__ = _Meta
 
@@ -196,12 +196,12 @@ class DigitalSensor(Sensor):
 		return data[-n_bytes:]
 
 class CommandState(object):
-        'Namespace for enumeration of the command state of sensors'
+	'Namespace for enumeration of the command state of sensors'
 	# NOTE: just a namespace (enumeration)
 	OFF = 0x00
 	SINGLE_SHOT = 0x01
 	CONTINUOUS_MEASUREMENT = 0x02
-	EVENT_CAPTURE = 0x03		# Check for ultrasonic interference
+	EVENT_CAPTURE = 0x03 # Check for ultrasonic interference
 	REQUEST_WARM_RESET = 0x04
 
 # I2C addresses for an Ultrasonic sensor
@@ -240,7 +240,7 @@ class _MetaUS(_Meta):
 				setattr(cls, 'set_' + name, c)
 
 class UltrasonicSensor(DigitalSensor):
-        'Object for ultrasonic sensors'
+	'Object for ultrasonic sensors'
 
 	__metaclass__ = _MetaUS
 
@@ -249,17 +249,15 @@ class UltrasonicSensor(DigitalSensor):
 		self.sensor_type = Type.LOW_SPEED_9V
 		self.mode = Mode.RAW
 		self.set_input_mode()
-		sleep(0.1)	# Give I2C time to initialize
+		sleep(0.1)  # Give I2C time to initialize
 
 	def get_single_shot_measurement(self):
-                'Function to get data from ultrasonic sensors, synonmous to self.get_sample()'
+		'Function to get data from ultrasonic sensors, synonmous to self.get_sample()'
 		self.set_command_state(CommandState.SINGLE_SHOT)
 		return self.get_measurement_byte_0()
 
-UltrasonicSensor.get_sample = UltrasonicSensor.get_measurement_byte_0
-
-class Accelerometer(DigitalSensor):
-        'Object for Accelerometer sensors'
+class AccelerometerSensor(DigitalSensor):
+	'Object for Accelerometer sensors'
 
 	__metaclass__ = _MetaUS
 
@@ -268,37 +266,38 @@ class Accelerometer(DigitalSensor):
 		self.sensor_type = Type.LOW_SPEED_9V
 		self.mode = Mode.RAW
 		self.set_input_mode()
-		sleep(0.1)	# Give I2C time to initialize
+		sleep(0.1)  # Give I2C time to initialize
 
-        def get_single_shot_measurement(self):
-            self.set_command_state(CommandState.SINGLE_SHOT)
-            # Upper X, Y, Z
-            outbuf0 = self.get_measurement_byte_0()
-            outbuf1 = self.get_measurement_byte_1()
-            outbuf2 = self.get_measurement_byte_2()
-            # Lower X, Y, Z
-            outbuf3 = self.get_measurement_byte_3()
-            outbuf4 = self.get_measurement_byte_4()
-            outbuf5 = self.get_measurement_byte_5()
-            self.xval = outbuf0
-            if self.xval > 127:
-                self.xval -= 256
-            self.xval = self.xval * 4 + outbuf3
+		def get_single_shot_measurement(self):
+			self.set_command_state(CommandState.SINGLE_SHOT)
+			# Upper X, Y, Z
+			outbuf0 = self.get_measurement_byte_0()
+			outbuf1 = self.get_measurement_byte_1()
+			outbuf2 = self.get_measurement_byte_2()
+			# Lower X, Y, Z
+			outbuf3 = self.get_measurement_byte_3()
+			outbuf4 = self.get_measurement_byte_4()
+			outbuf5 = self.get_measurement_byte_5()
+			self.xval = outbuf0
+			if self.xval > 127:
+				self.xval -= 256
+			self.xval = self.xval * 4 + outbuf3
 
-            self.yval = outbuf1
-            if self.yval > 127:
-                self.yval -= 256
-            self.yval = self.yval * 4 + outbuf4
+			self.yval = outbuf1
+			if self.yval > 127:
+				self.yval -= 256
+			self.yval = self.yval * 4 + outbuf4
 
-            self.zval = outbuf2
-            if self.zval > 127:
-                self.zval -= 256
-            self.zval = self.zval * 4 + outbuf5
+			self.zval = outbuf2
+			if self.zval > 127:
+				self.zval -= 256
+			self.zval = self.zval * 4 + outbuf5
 
-            self.xval = float(self.xval)/200
-            self.yval = float(self.yval)/200
-            self.zval = float(self.zval)/200
+			self.xval = float(self.xval)/200
+			self.yval = float(self.yval)/200
+			self.zval = float(self.zval)/200
 
-            return self.xval, self.yval, self.zval
+			return self.xval, self.yval, self.zval
 
-Accelerometer.get_sample = Accelerometer.get_single_shot_measurement
+AccelerometerSensor.get_sample = AccelerometerSensor.get_single_shot_measurement
+UltrasonicSensor.get_sample = UltrasonicSensor.get_measurement_byte_0
