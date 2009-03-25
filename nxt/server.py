@@ -11,7 +11,7 @@
 # GNU General Public License for more details.
 
 '''Use for a socket-interface NXT driver. Command and protocol docs at:
-http://code.google.com/p/nxt-python/wiki/ServerUsage.'''
+http://code.google.com/p/nxt-python/wiki/ServerUsage'''
 
 import nxt.locator
 from nxt.motor import *
