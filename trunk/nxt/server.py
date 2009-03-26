@@ -119,7 +119,7 @@ def _process_command(cmd):
             retmsg = str(sys.exc_info()[1])
 
     #get_compass_sample
-    elif elif cmd.startswith('get_compass_sample'):
+    elif cmd.startswith('get_compass_sample'):
         try:
             port = string.split(cmd, ':')[1]
             port = _process_port(port)
