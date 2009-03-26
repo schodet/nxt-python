@@ -256,6 +256,8 @@ class UltrasonicSensor(DigitalSensor):
 		self.set_command_state(CommandState.SINGLE_SHOT)
 		return self.get_measurement_byte_0()
 
+UltrasonicSensor.get_sample = UltrasonicSensor.get_measurement_byte_0
+
 class AccelerometerSensor(DigitalSensor):
 	'Object for Accelerometer sensors. Thanks to Paulo Vieira.'
 
@@ -268,7 +270,7 @@ class AccelerometerSensor(DigitalSensor):
 		self.set_input_mode()
 		sleep(0.1)  # Give I2C time to initialize
 
-		def get_single_shot_measurement(self):
+		def get_sample(self):
 			self.set_command_state(CommandState.SINGLE_SHOT)
 			# Upper X, Y, Z
 			outbuf0 = self.get_measurement_byte_0()
@@ -299,5 +301,3 @@ class AccelerometerSensor(DigitalSensor):
 
 			return self.xval, self.yval, self.zval
 
-AccelerometerSensor.get_sample = AccelerometerSensor.get_single_shot_measurement
-UltrasonicSensor.get_sample = UltrasonicSensor.get_measurement_byte_0
