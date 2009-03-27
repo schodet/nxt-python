@@ -20,7 +20,7 @@ from nxt.compass import *
 import socket, string, sys
 global brick
 
-host = ''
+host = 'localhost'
 port = 54174
 outport = 54374
 
