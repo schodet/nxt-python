@@ -4,7 +4,7 @@ from distutils.core import setup
 
 setup(
 	name='NXT-Python',
-	version='0.8',
+	version='0.8.1',
 	author='Douglas Lau, Marcus Wanner',
 	author_email='dplau@comcast.net, marcusw@cox.net',
 	description='LEGO Mindstorms NXT Control Package',
