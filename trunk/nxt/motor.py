@@ -66,7 +66,8 @@ class Motor(object):
 		values = self.brick.get_output_state(self.port)
 		(self.port, self.power, self.mode, self.regulation,
 			self.turn_ratio, self.run_state, self.tacho_limit,
-			tacho_count, block_tacho_count, rotation_count) = values
+			self.tacho_count, self.block_tacho_count,
+                        self.rotation_count) = values
 		if self.debug:
                         print 'State got.'
 		return values
