@@ -21,7 +21,7 @@ from nxt.compass import *
 import socket, string, sys
 global brick
 
-host = 'localhost'
+host = ''
 port = 54174
 outport = 54374
 
@@ -149,13 +149,13 @@ def _process_command(cmd):
     
     #play_tone
     elif cmd.startswith('play_tone:'):
-        
-        #separate the information from the command keyword
-        info = string.split(cmd, ':')[1]
-        [freq, dur] = string.split(info, ',')
-
-        #call the function
         try:
+            #separate the information from the command keyword
+            info = string.split(cmd, ':')[1]
+            [freq, dur] = string.split(info, ',')
+
+            #call the function
+
             brick.play_tone_and_wait(int(freq), int(dur))
             retmsg = 'Tone command succeded.'
             retcode = 0
