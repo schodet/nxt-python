@@ -1,13 +1,23 @@
 #summary How to use the nxt.server module
+#labels Phase-Implementation
 
 To run the server, use
 {{{
 import nxt.server
 nxt.server.serve_forever()
 }}}
-or just double click on server.py in site-packages.
+or just double click on server.py in your site-packages/nxt directory.
 
-This is an example that uses the server:
+If you want to use password protection, do something like
+{{{
+import nxt.server
+password = 'nxtpass'
+authorizedips = ['127.0.0.1', '125.76.12.98'] #these are the ips that don't need to send the password before any commands are carried out. Usually, this is left blank.
+nxt.server.serve_forever(password, authorizedips) #both arguments are optional, but authorizedips won't have any effect if you don't provide a password.
+}}}
+Or you can pass a password (no pun intended) on the command line when starting the script, like `python server.py nxtpass`.
+
+This is an example of a python script that uses the server (but really, it could be interfaced to in any language that supports UDP datagram sockets):
 {{{
 #This script is an example for the nxt.server module. You need to run
 #nxt.server.serve_forever() in another window. Or, if you want to use
@@ -36,24 +46,26 @@ while 1:
     print 'Return code: '+retcode
     print 'Return message: '+retmsg
 }}}
-This will bring up a prompt (`nxt>`). These are the available commands:
-|| *Name* || *Effect* || *Syntax Example* ||
-|| find_brick || Looks for a brick and connects to it if it can || 'find_brick' ||
-|| get_touch_sample || Gets a sample from the port specified || 'get_touch_sample:1' ||
-|| get_sound_sample || Gets a sample from the port specified || 'get_sound_sample:1' ||
-|| get_light_sample || Gets a sample from the port specified || 'get_light_sample:1' ||
-|| get_ultrasonic_sample || Gets a sample from the port specified || 'get_ultrasonic_sample:1' ||
-|| get_accelerometer_sample || Gets a sample from the port specified || 'get_accelerometer_sample:1' ||
-|| get_compass_sample || Gets a sample from the port specified || 'get_compass_sample:1' ||
-|| update_motor || Updates a motor with the port, power, and tacholimit specified || 'update_motor:a,100,300' ||
-|| play_tone || Plays a tone of the frequency and duration specified || 'play_tone:500,100' ||
-|| close_brick || Closes the connection to the brick || 'close_brick' ||
+This will bring up a prompt (`nxt> `). Enter one of the commands in the table below and it will be sent to the server for processing.
 
-For each command, it returns a datagram in the syntax of errorcode (0 is success, 1 is failure), then a message. For everything except sensors, there is no success message. All error messages are gotten straight from the error traceback (using `sys.exc_info()`).
+When the server is running, it waits on port 54174 for incoming UDP datagrams. These datagrams are limited to a length of 100 bytes in length by the server for security reasons (I've never heard of a virus that was less than 100 bytes long, have you?). To have the server execute a command, just send it in a datagram to that port. These are the available commands:
+|| *Name* || *Effect* || *Syntax Example* ||
+|| find_brick || Looks for a brick and connects to it if it can || `'find_brick'` ||
+|| get_touch_sample || Gets a sample from the port specified || `'get_touch_sample:1'` ||
+|| get_sound_sample || Gets a sample from the port specified || `'get_sound_sample:1'` ||
+|| get_light_sample || Gets a sample from the port specified || `'get_light_sample:1'` ||
+|| get_ultrasonic_sample || Gets a sample from the port specified || `'get_ultrasonic_sample:1'` ||
+|| get_accelerometer_sample || Gets a sample from the port specified || `'get_accelerometer_sample:1'` ||
+|| get_compass_sample || Gets a sample from the port specified || `'get_compass_sample:1'` ||
+|| update_motor || Updates a motor with the port, power, and tacholimit specified || `'update_motor:a,100,300'` ||
+|| play_tone || Plays a tone of the frequency and duration specified || `'play_tone:500,100'` ||
+|| close_brick || Closes the connection to the brick || `'close_brick'` ||
+
+For each command, the server sends back a datagram on port 54374 in the syntax of errorcode (0 is success, 1 is failure), then a message. For sensors, the success message is the sample from the sensor. All command failure messages are gotten straight from the error traceback (using `sys.exc_info()`).
 
 Notes:
   * It's all in UDP datagram sockets.
-  * You will get an error if you do anything before you do find_brick.
+  * You will probably get an error if you do anything (besides entering a correct password, if one is required) before you do a `'find_brick'`.
   * If you get a failure code and a return message of "need more than x values to unpack.", it's because you forgot a parameter (or two or three) in a command that requires them.
   * Because of the universal nature of sockets, you can use this driver in just about any programming language that supports (datagram) sockets. Use your imagination!
   * If you have any questions or suggestions, post a comment below or contact me.
