@@ -25,27 +25,27 @@ host = ''
 port = 54174
 outport = 54374
 
-def _process_port(port):
-    if port == 'A' or port == 'a':
-        port = PORT_A
-    elif port == 'B' or port == 'b':
-        port = PORT_B
-    elif port == 'C' or port == 'c':
-        port = PORT_C
+def _process_port(nxtport):
+    if nxtport == 'A' or nxtport == 'a':
+        nxtport = PORT_A
+    elif nxtport == 'B' or nxtport == 'b':
+        nxtport = PORT_B
+    elif nxtport == 'C' or nxtport == 'c':
+        nxtport = PORT_C
 
-    elif port == '1':
-        port = PORT_1
-    elif port == '2':
-        port = PORT_2
-    elif port == '3':
-        port = PORT_3
-    elif port == '4':
-        port = PORT_4
+    elif nxtport == '1':
+        nxtport = PORT_1
+    elif nxtport == '2':
+        nxtport = PORT_2
+    elif nxtport == '3':
+        nxtport = PORT_3
+    elif nxtport == '4':
+        nxtport = PORT_4
 
     else:
         raise ValueError, 'Invalid port.'
 
-    return port
+    return nxtport
 
 def _process_command(cmd):
     global brick
@@ -180,30 +180,61 @@ def _process_command(cmd):
     #then return 1 or 0 and a message
     return retcode, retmsg
 
-def serve_forever():
-    'Serve clients until the window is closed or there is an unhandled error.'
+def serve_forever(password=None, authorizedips = []):
+    '''Serve clients until the window is closed or there is an unhandled error.
+If you supply a password, then any ip that wants to control the NXT will have
+to send the password once to be authorized before any of the commands it sends
+will be carried out.
+authorizedips is a list of the ips that can have access to the NXT without
+supplying a password. Normally, this is left blank.'''
     #make sockets
     outsock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     insock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     insock.bind((host, port))
     while 1:
         #get a message from port on any host
-        inmsg, addr = insock.recvfrom(100) #no commands can be longer than 100 chars
+        inmsg, (clientip,assignedport) = insock.recvfrom(100) #no commands can be longer than 100 chars
 
         #print a helpful message to the console.
-        print 'Got command '+inmsg+' from '+addr[0]
-        
-        #process it
-        code, message = _process_command(inmsg)
+        print 'Got command '+inmsg+' from '+clientip
+
+        #process command
+        if password:
+            #password protection enabled
+            try:
+                authorizedips.index(clientip)
+                #ip is authorized, and is therefore in the list of authorized ip
+                code, message = _process_command(inmsg) #process the command as normal
+            except ValueError:
+                #ip not authorized, and therefore cannot be found in the list of authorized ips
+                if inmsg == str(password):
+                    #command is the correct password
+                    authorizedips.append(clientip)
+                    code = 0
+                    message = 'Authorization successful.'
+                else:
+                    #command is not the password
+                    code = 1
+                    message = 'NXT access on this server is password protected, please send correct password to be authorized.'
+
+        else:
+            #not password protected
+            code, message = _process_command(inmsg)
         
         #send return code to the computer that send the request
-        outsock.sendto(str(code) + message, (addr[0], 54374))
+        outsock.sendto(str(code) + message, (clientip, 54374))
 
         #print a summany of the response
-        print 'Send return code '+str(code)+' with message "'+message+'" to '+addr[0]
+        print 'Sent return code '+str(code)+' with message "'+message+'" to '+clientip
         print ''
         
         #do again
 
 if __name__ == '__main__':
-    serve_forever()
+    try:
+        password = sys.argv[1]
+    except:
+        password = None
+    #serve automatically if the script is started by double-clicking or
+    #by command line. 
+    serve_forever(password)
