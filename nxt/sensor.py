@@ -63,75 +63,6 @@ class Sensor(object):
 		self.brick.set_input_mode(self.port, self.sensor_type,
 			self.mode)
 
-class AnalogSensor(Sensor):
-	'Object for analog sensors'
-
-	def __init__(self, brick, port):
-		super(AnalogSensor, self).__init__(brick, port)
-		self.valid = False
-		self.calibrated = False
-		self.raw_ad_value = 0
-		self.normalized_ad_value = 0
-		self.scaled_value = 0
-		self.calibrated_value = 0
-
-	def get_input_values(self):
-		values = self.brick.get_input_values(self.port)
-		(self.port, self.valid, self.calibrated, self.sensor_type,
-			self.mode, self.raw_ad_value, self.normalized_ad_value,
-			self.scaled_value, self.calibrated_value) = values
-		return values
-
-	def reset_input_scaled_value(self):
-		self.brick.reset_input_scaled_value()
-
-	def get_sample(self):
-		self.get_input_values()
-		return self.scaled_value
-
-class TouchSensor(AnalogSensor):
-	'Object for touch sensors'
-
-	def __init__(self, brick, port):
-		super(TouchSensor, self).__init__(brick, port)
-		self.sensor_type = Type.SWITCH
-		self.mode = Mode.BOOLEAN
-		self.set_input_mode()
-
-	def is_pressed(self):
-		return bool(self.scaled_value)
-
-	def get_sample(self):
-		self.get_input_values()
-		return self.is_pressed()
-
-class LightSensor(AnalogSensor):
-	'Object for light sensors'
-
-	def __init__(self, brick, port):
-		super(LightSensor, self).__init__(brick, port)
-		self.set_illuminated(True)
-
-	def set_illuminated(self, active):
-		if active:
-			self.sensor_type = Type.LIGHT_ACTIVE
-		else:
-			self.sensor_type = Type.LIGHT_INACTIVE
-		self.set_input_mode()
-
-class SoundSensor(AnalogSensor):
-	'Object for sound sensors'
-
-	def __init__(self, brick, port):
-		super(SoundSensor, self).__init__(brick, port)
-		self.set_adjusted(True)
-
-	def set_adjusted(self, active):
-		if active:
-			self.sensor_type = Type.SOUND_DBA
-		else:
-			self.sensor_type = Type.SOUND_DB
-		self.set_input_mode()
 
 I2C_ADDRESS = {
 	0x00: ('version', 8),
@@ -239,6 +170,78 @@ class _MetaUS(_Meta):
 				c = _make_command(address)
 				setattr(cls, 'set_' + name, c)
 
+
+class AnalogSensor(Sensor):
+	'Object for analog sensors'
+
+	def __init__(self, brick, port):
+		super(AnalogSensor, self).__init__(brick, port)
+		self.valid = False
+		self.calibrated = False
+		self.raw_ad_value = 0
+		self.normalized_ad_value = 0
+		self.scaled_value = 0
+		self.calibrated_value = 0
+
+	def get_input_values(self):
+		values = self.brick.get_input_values(self.port)
+		(self.port, self.valid, self.calibrated, self.sensor_type,
+			self.mode, self.raw_ad_value, self.normalized_ad_value,
+			self.scaled_value, self.calibrated_value) = values
+		return values
+
+	def reset_input_scaled_value(self):
+		self.brick.reset_input_scaled_value()
+
+	def get_sample(self):
+		self.get_input_values()
+		return self.scaled_value
+
+class TouchSensor(AnalogSensor):
+	'Object for touch sensors'
+
+	def __init__(self, brick, port):
+		super(TouchSensor, self).__init__(brick, port)
+		self.sensor_type = Type.SWITCH
+		self.mode = Mode.BOOLEAN
+		self.set_input_mode()
+
+	def is_pressed(self):
+		return bool(self.scaled_value)
+
+	def get_sample(self):
+		self.get_input_values()
+		return self.is_pressed()
+
+class LightSensor(AnalogSensor):
+	'Object for light sensors'
+
+	def __init__(self, brick, port):
+		super(LightSensor, self).__init__(brick, port)
+		self.set_illuminated(True)
+
+	def set_illuminated(self, active):
+		if active:
+			self.sensor_type = Type.LIGHT_ACTIVE
+		else:
+			self.sensor_type = Type.LIGHT_INACTIVE
+		self.set_input_mode()
+
+class SoundSensor(AnalogSensor):
+	'Object for sound sensors'
+
+	def __init__(self, brick, port):
+		super(SoundSensor, self).__init__(brick, port)
+		self.set_adjusted(True)
+
+	def set_adjusted(self, active):
+		if active:
+			self.sensor_type = Type.SOUND_DBA
+		else:
+			self.sensor_type = Type.SOUND_DB
+		self.set_input_mode()
+
+
 class UltrasonicSensor(DigitalSensor):
 	'Object for ultrasonic sensors'
 
@@ -251,12 +254,10 @@ class UltrasonicSensor(DigitalSensor):
 		self.set_input_mode()
 		sleep(0.1)  # Give I2C time to initialize
 
-	def get_single_shot_measurement(self):
+	def get_sample(self):
 		'Function to get data from ultrasonic sensors, synonmous to self.get_sample()'
 		self.set_command_state(CommandState.SINGLE_SHOT)
 		return self.get_measurement_byte_0()
-
-UltrasonicSensor.get_sample = UltrasonicSensor.get_measurement_byte_0
 
 class AccelerometerSensor(DigitalSensor):
 	'Object for Accelerometer sensors. Thanks to Paulo Vieira.'
@@ -270,35 +271,35 @@ class AccelerometerSensor(DigitalSensor):
 		self.set_input_mode()
 		sleep(0.1)  # Give I2C time to initialize
 
-		def get_sample(self):
-			self.set_command_state(CommandState.SINGLE_SHOT)
-			outbuf = [0,0,0,0,0,0]
-			# Upper X, Y, Z
-			outbuf[0] = self.get_measurement_byte_0()
-			outbuf[1] = self.get_measurement_byte_1()
-			outbuf[2] = self.get_measurement_byte_2()
-			# Lower X, Y, Z
-			outbuf[3] = self.get_measurement_byte_3()
-			outbuf[4] = self.get_measurement_byte_4()
-			outbuf[5] = self.get_measurement_byte_5()
-			self.xval = outbuf[0]
-			if self.xval > 127:
-				self.xval -= 256
-			self.xval = self.xval * 4 + outbuf[3]
+	def get_sample(self):
+		self.set_command_state(CommandState.SINGLE_SHOT)
+		outbuf = [0,0,0,0,0,0]
+		# Upper X, Y, Z
+		outbuf[0] = self.get_measurement_byte_0()
+		outbuf[1] = self.get_measurement_byte_1()
+		outbuf[2] = self.get_measurement_byte_2()
+		# Lower X, Y, Z
+		outbuf[3] = self.get_measurement_byte_3()
+		outbuf[4] = self.get_measurement_byte_4()
+		outbuf[5] = self.get_measurement_byte_5()
+		self.xval = outbuf[0]
+		if self.xval > 127:
+			self.xval -= 256
+		self.xval = self.xval * 4 + outbuf[3]
 
-			self.yval = outbuf[1]
-			if self.yval > 127:
-				self.yval -= 256
-			self.yval = self.yval * 4 + outbuf[4]
+		self.yval = outbuf[1]
+		if self.yval > 127:
+			self.yval -= 256
+		self.yval = self.yval * 4 + outbuf[4]
 
-			self.zval = outbuf[2]
-			if self.zval > 127:
-				self.zval -= 256
-			self.zval = self.zval * 4 + outbuf[5]
+		self.zval = outbuf[2]
+		if self.zval > 127:
+			self.zval -= 256
+		self.zval = self.zval * 4 + outbuf[5]
 
-			self.xval = float(self.xval)/200
-			self.yval = float(self.yval)/200
-			self.zval = float(self.zval)/200
+		self.xval = float(self.xval)/200
+		self.yval = float(self.yval)/200
+		self.zval = float(self.zval)/200
 
-			return self.xval, self.yval, self.zval
+		return self.xval, self.yval, self.zval
 
