@@ -82,8 +82,10 @@ after turning the specified degrees.'''
             direction = (power > 0)*2-1
             self.get_output_state()
             startingTachoCount = self.tacho_count
+
+            if self.debug:
+                print 'tachocount: '+str(startingTachoCount)
             
-            print 'tachocount: '+str(startingTachoCount)
             tachoTarget = startingTachoCount + tacholim*direction
             
             if self.debug:
