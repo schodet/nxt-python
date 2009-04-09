@@ -37,52 +37,110 @@ LIMIT_RUN_FOREVER = 0
 
 class Motor(object):
 
-	def __init__(self, brick, port):
-		self.brick = brick
-		self.port = port
-		self.power = 0
-		self.mode = MODE_IDLE
-		self.regulation = REGULATION_IDLE
-		self.turn_ratio = 0
-		self.run_state = RUN_STATE_IDLE
-		self.tacho_limit = LIMIT_RUN_FOREVER
-		self.tacho_count = 0
-		self.block_tacho_count = 0
-		self.rotation_count = 0
-		self.debug = 0
+    def __init__(self, brick, port):
+        self.brick = brick
+        self.port = port
+        self.power = 0
+        self.mode = MODE_IDLE
+        self.regulation = REGULATION_IDLE
+        self.turn_ratio = 0
+        self.run_state = RUN_STATE_IDLE
+        self.tacho_limit = LIMIT_RUN_FOREVER
+        self.tacho_count = 0
+        self.block_tacho_count = 0
+        self.rotation_count = 0
+        self.debug = 0
 
-	def set_output_state(self):
+    def set_output_state(self):
+        if self.debug:
+            print 'Setting brick output state...'
+        self.brick.set_output_state(self.port, self.power, self.mode, self.regulation, self.turn_ratio, self.run_state, self.tacho_limit)
+        if self.debug:
+            print 'State set.'
+
+    def get_output_state(self):
+        if self.debug:
+            print 'Getting brick output state...'
+        values = self.brick.get_output_state(self.port)
+        (self.port, self.power, self.mode, self.regulation,
+            self.turn_ratio, self.run_state, self.tacho_limit,
+            self.tacho_count, self.block_tacho_count,
+            self.rotation_count) = values
+        if self.debug:
+            print 'State got.'
+        return values
+
+        def reset_position(self, relative):
+            self.brick.reset_motor_position(self.port, relative)
+
+    def update(self, power, tacholim, braking=False):
+        '''Use this to run a motor. power is a value between -127 and 128, tacholim is the
+number of degrees to apply power for. braking is wether or not to stop the motor
+after turning the specified degrees.'''
+
+        if braking:
+            direction = (power > 0)*2-1
+            self.get_output_state()
+            startingTachoCount = self.tacho_count
+            
+            print 'tachocount: '+str(startingTachoCount)
+            tachoTarget = startingTachoCount + tacholim*direction
+            
+            if self.debug:
+                print 'tacho target: '+str(tachoTarget)
+
+        self.mode = MODE_MOTOR_ON
+        self.run_state = RUN_STATE_RUNNING
+        self.power = power
+        self.tacho_limit = tacholim
+        
+        if self.debug:
+            print 'Updating motor information...'
+                        
+        self.set_output_state()
+        
+        if braking:
+            
+            curTacho = 0
+            
+            while 1:
+                
                 if self.debug:
-                        print 'Setting brick output state...'
-		self.brick.set_output_state(self.port, self.power, self.mode,
-			self.regulation, self.turn_ratio, self.run_state,
-			self.tacho_limit)
-		if self.debug:
-                        print 'State set.'
+                    print 'checking tachocount...'
 
-	def get_output_state(self):
+                olderTachoCount = curTacho
+                self.get_output_state()
+                curTacho = self.tacho_count
+                
                 if self.debug:
-                        print 'Getting brick output state...'
-		values = self.brick.get_output_state(self.port)
-		(self.port, self.power, self.mode, self.regulation,
-			self.turn_ratio, self.run_state, self.tacho_limit,
-			self.tacho_count, self.block_tacho_count,
-                        self.rotation_count) = values
-		if self.debug:
-                        print 'State got.'
-		return values
+                    print 'tachocount: '+str(curTacho)
+                
+                if curTacho<tachoTarget+10 and curTacho>tachoTarget-10:
+                    
+                    if self.debug:
+                        print 'tachocount good, breaking from loop...'
+                    
+                    break
+                
+                else:
+                    if curTacho == olderTachoCount: #motor hasn't moved
+                    
+                        if self.debug:
+                            print 'tachocount bad, giving extra power...'
 
-	def reset_position(self, relative):
-		self.brick.reset_motor_position(self.port, relative)
+                        self.update(power, 1, 0)
+                    else:
+                        if self.debug:
+                            print 'tachocount bad, waiting...'
 
-	def update(self, power, tacholim):
-		'Use this to run a motor. power is a value between -127 and 128, tacholim is the number of degrees to apply power for.'
-                self.mode = MODE_MOTOR_ON
-                self.run_state = RUN_STATE_RUNNING
-		self.power = power
-		self.tacho_limit = tacholim
-		if self.debug:
-                        print 'Updating motor information...'
-		self.set_output_state()
-		if self.debug:
-                        print 'Updating finished.'
+            if self.debug:
+                print 'going in reverse...'
+            
+            self.update(-power/3, 1)
+
+            self.mode = MODE_BRAKE
+
+            self.set_output_state()
+        
+        if self.debug:
+            print 'Updating finished.'
