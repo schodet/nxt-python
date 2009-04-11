@@ -230,11 +230,12 @@ supplying a password. Normally, this is left blank.'''
         
         #do again
 
+#serve automatically if the script is started
+#by double-clicking or by command line.
 if __name__ == '__main__':
     try:
         password = sys.argv[1]
     except:
         password = None
-    #serve automatically if the script is started by double-clicking or
-    #by command line. 
+    
     serve_forever(password)
