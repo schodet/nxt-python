@@ -75,26 +75,26 @@ class Motor(object):
         def reset_position(self, relative):
             self.brick.reset_motor_position(self.port, relative)
 
-    def update(self, power, tacholim, braking=False):
-        '''Use this to run a motor. power is a value between -127 and 128, tacholim is the
-number of degrees to apply power for. braking is wether or not to stop the motor
-after turning the specified degrees.'''
+    def update(self, power, tacho_limit, braking=False):
+        '''Use this to run a motor. power is a value between -127 and 128, tacho_limit is the
+number of degrees to apply power for. Braking is wether or not to stop the motor
+after turning the specified degrees (Under construction).'''
 
         if braking:
             direction = (power > 0)*2-1
             self.get_output_state()
-            startingTachoCount = self.tacho_count
+            starting_tacho_count = self.tacho_count
 
-            self._debug_out('tachocount: '+str(startingTachoCount))
+            self._debug_out('tachocount: '+str(starting_tacho_count))
             
-            tachoTarget = startingTachoCount + tacholim*direction
+            tacho_target = starting_tacho_count + tacho_limit*direction
             
-            self._debug_out('tacho target: '+str(tachoTarget))
+            self._debug_out('tacho target: '+str(tacho_target))
 
         self.mode = MODE_MOTOR_ON
         self.run_state = RUN_STATE_RUNNING
         self.power = power
-        self.tacho_limit = tacholim
+        self.tacho_limit = tacho_limit
         
         self._debug_out('Updating motor information...')
         
@@ -102,26 +102,26 @@ after turning the specified degrees.'''
 
             self.update(power, 1, 0)
             
-            curTacho = 0
+            current_tacho = 0
             
             while 1:
                 
                 self._debug_out('checking tachocount...')
 
-                olderTachoCount = curTacho
+                olderTachoCount = current_tacho
                 self.get_output_state()
-                curTacho = self.tacho_count
+                current_tacho = self.tacho_count
                 
-                self._debug_out('tachocount: '+str(curTacho))
+                self._debug_out('tachocount: '+str(current_tacho))
                 
-                if curTacho<tachoTarget+10 and curTacho>tachoTarget-10:
+                if current_tacho<tacho_target+10 and current_tacho>tacho_target-10:
                     
                     self._debug_out('tachocount good, breaking from loop...')
                     
                     break
                 
                 else:
-                    if curTacho=olderTachoCount: #motor hasn't moved
+                    if current_tacho=olderTachoCount: #motor hasn't moved
                     
                         self._debug_out('tachocount bad, giving extra power...')
 
@@ -136,7 +136,7 @@ after turning the specified degrees.'''
             self.mode = MODE_BRAKE
             self.set_output_state()
 
-            self._debug_out('difference from goal: '+str(self.get_output_state()[7]-tachoTarget))
+            self._debug_out('difference from goal: '+str(self.get_output_state()[7]-tacho_target))
 
         self.set_output_state()
         self._debug_out('Updating finished. ending tachocount: '+str(self.get_output_state()[7]))

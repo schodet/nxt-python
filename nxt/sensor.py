@@ -273,29 +273,29 @@ class AccelerometerSensor(DigitalSensor):
 
 	def get_sample(self):
 		self.set_command_state(CommandState.SINGLE_SHOT)
-		outbuf = [0,0,0,0,0,0]
+		out_buffer = [0,0,0,0,0,0]
 		# Upper X, Y, Z
-		outbuf[0] = self.get_measurement_byte_0()
-		outbuf[1] = self.get_measurement_byte_1()
-		outbuf[2] = self.get_measurement_byte_2()
+		out_buffer[0] = self.get_measurement_byte_0()
+		out_buffer[1] = self.get_measurement_byte_1()
+		out_buffer[2] = self.get_measurement_byte_2()
 		# Lower X, Y, Z
-		outbuf[3] = self.get_measurement_byte_3()
-		outbuf[4] = self.get_measurement_byte_4()
-		outbuf[5] = self.get_measurement_byte_5()
-		self.xval = outbuf[0]
+		out_buffer[3] = self.get_measurement_byte_3()
+		out_buffer[4] = self.get_measurement_byte_4()
+		out_buffer[5] = self.get_measurement_byte_5()
+		self.xval = out_buffer[0]
 		if self.xval > 127:
 			self.xval -= 256
-		self.xval = self.xval * 4 + outbuf[3]
+		self.xval = self.xval * 4 + out_buffer[3]
 
-		self.yval = outbuf[1]
+		self.yval = out_buffer[1]
 		if self.yval > 127:
 			self.yval -= 256
-		self.yval = self.yval * 4 + outbuf[4]
+		self.yval = self.yval * 4 + out_buffer[4]
 
-		self.zval = outbuf[2]
+		self.zval = out_buffer[2]
 		if self.zval > 127:
 			self.zval -= 256
-		self.zval = self.zval * 4 + outbuf[5]
+		self.zval = self.zval * 4 + out_buffer[5]
 
 		self.xval = float(self.xval)/200
 		self.yval = float(self.yval)/200
