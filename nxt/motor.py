@@ -14,6 +14,8 @@
 
 'Use for motor control'
 
+import time
+
 PORT_A = 0x00
 PORT_B = 0x01
 PORT_C = 0x02
@@ -51,23 +53,23 @@ class Motor(object):
         self.rotation_count = 0
         self.debug = 0
 
+    def _debug_out(self, message):
+        if self.debug:
+            print message
+
     def set_output_state(self):
-        if self.debug:
-            print 'Setting brick output state...'
+        self._debug_out('Setting brick output state...')
         self.brick.set_output_state(self.port, self.power, self.mode, self.regulation, self.turn_ratio, self.run_state, self.tacho_limit)
-        if self.debug:
-            print 'State set.'
+        self._debug_out('State set.')
 
     def get_output_state(self):
-        if self.debug:
-            print 'Getting brick output state...'
+        self._debug_out('Getting brick output state...')
         values = self.brick.get_output_state(self.port)
         (self.port, self.power, self.mode, self.regulation,
             self.turn_ratio, self.run_state, self.tacho_limit,
             self.tacho_count, self.block_tacho_count,
             self.rotation_count) = values
-        if self.debug:
-            print 'State got.'
+        self._debug_out('State got.')
         return values
 
         def reset_position(self, relative):
@@ -83,66 +85,58 @@ after turning the specified degrees.'''
             self.get_output_state()
             startingTachoCount = self.tacho_count
 
-            if self.debug:
-                print 'tachocount: '+str(startingTachoCount)
+            self._debug_out('tachocount: '+str(startingTachoCount))
             
             tachoTarget = startingTachoCount + tacholim*direction
             
-            if self.debug:
-                print 'tacho target: '+str(tachoTarget)
+            self._debug_out('tacho target: '+str(tachoTarget))
 
         self.mode = MODE_MOTOR_ON
         self.run_state = RUN_STATE_RUNNING
         self.power = power
         self.tacho_limit = tacholim
         
-        if self.debug:
-            print 'Updating motor information...'
-                        
-        self.set_output_state()
+        self._debug_out('Updating motor information...')
         
         if braking:
+
+            self.update(power, 1, 0)
             
             curTacho = 0
             
             while 1:
                 
-                if self.debug:
-                    print 'checking tachocount...'
+                self._debug_out('checking tachocount...')
 
                 olderTachoCount = curTacho
                 self.get_output_state()
                 curTacho = self.tacho_count
                 
-                if self.debug:
-                    print 'tachocount: '+str(curTacho)
+                self._debug_out('tachocount: '+str(curTacho))
                 
                 if curTacho<tachoTarget+10 and curTacho>tachoTarget-10:
                     
-                    if self.debug:
-                        print 'tachocount good, breaking from loop...'
+                    self._debug_out('tachocount good, breaking from loop...')
                     
                     break
                 
                 else:
-                    if curTacho == olderTachoCount: #motor hasn't moved
+                    if curTacho=olderTachoCount: #motor hasn't moved
                     
-                        if self.debug:
-                            print 'tachocount bad, giving extra power...'
+                        self._debug_out('tachocount bad, giving extra power...')
 
                         self.update(power, 1, 0)
                     else:
-                        if self.debug:
-                            print 'tachocount bad, waiting...'
+                        self._debug_out('tachocount bad, waiting...')
 
-            if self.debug:
-                print 'going in reverse...'
+            self._debug_out('going in reverse...')
             
-            self.update(-power/3, 1)
-
+            self.update(-power/2, 1)
+            time.sleep(0.01)
             self.mode = MODE_BRAKE
-
             self.set_output_state()
-        
-        if self.debug:
-            print 'Updating finished.'
+
+            self._debug_out('difference from goal: '+str(self.get_output_state()[7]-tachoTarget))
+
+        self.set_output_state()
+        self._debug_out('Updating finished. ending tachocount: '+str(self.get_output_state()[7]))
