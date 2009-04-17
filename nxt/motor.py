@@ -121,7 +121,7 @@ after turning the specified degrees (Under construction).'''
                     break
                 
                 else:
-                    if current_tacho=olderTachoCount: #motor hasn't moved
+                    if current_tacho==olderTachoCount: #motor hasn't moved
                     
                         self._debug_out('tachocount bad, giving extra power...')
 
