@@ -48,7 +48,7 @@ while 1:
 }}}
 This will bring up a prompt (`nxt> `). Enter one of the commands in the table below and it will be sent to the server for processing.
 
-When the server is running, it waits on port 54174 for incoming UDP datagrams. These datagrams are limited to a length of 100 bytes in length by the server for security reasons (I've never heard of a virus that was less than 100 bytes long, have you?). To have the server execute a command, just send it in a datagram to that port. These are the available commands:
+When the server is running, it waits on port 54174 for incoming UDP datagrams. These datagrams are limited to a length of 100 bytes (or characters) in length by the server for security reasons (I've never heard of a virus that was less than 100 bytes long, have you?). To have the server execute a command, just send it in a datagram to that port. These are the available commands:
 || *Name* || *Effect* || *Syntax Example* ||
 || find_brick || Looks for a brick and connects to it if it can || `'find_brick'` ||
 || get_touch_sample || Gets a sample from the port specified || `'get_touch_sample:1'` ||
