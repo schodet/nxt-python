@@ -131,7 +131,7 @@ after turning the specified degrees (Under construction).'''
 
             self._debug_out('going in reverse...')
             
-            self.update(-power/2, 1)
+            self.update(direction*60, 1)
             time.sleep(0.01)
             self.mode = MODE_BRAKE
             self.set_output_state()
