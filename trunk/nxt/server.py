@@ -32,6 +32,8 @@ def _process_port(nxtport):
         nxtport = PORT_B
     elif nxtport == 'C' or nxtport == 'c':
         nxtport = PORT_C
+    elif nxtport == 'ALL' or nxtport == 'All' or nxtport == 'all':
+        nxtport = PORT_ALL
 
     elif nxtport == '1':
         nxtport = PORT_1
@@ -43,7 +45,7 @@ def _process_port(nxtport):
         nxtport = PORT_4
 
     else:
-        raise ValueError, 'Invalid port.'
+        raise ValueError, 'Invalid port: '+nxtport
 
     return nxtport
 
@@ -136,11 +138,22 @@ def _process_command(cmd):
             #separate the information from the command keyword
             info = string.split(cmd, ':')[1]
             [port, power, tacholim] = string.split(info, ',')
+            portarray = []
+            if port.count('(') > 0 and port.count(')') > 0:
+                #there are more than 1 ports, separate them
+                port = port.strip('()')
+                #port.strip(')')
+                port.replace(' ', '')
+                for separateport in string.split(port, ';'):
+                    portarray.append(separateport)
+            else:
+                #one port, just use that
+                portarray.append(port)
         
             #process the port
-            port = _process_port(port)
-
-            Motor(brick, port).update(int(power), int(tacholim))
+            for currentport in portarray:
+                processedport = _process_port(currentport)
+                Motor(brick, processedport).update(int(power), int(tacholim))
             retmsg = 'Motor command succeded.'
             retcode = 0
         except:

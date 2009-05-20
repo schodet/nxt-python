@@ -2,13 +2,13 @@
 
 from distutils.core import setup
 
-readme = open('Readme.txt', 'r')
+readme = open('README.txt', 'r')
 ldesc = readme.read(8192)
 readme.close()
 
 setup(
 	name='NXT-Python',
-	version='0.9',
+	version='1.0',
 	author='Douglas Lau, Marcus Wanner',
 	author_email='dplau@comcast.net, marcusw@cox.net',
 	description='LEGO Mindstorms NXT Control Package',

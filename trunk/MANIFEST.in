@@ -1,1 +1,2 @@
 include docs/*.html *.url *.css *.txt
+include README.txt LICENSE.txt
