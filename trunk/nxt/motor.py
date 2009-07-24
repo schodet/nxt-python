@@ -77,8 +77,8 @@ class Motor(object):
 
     def update(self, power, tacho_limit, braking=False, max_retries=5):
         '''Use this to run a motor. power is a value between -127 and 128, tacho_limit is
-the number of degrees to apply power for (unreliable). Braking is wether or not
-to stop the motor after turning the specified degrees. max_retries is the
+the number of degrees to apply power for. Braking is wether or not to stop the
+motor after turning the specified degrees (unreliable). max_retries is the
 maximum times an internal loop of the braking function runs, so it doesn't get
 caught in an infinite loop.'''
 
