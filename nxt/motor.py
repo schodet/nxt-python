@@ -75,6 +75,35 @@ class Motor(object):
         def reset_position(self, relative):
             self.brick.reset_motor_position(self.port, relative)
 
+    def run(self, power=100, regulated=1):
+        '''Unlike update(), set_power() tells the motor to run continuously.'''
+        self.power = power
+	if regulated:
+            self.mode = MODE_MOTOR_ON | MODE_REGULATED
+            self.regulation = REGULATION_MOTOR_SPEED
+        else:
+            self.mode = MODE_MOTOR_ON
+            self.regulation = REGULATION_IDLE
+        self.turn_ratio = 0
+        self.run_state = RUN_STATE_RUNNING
+        self.tacho_limit = LIMIT_RUN_FOREVER
+        self.set_output_state()
+
+    def stop(self, braking=1):
+        '''Tells the motor to stop.'''
+        self.power = 0
+        if braking:
+            self.mode = MODE_MOTOR_ON | MODE_BRAKE | MODE_REGULATED
+            self.regulation = REGULATION_MOTOR_SPEED
+            self.run_state = RUN_STATE_RUNNING
+        else:
+            self.mode = MODE_IDLE
+            self.regulation = REGULATION_IDLE
+            self.run_state = RUN_STATE_IDLE
+        self.turn_ratio = 0
+        self.tacho_limit = LIMIT_RUN_FOREVER
+        self.set_output_state()
+
     def update(self, power, tacho_limit, braking=False, max_retries=5):
         '''Use this to run a motor. power is a value between -127 and 128, tacho_limit is
 the number of degrees to apply power for. Braking is wether or not to stop the
@@ -90,7 +119,10 @@ caught in an infinite loop.'''
             tacho_target = starting_tacho_count + tacho_limit*direction
             self._debug_out('tacho target: '+str(tacho_target))
 
+        # Update modifiers even if they aren't used, might have been changed
         self.mode = MODE_MOTOR_ON
+        self.regulation = REGULATION_IDLE
+        self.turn_ratio = 0
         self.run_state = RUN_STATE_RUNNING
         self.power = power
         self.tacho_limit = tacho_limit
