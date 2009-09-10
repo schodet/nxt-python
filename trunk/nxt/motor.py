@@ -109,10 +109,12 @@ class Motor(object):
 the number of degrees to apply power for. Braking is wether or not to stop the
 motor after turning the specified degrees (unreliable). max_retries is the
 maximum times an internal loop of the braking function runs, so it doesn't get
-caught in an infinite loop.'''
+caught in an infinite loop (deprecated, do not use).'''
 
         if braking:
             direction = (power > 0)*2-1
+            if abs(power) < 50:
+                power = 50 * direction
             self.get_output_state()
             starting_tacho_count = self.tacho_count
             self._debug_out('tachocount: '+str(starting_tacho_count))
@@ -129,37 +131,33 @@ caught in an infinite loop.'''
         self._debug_out('Updating motor information...')
         
         if braking:
-            self.update(power, 1, 0)
+            self.update(power, LIMIT_RUN_FOREVER, 0)
             current_tacho = 0
             retries = 0
+            delta = power*0.6 #the amount of error allowed in stopping (to correct for latency)
             
             while 1:
                 self._debug_out('checking tachocount...')
-                olderTachoCount = current_tacho
                 self.get_output_state()
                 current_tacho = self.tacho_count
                 self._debug_out('tachocount: '+str(current_tacho))
                 
-                if current_tacho<tacho_target+10 and current_tacho>tacho_target-10:
+                if ((power >= 0 and current_tacho >= tacho_target - delta) or
+                    (power <  0 and current_tacho <= tacho_target + delta)):
                     self._debug_out('tachocount good, breaking from loop...')
                     break
                 else:
-                    if current_tacho==olderTachoCount: #motor hasn't moved
-                        self._debug_out('tachocount bad, giving extra power...')
-                        retries = retries + 1
-                        self.update(power, 1, 0)
-                    else:
-                        self._debug_out('tachocount bad, waiting...')
-
-                if (retries == max_retries):
-                    self._debug_out('max retries reached, breaking from loop...')
-                    break
-
-            self._debug_out('going in reverse...')
-            self.update(direction*60, 1)
-            time.sleep(0.01)
-            self.mode = MODE_BRAKE
+                    self._debug_out('tachocount bad, trying again...')
+ 
+            self.power = 0
+            self.mode = MODE_MOTOR_ON | MODE_BRAKE | MODE_REGULATED
+            self.regulation = REGULATION_MOTOR_SPEED
+            self.run_state = RUN_STATE_RUNNING
             self.set_output_state()
+            if self.debug:
+                time.sleep(1)
             self._debug_out('difference from goal: '+str(self.get_output_state()[7]-tacho_target))
-        self.set_output_state()
-        self._debug_out('Updating finished. ending tachocount: '+str(self.get_output_state()[7]))
+
+        else:
+            self.set_output_state()
+            self._debug_out('Updating finished. ending tachocount: '+str(self.get_output_state()[7]))
