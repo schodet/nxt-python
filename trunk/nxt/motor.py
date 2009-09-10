@@ -131,10 +131,10 @@ caught in an infinite loop (deprecated, do not use).'''
         self._debug_out('Updating motor information...')
         
         if braking:
-            self.update(power, LIMIT_RUN_FOREVER, 0)
+            self.run(power)
             current_tacho = 0
             retries = 0
-            delta = power*0.6 #the amount of error allowed in stopping (to correct for latency)
+            delta = abs(power)*0.5 #the amount of error allowed in stopping (to correct for latency)
             
             while 1:
                 self._debug_out('checking tachocount...')
@@ -142,20 +142,14 @@ caught in an infinite loop (deprecated, do not use).'''
                 current_tacho = self.tacho_count
                 self._debug_out('tachocount: '+str(current_tacho))
                 
-                if ((power >= 0 and current_tacho >= tacho_target - delta) or
-                    (power <  0 and current_tacho <= tacho_target + delta)):
+                if ((power >= 0 and (current_tacho >= tacho_target - delta)) or
+                    (power <  0 and (current_tacho <= tacho_target + delta))):
                     self._debug_out('tachocount good, breaking from loop...')
                     break
                 else:
                     self._debug_out('tachocount bad, trying again...')
  
-            self.power = 0
-            self.mode = MODE_MOTOR_ON | MODE_BRAKE | MODE_REGULATED
-            self.regulation = REGULATION_MOTOR_SPEED
-            self.run_state = RUN_STATE_RUNNING
-            self.set_output_state()
-            if self.debug:
-                time.sleep(1)
+            self.stop(1)
             self._debug_out('difference from goal: '+str(self.get_output_state()[7]-tacho_target))
 
         else:
