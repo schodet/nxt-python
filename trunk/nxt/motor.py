@@ -72,13 +72,13 @@ class Motor(object):
         self._debug_out('State got.')
         return values
 
-        def reset_position(self, relative):
-            self.brick.reset_motor_position(self.port, relative)
+    def reset_position(self, relative):
+        self.brick.reset_motor_position(self.port, relative)
 
     def run(self, power=100, regulated=1):
         '''Unlike update(), set_power() tells the motor to run continuously.'''
         self.power = power
-	if regulated:
+        if regulated:
             self.mode = MODE_MOTOR_ON | MODE_REGULATED
             self.regulation = REGULATION_MOTOR_SPEED
         else:
