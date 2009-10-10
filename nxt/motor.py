@@ -104,12 +104,14 @@ class Motor(object):
         self.tacho_limit = LIMIT_RUN_FOREVER
         self.set_output_state()
 
-    def update(self, power, tacho_limit, braking=False, max_retries=5):
+    def update(self, power, tacho_limit, braking=False, max_retries=-1):
         '''Use this to run a motor. power is a value between -127 and 128, tacho_limit is
 the number of degrees to apply power for. Braking is wether or not to stop the
 motor after turning the specified degrees (unreliable). max_retries is the
 maximum times an internal loop of the braking function runs, so it doesn't get
 caught in an infinite loop (deprecated, do not use).'''
+        if max_retries != -1:
+            print 'Warning: max_retries is deprecated and is not longer needed, please do not use it!'
 
         if braking:
             direction = (power > 0)*2-1
