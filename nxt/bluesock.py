@@ -31,7 +31,7 @@ class BlueSock(object):
 
 	def connect(self):
                 if self.debug:
-                        print 'Connecting via USB...'
+                        print 'Connecting via Bluetooth...'
 		sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
 		sock.connect((self.host, BlueSock.PORT))
 		self.sock = sock
@@ -41,10 +41,10 @@ class BlueSock(object):
 
 	def close(self):
                 if self.debug:
-                        print 'Closing USB connection...'
+                        print 'Closing Bluetooth connection...'
 		self.sock.close()
 		if self.debug:
-                        print 'USB connection closed.'
+                        print 'Bluetooth connection closed.'
 
 	def send(self, data):
 		if self.debug:
