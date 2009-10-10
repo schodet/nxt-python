@@ -14,30 +14,44 @@
 
 class BrickNotFoundError(Exception):
 	pass
+	
+class NoBackendError(Exception):
+    pass
 
 def find_bricks(host=None, name=None):
-        'Used by find_one_brick to look for bricks ***ADVANCED USERS ONLY***'
-	try:
-		import usbsock
-		socks = usbsock.find_bricks(host, name)
-		for s in socks:
-			yield s
-	except ImportError:
-		pass
-	try:
-		import bluesock
-		from bluetooth import BluetoothError
-		try:
-			socks = bluesock.find_bricks(host, name)
-			for s in socks:
-				yield s
-		except BluetoothError:
-			pass
-	except ImportError:
-		pass
+    """Used by find_one_brick to look for bricks ***ADVANCED USERS ONLY***"""
+    
+    try:
+        import usbsock
+        usb_available = True
+        socks = usbsock.find_bricks(host, name)
+        for s in socks:
+            yield s
+    except ImportError:
+        usb_available = False
+        import sys
+        print >>sys.stderr, "USB unavailable, not searching there"
+    
+    try:
+        from bluetooth import BluetoothError
+    except ImportError:
+        import sys
+        print >>sys.stderr, "Bluetooth unavailable, not searching there"
+        if not usb_available:
+            raise NoBackendError("Neither USB nor Bluetooth could be used!")
+    
+    try:
+        import bluesock
+        socks = bluesock.find_bricks(host, name)
+        for s in socks:
+            yield s
+    except BluetoothError:
+        pass
 
 def find_one_brick(host=None, name=None):
-        'Use to find one brick. After it returns a usbsock object or a bluesock object, use .connect() to connect to the brick, which returns a brick object.'
-	for s in find_bricks(host, name):
-		return s
-	raise BrickNotFoundError
+    """Use to find one brick. After it returns a usbsock object or a bluesock
+    object, use .connect() to connect to the brick, which returns a brick
+    object."""
+    for s in find_bricks(host, name):
+        return s
+    raise BrickNotFoundError
