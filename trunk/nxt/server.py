@@ -56,7 +56,7 @@ def _process_command(cmd):
     #act on messages, these conditions can be in no particular order
     #it should send a return code on port 54374. 0 for success, 1 for failure
     #then an error message
-    #find_brick
+
     if cmd.startswith('find_brick'):
         try:
             brick = nxt.locator.find_one_brick()
@@ -66,8 +66,7 @@ def _process_command(cmd):
         except:
             retcode = 1
             retmsg = str(sys.exc_info()[1])
-    
-    #get_touch_sample
+
     elif cmd.startswith('get_touch_sample'):
         try:
             port = string.split(cmd, ':')[1]
@@ -77,8 +76,7 @@ def _process_command(cmd):
         except:
             retcode = 1
             retmsg = str(sys.exc_info()[1])
-        
-    #get_sound_sample
+
     elif cmd.startswith('get_sound_sample'):
         try:
             port = string.split(cmd, ':')[1]
@@ -89,18 +87,25 @@ def _process_command(cmd):
             retcode = 1
             retmsg = str(sys.exc_info()[1])
 
-    #get_light_sample
     elif cmd.startswith('get_light_sample'):
         try:
-            port = string.split(cmd, ':')[1]
+            data = string.split(cmd, ':')[1]
+            data = string.split(data, ',')
+            if len(data) > 1:
+                #there is emit light data
+                port, emit = data
+            else:
+                port, emit = data[0], False
             port = _process_port(port)
-            retmsg = str(LightSensor(brick, port).get_sample())
+            light = LightSensor(brick, port)
+            light.set_illuminated(emit)
+            retmsg = str(light.get_sample())
+            light.set_illuminated(False)
             retcode = 0
         except:
             retcode = 1
             retmsg = str(sys.exc_info()[1])
-    
-    #get_ultrasonic_sample
+
     elif cmd.startswith('get_ultrasonic_sample'):
         try:
             port = string.split(cmd, ':')[1]
@@ -121,7 +126,6 @@ def _process_command(cmd):
             retcode = 1
             retmsg = str(sys.exc_info()[1])
 
-    #get_compass_sample
     elif cmd.startswith('get_compass_sample'):
         try:
             port = string.split(cmd, ':')[1]
@@ -131,8 +135,7 @@ def _process_command(cmd):
         except:
             retcode = 1
             retmsg = str(sys.exc_info()[1])
-    
-    #update_motor
+
     elif cmd.startswith('update_motor:'):
         try:
             #separate the information from the command keyword
@@ -159,8 +162,31 @@ def _process_command(cmd):
         except:
             retcode = 1
             retmsg = str(sys.exc_info()[1])
-    
-    #play_tone
+
+    elif cmd.startswith('run_motor:'):
+        try:
+            #separate the information from the command keyword
+            info = string.split(cmd, ':')[1]
+            [port, power, regulated] = string.split(info, ',')
+            port = _process_port(port)
+            Motor(brick, port).run(int(power), int(regulated))
+            retmsg = 'Motor run command succeded.'
+        except:
+            retcode = 1
+            retmsg = str(sys.exc_info()[1])
+
+    elif cmd.startswith('stop_motor:'):
+        try:
+            #separate the information from the command keyword
+            info = string.split(cmd, ':')[1]
+            [port, braking] = string.split(info, ',')
+            port = _process_port(port)
+            Motor(brick, port).stop(int(braking))
+            retmsg = 'Motor stop command succeded.'
+        except:
+            retcode = 1
+            retmsg = str(sys.exc_info()[1])
+
     elif cmd.startswith('play_tone:'):
         try:
             #separate the information from the command keyword
