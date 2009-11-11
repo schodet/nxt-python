@@ -2,12 +2,12 @@
 
 from distutils.core import setup
 
-readme = open('README.txt', 'r')
+readme = open('README', 'r')
 ldesc = readme.read(8192)
 readme.close()
 
 setup(
-	name='NXT-Python',
+	name='nxt-python',
 	version='1.0',
 	author='Douglas Lau, Marcus Wanner',
 	author_email='dplau@comcast.net, marcusw@cox.net',
