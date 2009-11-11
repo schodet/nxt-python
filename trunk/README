@@ -9,6 +9,10 @@ Releases halted in May 2007.
 NXT-Python is based on NXT_Python, but is significantly newer, and, as time
 goes on, different/better. This is NXT-Python.
 
+Note: NXT-Python has not been tested and may not work with
+custom nxt firmware versions (if you don't know what that means, you don't
+need to worry about it).
+
 Requirements:
 
 	* Python 2.6 (http://www.python.org)
