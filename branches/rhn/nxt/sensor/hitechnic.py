@@ -14,6 +14,8 @@
 import nxt.sensor
 import struct
 from time import sleep
+from .common import *
+from .digital import BaseDigitalSensor
 
 class CompassMode:
     MEASUREMENT = 0
@@ -21,15 +23,15 @@ class CompassMode:
     CALIBRATION_FAILED = 0x02
 
 
-class Compass(nxt.sensor.DigitalSensor):
+class Compass(BaseDigitalSensor):
     I2C_ADDR = {'heading': (0x44, '<H'),
                         'mode': (0x41, 'b'),
     }
     
     def __init__(self, brick, port):
         super(Compass, self).__init__(brick, port)
-        self.sensor_type = nxt.sensor.Type.LOW_SPEED_9V
-        self.mode = nxt.sensor.Mode.RAW
+        self.sensor_type = Type.LOW_SPEED_9V
+        self.mode = Mode.RAW
         self.set_input_mode()
         sleep(0.1)	# Give I2C time to initialize
     

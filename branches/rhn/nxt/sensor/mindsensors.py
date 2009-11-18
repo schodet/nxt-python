@@ -15,14 +15,19 @@
 
 import nxt.sensor
 from time import sleep
+from .common import *
+from .digital import _Meta, BaseDigitalSensor, _make_query, _make_command
+# so many to keep track of how many is left. ideally, only BaseDigitalSensor needs to be imported
 
-class SumoReading:
+class SumoEyesReading:
     def __init__(self, left, right):
         self.left = left
         self.right = right
 
-class Sumo(nxt.sensor.LightSensor):
-    """The class to control Mindsensors Sumo sensor"""
+class SumoEyes(nxt.sensor.LightSensor):
+    """The class to control Mindsensors Sumo sensor. Warning: long range not
+    tested yet.
+    """
     def set_long_range(self, val):
         """Sets if the sensor should operate in long range mode (12 inches) or
         the short range mode (6 in). val should be True or False.
@@ -31,7 +36,7 @@ class Sumo(nxt.sensor.LightSensor):
     
     def get_input_values(self):
         """Returns a SumoReading"""
-        rd = nxt.sensor.AnalogSensor.get_input_values(self)
+        rd = nxt.sensor.LightSensor.get_input_values(self)
         val = rd[6]
         raw = val
         right = 600 < val < 700
@@ -76,21 +81,21 @@ I2C_ADDRESS_CMPS_NX = {
 	0x4F: ('y_raw_msb', 1, True),
 }
 
-class _MetaCMPS_Nx(nxt.sensor._Meta):
+class _MetaCMPS_Nx(_Meta):
 	'Metaclass which adds accessor methods for CMPS-Nx I2C addresses'
 
 	def __init__(cls, name, bases, dict):
 		super(_MetaCMPS_Nx, cls).__init__(name, bases, dict)
 		for address in I2C_ADDRESS_CMPS_NX:
 			name, n_bytes, set_method = I2C_ADDRESS_CMPS_NX[address]
-			q = nxt.sensor._make_query(address, n_bytes)
+			q = _make_query(address, n_bytes)
 			setattr(cls, 'get_' + name, q)
 			if set_method:
-				c = nxt.sensor._make_command(address)
+				c = _make_command(address)
 				setattr(cls, 'set_' + name, c)
 
 
-class Compass(nxt.sensor.DigitalSensor):
+class Compass(BaseDigitalSensor):
     """Warning! Likely to be broken because of no access to the hardware.
     If it doesn't work, contact me at nxpygoac.rhn@porcupinefactory.org
     """
@@ -98,15 +103,15 @@ class Compass(nxt.sensor.DigitalSensor):
 
 	def __init__(self, brick, port):
 		super(Compass, self).__init__(brick, port)
-		self.sensor_type = nxt.sensor.Type.LOW_SPEED_9V
-		self.mode = nxt.sensor.Mode.RAW
+		self.sensor_type = Type.LOW_SPEED_9V
+		self.mode = Mode.RAW
 		self.set_input_mode()
 		sleep(0.1)	# Give I2C time to initialize
 
 Compass.get_sample = Compass.get_heading_lsb
 
 
-class IRLong(nxt.sensor.DigitalSensor):
+class IRLong(BaseDigitalSensor):
     I2C_ADDR = {'command': (0x41, 'b'),
                         'distance': (0x42, '<H'),
                         'voltage': (0x44, '<H'),
@@ -118,8 +123,8 @@ class IRLong(nxt.sensor.DigitalSensor):
     
     def __init__(self, brick, port):
         super(IRLong, self).__init__(brick, port)
-        self.sensor_type = nxt.sensor.Type.LOW_SPEED_9V
-        self.mode = nxt.sensor.Mode.RAW
+        self.sensor_type = Type.LOW_SPEED_9V
+        self.mode = Mode.RAW
         self.set_input_mode()
         sleep(0.1)	# Give I2C time to initialize
     
