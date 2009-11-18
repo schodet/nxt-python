@@ -11,7 +11,6 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-import nxt.sensor
 import struct
 from time import sleep
 from .common import *
@@ -25,24 +24,46 @@ class CompassMode:
 
 class Compass(BaseDigitalSensor):
     I2C_ADDR = {'heading': (0x44, '<H'),
-                        'mode': (0x41, 'b'),
+                        'mode': (0x41, 'B'),
     }
     
     def __init__(self, brick, port):
         super(Compass, self).__init__(brick, port)
-        self.sensor_type = Type.LOW_SPEED_9V
-        self.mode = Mode.RAW
-        self.set_input_mode()
+		self.set_input_mode(Type.LOW_SPEED_9V, Mode.RAW)
         sleep(0.1)	# Give I2C time to initialize
     
     def get_heading(self):
-        return self._i2c_query('heading')[0]
+        return self.read_value('heading')[0]
 
     def get_mode(self):
-        return self._i2c_query('mode')[0]
+        return self.read_value('mode')[0]
     
     def set_mode(self, mode):
          if mode != CompassMode.MEASUREMENT and \
                  mode != CompassMode.CALIBRATION:
              raise TypeError('Invalid mode specified: ' + str(mode))
-         self._i2c_command('mode', (mode, ))
+         self.write_value('mode', (mode, ))
+ 
+         
+class Accelerometer(BaseDigitalSensor):
+	'Object for Accelerometer sensors. Thanks to Paulo Vieira. Broken by rhn.'
+	I2C_ADDR = {'x_axis_high': (0x42, 'b'),
+	    'y_axis_high': (0x43, 'b'),
+	    'z_axis_high': (0x44, 'b'),
+	    'xyz_short': (0x42, 'b' * 3),
+	    'all_data': (0x42, 'b' * 3 + 'B' * 3)
+	}
+	def __init__(self, brick, port):
+		super(Accelerometer, self).__init__(brick, port)
+		self.set_input_mode(Type.LOW_SPEED_9V, Mode.RAW)
+		sleep(0.1)  # Give I2C time to initialize
+
+    def get_acceleration(self):
+        """"Returns the acceleration along x, y, z axes. Units are unknown to
+        me.
+        """
+        xh, yh, zh, xl, yl, zl = self.read_values('all_data')
+        x = xh << 2 + xl
+        y = yh << 2 + yl
+        z = zh << 2 + yl
+        return x, y, z

@@ -55,10 +55,7 @@ class Sensor(object):
 	def __init__(self, brick, port):
 		self.brick = brick
 		self.port = port
-		self.sensor_type = Type.NO_SENSOR
-		self.mode = Mode.RAW
 
-	def set_input_mode(self):
-		self.brick.set_input_mode(self.port, self.sensor_type,
-			self.mode)
+	def set_input_mode(self, type_, mode):
+		self.brick.set_input_mode(self.port, type_, mode)
 

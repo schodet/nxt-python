@@ -16,11 +16,11 @@
 from .common import *
 from .analog import BaseAnalogSensor
 from .digital import BaseDigitalSensor
-from .generic import Touch, Light, Sound, Ultrasonic, Accelerometer
+from .generic import Touch, Light, Sound, Ultrasonic
 import mindsensors
 MSSumoEyes = mindsensors.SumoEyes
 MSCompass = mindsensors.Compass
 MSIRLong = mindsensors.IRLong
 import hitechnic
 HTCompass = hitechnic.Compass
-
+HTAccelerometer = hitechnic.Accelerometer

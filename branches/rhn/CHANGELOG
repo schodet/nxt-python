@@ -1,0 +1,5 @@
+Wed, 18 Nov 2009 19:05:49 +0100 by rhn:
+* Created this changelog
+* Changed set_input_mode behaviour to take parameters. TODO: Make it remember last mode for analog sensors
+* Made get_input_values() return RawReading, and added get_reading() returning named values.
+* Changed the way digital sensors work, partially getting rid of metaclasses and breaking everything in the process (no access to hardware)

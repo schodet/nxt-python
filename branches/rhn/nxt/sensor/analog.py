@@ -15,29 +15,29 @@
 
 from common import *
 
+
+class RawReading: # can be converted to the old version
+    """A pseudo-structure holding the raw sensor values as returned by the NXT
+    brick.
+    """
+    def __init__(self, values):
+        (self.port, self.valid, self.calibrated, self.sensor_type, self.mode,
+            self.raw_ad_value, self.normalized_ad_value, self.scaled_value,
+            self.calibrated_value) = values
+            
+
 class BaseAnalogSensor(Sensor):
-	'Object for analog sensors'
-
-	def __init__(self, brick, port):
-		super(BaseAnalogSensor, self).__init__(brick, port)
-		self.valid = False
-		self.calibrated = False
-		self.raw_ad_value = 0
-		self.normalized_ad_value = 0
-		self.scaled_value = 0
-		self.calibrated_value = 0
-
+	"""Object for analog sensors. ReadingClass is the class we want to return
+	to the user.
+	"""
 	def get_input_values(self):
-		values = self.brick.get_input_values(self.port)
-		(self.port, self.valid, self.calibrated, self.sensor_type,
-			self.mode, self.raw_ad_value, self.normalized_ad_value,
-			self.scaled_value, self.calibrated_value) = values
-		return values
-
+	    """Returns the raw sensor values as returned by the NXT brick."""
+		return RawReading(self.brick.get_input_values(self.port))
+		
+	def get_reading(self):
+	    """Returns the processed meaningful values of the sensor"""
+        return self.ReadingClass(self.get_input_values())
+	
 	def reset_input_scaled_value(self):
 		self.brick.reset_input_scaled_value()
-
-	def get_sample(self):
-		self.get_input_values()
-		return self.scaled_value
 

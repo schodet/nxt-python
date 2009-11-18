@@ -63,39 +63,46 @@ class BaseDigitalSensor(Sensor):
 				sleep(0.01)
 		raise I2CError, 'ls_get_status timeout'
 
-	def _i2c_command(self, address, value):
-		"""Writes an i2c value. If address is int, then it's considered the
-		numerical address to write to, and value must be a string. Otherwise,
-		address must be a string found in self.I2C_ADDR dictionary and value is
-		a tuple of values corresponding to the format from self.I2C_ADDR
-		dictionary. Entries in self.I2C_ADDR are (address, format) pairs, with
-		format as in the struct	module.
+	def _i2c_command(self, address, value, format):
+		"""Writes an i2c value to the given address. value must be a string. value is
+		a tuple of values corresponding to the given format.
 		"""
-		if isinstance(str, address):
-		    address, fmt = self.I2C_ADDR[address]
-		    value = struct.pack(fmt, value)
+		value = struct.pack(fmt, value)
 		msg = chr(DigitalSensor.I2C_DEV) + chr(address) + chr(value)
 		self.brick.ls_write(self.port, msg, 0)
 
-	def _i2c_query(self, address, n_bytes=None):
-		"""Reads an i2c value. if format is present, then it's considered
-		the number of bytes to be read from address address. Otherwise, address
-		must be a string found in self.I2C_ADDR dictionary. Entries in
-		self.I2C_ADDR are (address, format) pairs, with format as in the struct
+	def _i2c_query(self, address, format):
+		"""Reads an i2c value from given address, and returns a value unpacked
+		according to the given format. Format is the same as in the struct
 		module.
 		"""
-		if n_bytes is None:
-		    address, fmt = self.I2C_ADDR[address]
-		    n_bytes = struct.calcsize(fmt)
-		    val = self._i2c_query(address, n_bytes)
-		    return struct.unpack(fmt, val)
+		n_bytes = struct.calcsize(format)
 		msg = chr(DigitalSensor.I2C_DEV) + chr(address)
 		self.brick.ls_write(self.port, msg, n_bytes)
 		self._ls_get_status(n_bytes)
 		data = self.brick.ls_read(self.port)
 		if len(data) < n_bytes:
 			raise I2CError, 'Read failure'
-		return data[-n_bytes:]
+		return struct.unpack(format, data[-n_bytes:]) # TODO: why could there be more than n_bytes? 
+		
+	def read_value(self, name):
+	    """Reads an value from the sensor. Name must be a string found in
+	    self.I2C_ADDR dictionary. Entries in self.I2C_ADDR are in the
+	    name: (address, format) form, with format as in the struct module.
+	    """
+	    address, fmt = self.I2C_ADDR[name]
+	    return self._i2c_query(address, fmt)
+
+	def write_value(self, name, value):
+	    """Writes value to the sensor. Name must be a string found in
+		self.I2C_ADDR dictionary. Entries in self.I2C_ADDR are in the
+		name: (address, format) form, with format as in the struct module.
+		value is a tuple of values corresponding to the format from
+		self.I2C_ADDR dictionary.
+		"""
+		address, fmt = self.I2C_ADDR[address]
+		self._i2c_command(address, value, fmt)
+		
 
 class CommandState(object):
 	'Namespace for enumeration of the command state of sensors'
