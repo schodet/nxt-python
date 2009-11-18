@@ -1,6 +1,7 @@
 # nxt.sensor module -- Classes to read LEGO Mindstorms NXT sensors
 # Copyright (C) 2006,2007  Douglas P Lau
 # Copyright (C) 2009  Marcus Wanner, Paulo Vieira
+# Copyright (C) 2009  rhn
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,6 +15,7 @@
 
 from time import sleep
 from nxt.error import I2CError, I2CPendingError
+import struct
 
 PORT_1 = 0x00
 PORT_2 = 0x01
@@ -76,7 +78,7 @@ I2C_ADDRESS = {
 
 def _make_query(address, n_bytes):
 	def query(self):
-		data = self.i2c_query(address, n_bytes)
+		data = self._i2c_query(address, n_bytes)
 		if n_bytes == 1:
 			return ord(data)
 		else:
@@ -113,11 +115,32 @@ class DigitalSensor(Sensor):
 				sleep(0.01)
 		raise I2CError, 'ls_get_status timeout'
 
-	def i2c_command(self, address, value):
+	def _i2c_command(self, address, value):
+		"""Writes an i2c value. If address is int, then it's considered the
+		numerical address to write to, and value must be a string. Otherwise,
+		address must be a string found in self.I2C_ADDR dictionary and value is
+		a tuple of values corresponding to the format from self.I2C_ADDR
+		dictionary. Entries in self.I2C_ADDR are (address, format) pairs, with
+		format as in the struct	module.
+		"""
+		if isinstance(str, address):
+		    address, fmt = self.I2C_ADDR[address]
+		    value = struct.pack(fmt, value)
 		msg = chr(DigitalSensor.I2C_DEV) + chr(address) + chr(value)
 		self.brick.ls_write(self.port, msg, 0)
 
-	def i2c_query(self, address, n_bytes):
+	def _i2c_query(self, address, n_bytes=None):
+		"""Reads an i2c value. if format is present, then it's considered
+		the number of bytes to be read from address address. Otherwise, address
+		must be a string found in self.I2C_ADDR dictionary. Entries in
+		self.I2C_ADDR are (address, format) pairs, with format as in the struct
+		module.
+		"""
+		if n_bytes is None:
+		    address, fmt = self.I2C_ADDR[address]
+		    n_bytes = struct.calcsize(fmt)
+		    val = self._i2c_query(address, n_bytes)
+		    return struct.unpack(fmt, val)
 		msg = chr(DigitalSensor.I2C_DEV) + chr(address)
 		self.brick.ls_write(self.port, msg, n_bytes)
 		self._ls_get_status(n_bytes)
@@ -135,40 +158,11 @@ class CommandState(object):
 	EVENT_CAPTURE = 0x03 # Check for ultrasonic interference
 	REQUEST_WARM_RESET = 0x04
 
-# I2C addresses for an Ultrasonic sensor
-I2C_ADDRESS_US = {
-	0x40: ('continuous_measurement_interval', 1, True),
-	0x41: ('command_state', 1, True),
-	0x42: ('measurement_byte_0', 1, False),
-	0x43: ('measurement_byte_1', 1, False),
-	0x44: ('measurement_byte_2', 1, False),
-	0x45: ('measurement_byte_3', 1, False),
-	0x46: ('measurement_byte_4', 1, False),
-	0x47: ('measurement_byte_5', 1, False),
-	0x48: ('measurement_byte_6', 1, False),
-	0x49: ('measurement_byte_7', 1, False),
-	0x50: ('actual_zero', 1, True),
-	0x51: ('actual_scale_factor', 1, True),
-	0x52: ('actual_scale_divisor', 1, True),
-}
 
 def _make_command(address):
 	def command(self, value):
-		self.i2c_command(address, value)
+		self._i2c_command(address, value)
 	return command
-
-class _MetaUS(_Meta):
-	'Metaclass which adds accessor methods for US I2C addresses'
-
-	def __init__(cls, name, bases, dict):
-		super(_MetaUS, cls).__init__(name, bases, dict)
-		for address in I2C_ADDRESS_US:
-			name, n_bytes, set_method = I2C_ADDRESS_US[address]
-			q = _make_query(address, n_bytes)
-			setattr(cls, 'get_' + name, q)
-			if set_method:
-				c = _make_command(address)
-				setattr(cls, 'set_' + name, c)
 
 
 class AnalogSensor(Sensor):
@@ -242,27 +236,41 @@ class SoundSensor(AnalogSensor):
 		self.set_input_mode()
 
 
-class UltrasonicSensor(DigitalSensor):
-	'Object for ultrasonic sensors'
+I2C_ADDRESS_ACC = {
+	0x40: ('continuous_measurement_interval', 1, True),
+	0x41: ('command_state', 1, True),
+	0x42: ('measurement_byte_0', 1, False),
+	0x43: ('measurement_byte_1', 1, False),
+	0x44: ('measurement_byte_2', 1, False),
+	0x45: ('measurement_byte_3', 1, False),
+	0x46: ('measurement_byte_4', 1, False),
+	0x47: ('measurement_byte_5', 1, False),
+	0x48: ('measurement_byte_6', 1, False),
+	0x49: ('measurement_byte_7', 1, False),
+	0x50: ('actual_zero', 1, True),
+	0x51: ('actual_scale_factor', 1, True),
+	0x52: ('actual_scale_divisor', 1, True),
+}
 
-	__metaclass__ = _MetaUS
 
-	def __init__(self, brick, port):
-		super(UltrasonicSensor, self).__init__(brick, port)
-		self.sensor_type = Type.LOW_SPEED_9V
-		self.mode = Mode.RAW
-		self.set_input_mode()
-		sleep(0.1)  # Give I2C time to initialize
+class _MetaAcc(_Meta):
+	'Metaclass which adds accessor methods for US I2C addresses'
 
-	def get_sample(self):
-		'Function to get data from ultrasonic sensors, synonmous to self.get_sample()'
-		self.set_command_state(CommandState.SINGLE_SHOT)
-		return self.get_measurement_byte_0()
+	def __init__(cls, name, bases, dict):
+		super(_MetaAcc, cls).__init__(name, bases, dict)
+		for address in I2C_ADDRESS_ACC:
+			name, n_bytes, set_method = I2C_ADDRESS_ACC[address]
+			q = _make_query(address, n_bytes)
+			setattr(cls, 'get_' + name, q)
+			if set_method:
+				c = _make_command(address)
+				setattr(cls, 'set_' + name, c)
+
 
 class AccelerometerSensor(DigitalSensor):
 	'Object for Accelerometer sensors. Thanks to Paulo Vieira.'
 
-	__metaclass__ = _MetaUS
+	__metaclass__ = _MetaAcc
 
 	def __init__(self, brick, port):
 		super(AccelerometerSensor, self).__init__(brick, port)
