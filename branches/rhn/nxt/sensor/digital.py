@@ -15,43 +15,29 @@
 
 from nxt.error import I2CError, I2CPendingError
 
-I2C_ADDRESS = {
-	0x00: ('version', 8),
-	0x08: ('product_id', 8),
-	0x10: ('sensor_type', 8),
-	0x11: ('factory_zero', 1),      # is this really correct?
-	0x12: ('factory_scale_factor', 1),
-	0x13: ('factory_scale_divisor', 1),
-	0x14: ('measurement_units', 1),
-}
-def _make_query(address, n_bytes):
-	def query(self):
-		data = self._i2c_query(address, n_bytes)
-		if n_bytes == 1:
-			return ord(data)
-		else:
-			return data
-	return query
+from common import *
+from time import sleep
+import struct
 
-class _Meta(type):
-	'Metaclass which adds accessor methods for I2C addresses'
-
-	def __init__(cls, name, bases, dict):
-		super(_Meta, cls).__init__(name, bases, dict)
-		for address in I2C_ADDRESS:
-			name, n_bytes = I2C_ADDRESS[address]
-			q = _make_query(address, n_bytes)
-			setattr(cls, 'get_' + name, q)
 
 class BaseDigitalSensor(Sensor):
-	'Object for digital sensors'
-
-	__metaclass__ = _Meta
-
+	"""Object for digital sensors. I2C_ADDRESS is the dictionary storing name
+	to	i2c address mappings. It should be updated in every subclass.
+	"""
 	I2C_DEV = 0x02
-
+    I2C_ADDRESS = {'version': (0x00, '8s'),
+        'product_id': (0x08, '8s'),
+        'sensor_type': (0x10, '8s'),
+#        0x11: ('factory_zero', 1),      # is this really correct?
+        'factory_scale_factor': (0x12, 'B'),
+        'factory_scale_divisor': (0x13, 'B'),
+        'measurement_units': (0x14, '7s'),
+    }
+    
 	def __init__(self, brick, port):
 		super(BaseDigitalSensor, self).__init__(brick, port)
+		self.set_input_mode(Type.LOW_SPEED_9V, Mode.RAW)
+		sleep(0.1)  # Give I2C time to initialize
 
 	def _ls_get_status(self, n_bytes):
 		for n in range(3):
@@ -68,7 +54,7 @@ class BaseDigitalSensor(Sensor):
 		a tuple of values corresponding to the given format.
 		"""
 		value = struct.pack(fmt, value)
-		msg = chr(DigitalSensor.I2C_DEV) + chr(address) + chr(value)
+		msg = chr(self.I2C_DEV) + chr(address) + chr(value)
 		self.brick.ls_write(self.port, msg, 0)
 
 	def _i2c_query(self, address, format):
@@ -77,7 +63,7 @@ class BaseDigitalSensor(Sensor):
 		module.
 		"""
 		n_bytes = struct.calcsize(format)
-		msg = chr(DigitalSensor.I2C_DEV) + chr(address)
+		msg = chr(self.I2C_DEV) + chr(address)
 		self.brick.ls_write(self.port, msg, n_bytes)
 		self._ls_get_status(n_bytes)
 		data = self.brick.ls_read(self.port)
@@ -87,22 +73,34 @@ class BaseDigitalSensor(Sensor):
 		
 	def read_value(self, name):
 	    """Reads an value from the sensor. Name must be a string found in
-	    self.I2C_ADDR dictionary. Entries in self.I2C_ADDR are in the
+	    self.I2C_ADDRESS dictionary. Entries in self.I2C_ADDRESS are in the
 	    name: (address, format) form, with format as in the struct module.
 	    """
-	    address, fmt = self.I2C_ADDR[name]
+	    address, fmt = self.I2C_ADDRESS[name]
 	    return self._i2c_query(address, fmt)
 
 	def write_value(self, name, value):
 	    """Writes value to the sensor. Name must be a string found in
-		self.I2C_ADDR dictionary. Entries in self.I2C_ADDR are in the
+		self.I2C_ADDRESS dictionary. Entries in self.I2C_ADDRESS are in the
 		name: (address, format) form, with format as in the struct module.
 		value is a tuple of values corresponding to the format from
-		self.I2C_ADDR dictionary.
+		self.I2C_ADDRESS dictionary.
 		"""
-		address, fmt = self.I2C_ADDR[address]
+		address, fmt = self.I2C_ADDRESS[address]
 		self._i2c_command(address, value, fmt)
 		
+	def get_version(self):
+	    return self.read_value('version')
+	
+	def get_vendor(self):
+	    return self.read_value('product_id')
+	    
+	def get_sensor_type(self):
+	    return self.read_value('sensor_type')
+	    
+	def get_measurement_units(self):
+	    return self.read_value('measurement_units')
+	    
 
 class CommandState(object):
 	'Namespace for enumeration of the command state of sensors'
@@ -113,8 +111,3 @@ class CommandState(object):
 	EVENT_CAPTURE = 0x03 # Check for ultrasonic interference
 	REQUEST_WARM_RESET = 0x04
 
-
-def _make_command(address):
-	def command(self, value):
-		self._i2c_command(address, value)
-	return command

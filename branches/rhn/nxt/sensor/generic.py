@@ -13,39 +13,28 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from time import sleep
 from .common import *
 from .digital import BaseDigitalSensor
 from .analog import BaseAnalogSensor
 
 
-class TouchReading:
-    def __init__(self, raw_reading):
-        self.raw = raw_reading
-        self.pressed = bool(raw_reading.scaled_value)
-
-
 class Touch(BaseAnalogSensor):
     """The LEGO touch sensor"""
-    ReadingClass = TouchReading
+
     def __init__(self, brick, port):
         super(Touch, self).__init__(brick, port)
         self.set_input_mode(Type.SWITCH, Mode.BOOLEAN)
-
-
-class LightReading:
-    def __init__(self, raw_reading):
-        self.raw = raw_reading
-        self.lightness = raw_reading.scaled_value
-        #self.lightness_lumens = raw_reading.raw_value * magical_lumen_factor
+    
+    def is_pressed(self):
+        return bool(self.get_input_values().scaled_value)
 
 
 class Light(BaseAnalogSensor):
     'Object for light sensors'
-    ReadingClass = LightReading
-    def __init__(self, brick, port):
-        super(Sensor, self).__init__(brick, port)
-        self.set_illuminated(True)
+
+    def __init__(self, brick, port, illuminated=True):
+        super(Light, self).__init__(brick, port)
+        self.set_illuminated(illuminated)
 
     def set_illuminated(self, active):
         if active:
@@ -53,17 +42,14 @@ class Light(BaseAnalogSensor):
         else:
             type_ = Type.LIGHT_INACTIVE
         self.set_input_mode(type_, Mode.RAW)
-	
 
-class SoundReading:
-    def __init__(self, raw_reading):
-        self.raw = raw_reading
-        self.loudness = raw_reading.scaled_value
+    def get_lightness(self):
+        return self.get_input_values().scaled_value	
 
 
 class Sound(BaseAnalogSensor):
     'Object for sound sensors'
-    ReadingClass = SoundReading
+
     def __init__(self, brick, port):
         super(Sound, self).__init__(brick, port)
         self.set_adjusted(True)
@@ -74,24 +60,26 @@ class Sound(BaseAnalogSensor):
         else:
             type_ = Type.SOUND_DB
         self.set_input_mode(type_, Mode.RAW)
+    
+    def get_loudness(self):
+        return self.get_input_values().scaled_value
 	    
 
 class Ultrasonic(BaseDigitalSensor):
     'Object for ultrasonic sensors'
 
     # I2C addresses for an Ultrasonic sensor
-    I2C_ADDR = {'continuous_measurement_interval': (0x40, 'B'),
-    	'command_state': (0x41, 'B'),
-    	'measurement_byte_0': (0x42, 'B'),
-    	'measurements': (0x42, 'B' * 8),
-    	'actual_scale_factor': (0x51, 'B'),
-    	'actual_scale_divisor': (0x52, 'B'),
+    I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
+    I2C_ADDRESS.update({'continuous_measurement_interval': (0x40, 'B'),
+        'command_state': (0x41, 'B'),
+        'measurement_byte_0': (0x42, 'B'),
+        'measurements': (0x42, 'B' * 8),
+        'actual_scale_factor': (0x51, 'B'),
+        'actual_scale_divisor': (0x52, 'B'),
     }
 
     def __init__(self, brick, port):
         super(Ultrasonic, self).__init__(brick, port)
-        self.set_input_mode(Type.LOW_SPEED_9V, Mode.RAW)
-        sleep(0.1)  # Give I2C time to initialize
 
     def get_distance(self):
         'Function to get data from the ultrasonic sensor'
@@ -104,6 +92,6 @@ class Ultrasonic(BaseDigitalSensor):
     def get_measurement_no(self, number):
         "Returns measurement_byte_number"
         if not 0 <= number < 8:
-            raise ValueError('Measurements are numbered 0 to 7, not' + str(number))
-        base_address, format = self.I2C_ADDR['measurement_byte_0']
+            raise ValueError('Measurements are numbered 0 to 7, not ' + str(number))
+        base_address, format = self.I2C_ADDRESS['measurement_byte_0']
         return self._i2c_query(base_address + number, format)

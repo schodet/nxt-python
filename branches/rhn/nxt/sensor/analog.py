@@ -27,17 +27,11 @@ class RawReading: # can be converted to the old version
             
 
 class BaseAnalogSensor(Sensor):
-	"""Object for analog sensors. ReadingClass is the class we want to return
-	to the user.
-	"""
+	"""Object for analog sensors."""
 	def get_input_values(self):
 	    """Returns the raw sensor values as returned by the NXT brick."""
-		return RawReading(self.brick.get_input_values(self.port))
+	    return RawReading(self.brick.get_input_values(self.port))
 		
-	def get_reading(self):
-	    """Returns the processed meaningful values of the sensor"""
-        return self.ReadingClass(self.get_input_values())
-	
 	def reset_input_scaled_value(self):
 		self.brick.reset_input_scaled_value()
 
