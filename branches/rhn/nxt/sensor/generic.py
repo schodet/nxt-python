@@ -27,6 +27,9 @@ class Touch(BaseAnalogSensor):
     
     def is_pressed(self):
         return bool(self.get_input_values().scaled_value)
+    
+    def get_sample(self):
+        return self.is_pressed()
 
 
 class Light(BaseAnalogSensor):
@@ -70,8 +73,8 @@ class Sound(BaseAnalogSensor):
     
     def get_loudness(self):
         return self.get_input_values().scaled_value
-	    
-	get_sample = get_loudness
+    
+    get_sample = get_loudness
 	
 
 class Ultrasonic(BaseDigitalSensor):
