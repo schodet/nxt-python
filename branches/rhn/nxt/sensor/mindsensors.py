@@ -31,12 +31,16 @@ class SumoEyesReading:
         both = 700 <= val < 900
         left = 300 < val < 400
         self.left = left or both
-        self.right = right or both
+        self.right = right or both
+    
+    def __str__(self):
+        return '(left: ' + str(self.left) + ', right: ' + str(self.right) + ')'
 
 class SumoEyes(BaseAnalogSensor):
     """The class to control Mindsensors Sumo sensor. Warning: long range not
-    tested yet.
+    working for my sensor.
     """
+    #range: 5-10cm
     def __init__(self, brick, port, long_range=False):
         super(SumoEyes, self).__init__(brick, port)
         self.set_long_range(long_range)
@@ -46,31 +50,31 @@ class SumoEyes(BaseAnalogSensor):
         the short range mode (6 in). val should be True or False.
         """
         if val:
-            type_ = Type.LIGHT_ACTIVE
-        else:
             type_ = Type.LIGHT_INACTIVE
+        else:
+            type_ = Type.LIGHT_ACTIVE
         self.set_input_mode(type_, Mode.RAW)
     
-    def get_reading(self):
-	    """Returns the processed meaningful values of the sensor"""
+    def get_sample(self):
+        """Returns the processed meaningful values of the sensor"""
         return SumoEyesReading(self.get_input_values())
-	
+    
 
         
 class CompassCommand(object):
     'Namespace for enumeration compass sensor commands'
-	# NOTE: just a namespace (enumeration)
+    # NOTE: just a namespace (enumeration)
     AUTO_TRIG_ON = (0x41, 0x02)
     AUTO_TRIG_OFF = (0x53, 0x01)
-    MAP_HEADING_BYTE = 0x42		# map heading to 0-255 range
-    MAP_HEADING_INTEGER = 0x49	# map heading to 0-36000 range
-    SAMPLING_50_HZ = 0x45		# set sampling frequency to 50 Hz
-    SAMPLING_60_HZ = 0x55		# set sampling frequency to 60 Hz
-    SET_ADPA_MODE_ON = 0x4E		# set ADPA mode on
-    SET_ADPA_MODE_OFF = 0x4F	# set ADPA mode off
-    BEGIN_CALIBRATION = 0x43	# begin calibration
-    DONE_CALIBRATION = 0x44		# done with calibration
-    LOAD_USER_CALIBRATION = 0x4C	# load user calibration value
+    MAP_HEADING_BYTE = 0x42        # map heading to 0-255 range
+    MAP_HEADING_INTEGER = 0x49    # map heading to 0-36000 range
+    SAMPLING_50_HZ = 0x45        # set sampling frequency to 50 Hz
+    SAMPLING_60_HZ = 0x55        # set sampling frequency to 60 Hz
+    SET_ADPA_MODE_ON = 0x4E        # set ADPA mode on
+    SET_ADPA_MODE_OFF = 0x4F    # set ADPA mode off
+    BEGIN_CALIBRATION = 0x43    # begin calibration
+    DONE_CALIBRATION = 0x44        # done with calibration
+    LOAD_USER_CALIBRATION = 0x4C    # load user calibration value
 
 
 class Compass(BaseDigitalSensor):
@@ -87,14 +91,16 @@ class Compass(BaseDigitalSensor):
         'y_range': (0x4A, '<H'),
         'x_raw': (0x4C, '<H'),
         'y_raw': (0x4E, '<H'),
-    }
+    })
 
     def __init__(self, brick, port):
         super(Compass, self).__init__(brick, port)
         self.write_value('command', (CompassCommand.MAP_HEADING_INTEGER, )) # is this necessary?
     
     def get_heading(self):
-        return self.read_value('heading')
+        return self.read_value('heading')[0]
+        
+    get_sample = get_heading
     
     def set_sampling_frequency(self, frequency):
         if frequency == 60:
@@ -108,7 +114,9 @@ class Compass(BaseDigitalSensor):
 
 class IRLong(BaseDigitalSensor):
     """Class for the Long Distance Infrared Sensor"""
+    # tested on 'V1.20', 'mndsnsrs', 'DIST'
     # TODO: data point upload, ADPA
+    
     I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
     I2C_ADDRESS.update({'command': (0x41, 'B'),
                         'distance': (0x42, '<H'),
@@ -117,10 +125,12 @@ class IRLong(BaseDigitalSensor):
                         'no_of_data_points': (0x51, 'B'),
                         'min_distance': (0x52, '<H'),
                         'max_distance': (0x54, '<H'),
-    }
+    })
     
     def get_distance(self):
         return self.read_value('distance')[0]
+
+    get_sample = get_distance
 
     def get_type(self):
         return self.read_value('type')[0]

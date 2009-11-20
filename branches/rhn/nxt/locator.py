@@ -34,24 +34,23 @@ def find_bricks(host=None, name=None):
     
     try:
         from bluetooth import BluetoothError
+        try:
+            import bluesock
+            socks = bluesock.find_bricks(host, name)
+            for s in socks:
+                yield s
+        except BluetoothError:
+            pass    
     except ImportError:
         import sys
         print >>sys.stderr, "Bluetooth unavailable, not searching there"
         if not usb_available:
             raise NoBackendError("Neither USB nor Bluetooth could be used!")
-    
-    try:
-        import bluesock
-        socks = bluesock.find_bricks(host, name)
-        for s in socks:
-            yield s
-    except BluetoothError:
-        pass
+   
 
 def find_one_brick(host=None, name=None):
     """Use to find one brick. After it returns a usbsock object or a bluesock
-    object, use .connect() to connect to the brick, which returns a brick
-    object."""
+    object, it automatically connects to it."""
     for s in find_bricks(host, name):
-        return s
+        return s.connect()
     raise BrickNotFoundError

@@ -14,7 +14,7 @@
 
 import bluetooth
 import os
-from nxt.brick import Brick
+from .brick import Brick
 
 class BlueSock(object):
 
@@ -30,21 +30,21 @@ class BlueSock(object):
 		return 'Bluetooth (%s)' % self.host
 
 	def connect(self):
-                if self.debug:
-                        print 'Connecting via Bluetooth...'
+		if self.debug:
+			print 'Connecting via Bluetooth...'
 		sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
 		sock.connect((self.host, BlueSock.PORT))
 		self.sock = sock
 		if self.debug:
-                        print 'Connected.'
+			print 'Connected.'
 		return Brick(self)
 
 	def close(self):
-                if self.debug:
-                        print 'Closing Bluetooth connection...'
+		if self.debug:
+			print 'Closing Bluetooth connection...'
 		self.sock.close()
 		if self.debug:
-                        print 'Bluetooth connection closed.'
+			print 'Bluetooth connection closed.'
 
 	def send(self, data):
 		if self.debug:

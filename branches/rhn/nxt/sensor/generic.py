@@ -30,8 +30,10 @@ class Touch(BaseAnalogSensor):
 
 
 class Light(BaseAnalogSensor):
-    'Object for light sensors'
-
+    """Object for light sensors. It automatically turns off light when it's not
+    used.
+    """
+    # TODO: A program may be running in the background. Leave the turning off to the user?
     def __init__(self, brick, port, illuminated=True):
         super(Light, self).__init__(brick, port)
         self.set_illuminated(illuminated)
@@ -45,6 +47,11 @@ class Light(BaseAnalogSensor):
 
     def get_lightness(self):
         return self.get_input_values().scaled_value	
+    
+    get_sample = get_lightness
+    
+    def __del__(self):
+        self.set_illuminated(False)
 
 
 class Sound(BaseAnalogSensor):
@@ -64,19 +71,23 @@ class Sound(BaseAnalogSensor):
     def get_loudness(self):
         return self.get_input_values().scaled_value
 	    
+	get_sample = get_loudness
+	
 
 class Ultrasonic(BaseDigitalSensor):
-    'Object for ultrasonic sensors'
+    """Object for ultrasonic sensors"""
+    #tested on 'V1.0', 'LEGO', 'Sonar'
 
     # I2C addresses for an Ultrasonic sensor
     I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
-    I2C_ADDRESS.update({'continuous_measurement_interval': (0x40, 'B'),
+    I2C_ADDRESS.update({'measurement_units': (0x14, '7s'),
+        'continuous_measurement_interval': (0x40, 'B'),
         'command_state': (0x41, 'B'),
         'measurement_byte_0': (0x42, 'B'),
         'measurements': (0x42, 'B' * 8),
         'actual_scale_factor': (0x51, 'B'),
         'actual_scale_divisor': (0x52, 'B'),
-    }
+    })
 
     def __init__(self, brick, port):
         super(Ultrasonic, self).__init__(brick, port)
@@ -84,6 +95,11 @@ class Ultrasonic(BaseDigitalSensor):
     def get_distance(self):
         'Function to get data from the ultrasonic sensor'
         return self.read_value('measurement_byte_0')[0]
+    
+    get_sample = get_distance
+            
+    def get_measurement_units(self):
+        return self.read_value('measurement_units')[0].split('\0')[0]
 		
     def get_all_measurements(self):
         "Returns all the past readings in measurement_byte_0 through 7"
@@ -94,4 +110,4 @@ class Ultrasonic(BaseDigitalSensor):
         if not 0 <= number < 8:
             raise ValueError('Measurements are numbered 0 to 7, not ' + str(number))
         base_address, format = self.I2C_ADDRESS['measurement_byte_0']
-        return self._i2c_query(base_address + number, format)
+        return self._i2c_query(base_address + number, format)[0]

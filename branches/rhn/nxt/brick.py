@@ -18,49 +18,49 @@ from nxt.error import FileNotFound, ModuleNotFound
 from nxt.telegram import OPCODES, Telegram
 
 def _make_poller(opcode, poll_func, parse_func):
-	def poll(self, *args, **kwargs):
-		ogram = poll_func(opcode, *args, **kwargs)
-		self.sock.send(str(ogram))
-		igram = Telegram(opcode=opcode, pkt=self.sock.recv())
-		return parse_func(igram)
-	return poll
+    def poll(self, *args, **kwargs):
+        ogram = poll_func(opcode, *args, **kwargs)
+        self.sock.send(str(ogram))
+        igram = Telegram(opcode=opcode, pkt=self.sock.recv())
+        return parse_func(igram)
+    return poll
 
 class _Meta(type):
-	'Metaclass which adds one method for each telegram opcode'
+    'Metaclass which adds one method for each telegram opcode'
 
-	def __init__(cls, name, bases, dict):
-		super(_Meta, cls).__init__(name, bases, dict)
-		for opcode in OPCODES:
-			poll_func, parse_func = OPCODES[opcode]
-			m = _make_poller(opcode, poll_func, parse_func)
-			setattr(cls, poll_func.__name__, m)
+    def __init__(cls, name, bases, dict):
+        super(_Meta, cls).__init__(name, bases, dict)
+        for opcode in OPCODES:
+            poll_func, parse_func = OPCODES[opcode]
+            m = _make_poller(opcode, poll_func, parse_func)
+            setattr(cls, poll_func.__name__, m)
 
 
 class FileFinder(object):
-	'A generator to find files on a NXT brick.'
+    'A generator to find files on a NXT brick.'
 
-	def __init__(self, brick, pattern):
-		self.brick = brick
-		self.pattern = pattern
-		self.handle = None
-	
-	def _close(self):
-		if self.handle:
-			self.brick.close(self.handle)	    
-	
-	def __del__(self):
-	    self._close()
+    def __init__(self, brick, pattern):
+        self.brick = brick
+        self.pattern = pattern
+        self.handle = None
+    
+    def _close(self):
+        if self.handle:
+            self.brick.close(self.handle)        
+    
+    def __del__(self):
+        self._close()
 
-	def __iter__(self):
-		self.handle, fname, size = self.brick.find_first(self.pattern)
-		yield (fname, size)
-		while True:
-			try:
-				handle, fname, size = self.brick.find_next(self.handle)
-				yield (fname, size)
-			except FileNotFound:
-			    self._close()
-			    break
+    def __iter__(self):
+        self.handle, fname, size = self.brick.find_first(self.pattern)
+        yield (fname, size)
+        while True:
+            try:
+                handle, fname, size = self.brick.find_next(self.handle)
+                yield (fname, size)
+            except FileNotFound:
+                self._close()
+                break
 
 
 def File(brick, name, mode='r', size=None):
@@ -79,131 +79,132 @@ def File(brick, name, mode='r', size=None):
 
 
 class FileReader(object):
-	"""Context manager to read a file on a NXT brick. Do use the iterator or
-	the read() method, but not both at the same time!
-	The iterator returns strings of an arbitrary (short) length.
-	"""
+    """Context manager to read a file on a NXT brick. Do use the iterator or
+    the read() method, but not both at the same time!
+    The iterator returns strings of an arbitrary (short) length.
+    """
 
-	def __init__(self, brick, fname):
-		self.brick = brick
-		self.handle, self.size = brick.open_read(fname)
-		
-	def read(self, bytes=None):
-		if bytes is not None:
-		    remaining = bytes
-		else:
-		    remaining = self.size
-		bsize = self.brick.sock.bsize
-		data = []
-		while remaining > 0:
-			handle, bsize, buffer_ = self.brick.read(self.handle,
-				min(bsize, remaining))
-			remaining -= len(buffer_)
-			data.append(buffer_)
-		return ''.join(data)
-	
-	def close(self):
-   		self.brick.close(self.handle)
-   		
-   	def __del__(self):
-   	    self.close()
+    def __init__(self, brick, fname):
+        self.brick = brick
+        self.handle, self.size = brick.open_read(fname)
+        
+    def read(self, bytes=None):
+        if bytes is not None:
+            remaining = bytes
+        else:
+            remaining = self.size
+        bsize = self.brick.sock.bsize
+        data = []
+        while remaining > 0:
+            handle, bsize, buffer_ = self.brick.read(self.handle,
+                min(bsize, remaining))
+            remaining -= len(buffer_)
+            data.append(buffer_)
+        return ''.join(data)
+    
+    def close(self):
+        self.brick.close(self.handle)
+           
+    def __del__(self):
+        self.close()
 
-	def __enter__(self):
-		return self
+    def __enter__(self):
+        return self
 
-	def __exit__(self, etp, value, tb):
-	    self.close()
-	    
-	def __iter__(self):
-		rem = self.size
-		bsize = self.brick.sock.bsize
-		while rem > 0:
-			handle, bsize, data = self.brick.read(self.handle,
-				min(bsize, rem))
-			yield data
-			rem -= len(data)
+    def __exit__(self, etp, value, tb):
+        self.close()
+        
+    def __iter__(self):
+        rem = self.size
+        bsize = self.brick.sock.bsize
+        while rem > 0:
+            handle, bsize, data = self.brick.read(self.handle,
+                min(bsize, rem))
+            yield data
+            rem -= len(data)
 
 
 class FileWriter(object):
-	"Object to write to a file on a NXT brick"
+    "Object to write to a file on a NXT brick"
 
-	def __init__(self, brick, fname, size):
-		self.brick = brick
-		self.handle = self.brick.open_write(fname, size)
-		self._position = 0
-		self.size = size
+    def __init__(self, brick, fname, size):
+        self.brick = brick
+        self.handle = self.brick.open_write(fname, size)
+        self._position = 0
+        self.size = size
 
-	def __del__(self):
-	    self.close()
-	    
-	def close(self):
-	    self.brick.close(self.handle)
-	
-	def tell(self):
-	    return self._position
+    def __del__(self):
+        self.close()
+        
+    def close(self):
+        self.brick.close(self.handle)
+    
+    def tell(self):
+        return self._position
 
-	def write(self, data):
-		remaining = len(data)
-		if remaining > self.size - self._position:
-		    raise ValueError('Data will not fit into remaining space')
-		bsize = self.brick.sock.bsize
-		data_position = 0
-		
-		while remaining > 0:
-			batch_size = min(bsize, remaining)
-			next_data_position = data_position + batch_size
-			buffer_ = data[data_position:next_data_position]
-			
-			handle, size = self.brick.write(self.handle, buffer_)
-			
-			self._position += batch_size
-			data_position = next_data_position
-			remaining -= batch_size
+    def write(self, data):
+        remaining = len(data)
+        if remaining > self.size - self._position:
+            raise ValueError('Data will not fit into remaining space')
+        bsize = self.brick.sock.bsize
+        data_position = 0
+        
+        while remaining > 0:
+            batch_size = min(bsize, remaining)
+            next_data_position = data_position + batch_size
+            buffer_ = data[data_position:next_data_position]
+            
+            handle, size = self.brick.write(self.handle, buffer_)
+            
+            self._position += batch_size
+            data_position = next_data_position
+            remaining -= batch_size
 
 
 class ModuleFinder(object):
-	'Iterator to lookup modules on a NXT brick'
+    'Iterator to lookup modules on a NXT brick'
 
-	def __init__(self, brick, pattern):
-		self.brick = brick
-		self.pattern = pattern
-		self.handle = None
+    def __init__(self, brick, pattern):
+        self.brick = brick
+        self.pattern = pattern
+        self.handle = None
 
-	def _close(self):
-		if self.handle:
-			self.brick.close(self.handle)
-	
-	def __del__(self):
-	    self._close()
+    def _close(self):
+        if self.handle:
+            self.brick.close(self.handle)
+    
+    def __del__(self):
+        self._close()
 
-	def __iter__(self):
-		self.handle, mname, mid, msize, miomap_size = \
-			self.brick.request_first_module(self.pattern)
-		yield (mname, mid, msize, miomap_size)
-		while True:
-			try:
-				handle, mname, mid, msize, miomap_size = \
-					self.brick.request_next_module(
-					self.handle)
-				yield (mname, mid, msize, miomap_size)
-			except ModuleNotFound:
-			    self._close()
-				break
+    def __iter__(self):
+        self.handle, mname, mid, msize, miomap_size = \
+            self.brick.request_first_module(self.pattern)
+        yield (mname, mid, msize, miomap_size)
+        while True:
+            try:
+                handle, mname, mid, msize, miomap_size = \
+                    self.brick.request_next_module(
+                    self.handle)
+                yield (mname, mid, msize, miomap_size)
+            except ModuleNotFound:
+                self._close()
+                break
 
-				
+                
 class Brick(object): #TODO: this begs to have explicit methods
-        'Main object for NXT Control'
+    'Main object for NXT Control'
 
-	__metaclass__ = _Meta
+    __metaclass__ = _Meta
 
-	def __init__(self, sock):
-		self.sock = sock
+    def __init__(self, sock):
+        self.sock = sock
 
-	def play_tone_and_wait(self, frequency, duration):
-		self.play_tone(frequency, duration)
-		sleep(duration / 1000.0)
-	
-	find_files = FileFinder
-	find_modules = ModuleFinder
-	open_file = File
+    def play_tone_and_wait(self, frequency, duration):
+        self.play_tone(frequency, duration)
+        sleep(duration / 1000.0)
+
+    
+    find_files = FileFinder
+    find_modules = ModuleFinder
+    open_file = File
 

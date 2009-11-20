@@ -18,19 +18,25 @@ from .digital import BaseDigitalSensor
 
 
 class CompassMode:
-    MEASUREMENT = 0
+    MEASUREMENT = 0x00
     CALIBRATION = 0x43
     CALIBRATION_FAILED = 0x02
 
 
 class Compass(BaseDigitalSensor):
+    """Hitechnic compass sensor."""
+    #tested on '\xfdV1.23  ', 'HiTechnc', 'Compass '
+
     I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
     I2C_ADDRESS.update({'heading': (0x44, '<H'),
                         'mode': (0x41, 'B'),
     })
 
     def get_heading(self):
+        """Returns heading from North in degrees."""
         return self.read_value('heading')[0]
+    
+    get_sample = get_heading
 
     def get_mode(self):
         return self.read_value('mode')[0]
@@ -48,14 +54,14 @@ class Acceleration:
         
 
 class Accelerometer(BaseDigitalSensor):
-	'Object for Accelerometer sensors. Thanks to Paulo Vieira. Broken by rhn.'
-	I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
-	I2C_ADDRESS.update({'x_axis_high': (0x42, 'b'),
-	    'y_axis_high': (0x43, 'b'),
-	    'z_axis_high': (0x44, 'b'),
-	    'xyz_short': (0x42, '3b'),
-	    'all_data': (0x42, '3b3B')
-	})
+    'Object for Accelerometer sensors. Thanks to Paulo Vieira. Broken by rhn.'
+    I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
+    I2C_ADDRESS.update({'x_axis_high': (0x42, 'b'),
+        'y_axis_high': (0x43, 'b'),
+        'z_axis_high': (0x44, 'b'),
+        'xyz_short': (0x42, '3b'),
+        'all_data': (0x42, '3b3B')
+    })
 
     def get_acceleration(self):
         """"Returns the acceleration along x, y, z axes. Units are unknown to
@@ -66,3 +72,5 @@ class Accelerometer(BaseDigitalSensor):
         y = yh << 2 + yl
         z = zh << 2 + yl
         return Acceleration(x, y, z)
+    
+    get_sample = get_acceleration
