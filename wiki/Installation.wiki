@@ -20,7 +20,7 @@ BUS=="usb", SYSFS{idVendor}=="0694", GROUP="lego", MODE="0660"
 
 Install [http://tortoisesvn.net/downloads TortiseSVN]. Create a new folder somewhere and call it something meaningful, like "nxt-python". Right click on the folder and click SVN Checkout. Copy and Paste "http://nxt-python.googlecode.com/svn/trunk/" to the top text box and click OK. After it finishes, double click on the folder to open it. Then double click on install.bat. If a black window appears, flashes some data, then disappears, it worked. If it doesn't disappear, follow the instructions on the screen.
 
-            For USB communications, you need to install [http://sourceforge.net/projects/pyusb/ PyUSB]. An executable installer for Python 2.6 (compiled by me!) is available [http://nxt-python.googlecode.com/files/pyusb-0.4.1.win32-py2.6.exe here].
+            For USB communications, you need to install [http://sourceforge.net/projects/pyusb/ PyUSB].
 
             For Bluetooth communications, download and install [http://code.google.com/p/pybluez/downloads/list PyBluez]. You will also need a compatible Bluetooth dongle, if your computer doesn’t already support Bluetooth.
 
