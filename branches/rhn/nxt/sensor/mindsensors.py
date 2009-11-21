@@ -15,7 +15,7 @@
 
 
 from .common import *
-from .digital import BaseDigitalSensor
+from .digital import BaseDigitalSensor, SensorInfo
 from .analog import BaseAnalogSensor
 
 
@@ -93,8 +93,8 @@ class Compass(BaseDigitalSensor):
         'y_raw': (0x4E, '<H'),
     })
 
-    def __init__(self, brick, port):
-        super(Compass, self).__init__(brick, port)
+    def __init__(self, brick, port, check_compatible=False):
+        super(Compass, self).__init__(brick, port, check_compatible)
         self.write_value('command', (CompassCommand.MAP_HEADING_INTEGER, )) # is this necessary?
     
     def get_heading(self):
@@ -114,7 +114,6 @@ class Compass(BaseDigitalSensor):
 
 class IRLong(BaseDigitalSensor):
     """Class for the Long Distance Infrared Sensor"""
-    # tested on 'V1.20', 'mndsnsrs', 'DIST'
     # TODO: data point upload, ADPA
     
     I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
@@ -144,3 +143,4 @@ class IRLong(BaseDigitalSensor):
     def get_max_distance(self):
         return self.read_value('max_distance')[0]
 
+IRLong.add_compatible_sensor('V1.20', 'mndsnsrs', 'DIST')

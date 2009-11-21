@@ -14,8 +14,9 @@
 # GNU General Public License for more details.
 
 from time import sleep
-from nxt.error import FileNotFound, ModuleNotFound
-from nxt.telegram import OPCODES, Telegram
+from .error import FileNotFound, ModuleNotFound
+from .telegram import OPCODES, Telegram
+from .sensor import get_sensor
 
 def _make_poller(opcode, poll_func, parse_func):
     def poll(self, *args, **kwargs):
@@ -207,4 +208,4 @@ class Brick(object): #TODO: this begs to have explicit methods
     find_files = FileFinder
     find_modules = ModuleFinder
     open_file = File
-
+    get_sensor = get_sensor

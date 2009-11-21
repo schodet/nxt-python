@@ -24,3 +24,12 @@ MSIRLong = mindsensors.IRLong
 import hitechnic
 HTCompass = hitechnic.Compass
 HTAccelerometer = hitechnic.Accelerometer
+
+
+def get_sensor(brick, port):
+    """Tries to detect the sensor type and return a relevant instantiated
+    class.
+    """
+    base_sensor = BaseDigitalSensor(brick, port, False)
+    info = base_sensor.get_sensor_info()
+    return find_class(info)(brick, port, check_compatible=False)

@@ -14,7 +14,7 @@
 # GNU General Public License for more details.
 
 from .common import *
-from .digital import BaseDigitalSensor
+from .digital import BaseDigitalSensor, SensorInfo
 
 
 class CompassMode:
@@ -25,7 +25,6 @@ class CompassMode:
 
 class Compass(BaseDigitalSensor):
     """Hitechnic compass sensor."""
-    #tested on '\xfdV1.23  ', 'HiTechnc', 'Compass '
 
     I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
     I2C_ADDRESS.update({'heading': (0x44, '<H'),
@@ -46,7 +45,9 @@ class Compass(BaseDigitalSensor):
                  mode != CompassMode.CALIBRATION:
              raise ValueError('Invalid mode specified: ' + str(mode))
          self.write_value('mode', (mode, ))
- 
+         
+Compass.add_compatible_sensor('\xfdV1.23  ', 'HiTechnc', 'Compass ')
+
 
 class Acceleration:
     def __init__(self, x, y, z):
@@ -62,6 +63,9 @@ class Accelerometer(BaseDigitalSensor):
         'xyz_short': (0x42, '3b'),
         'all_data': (0x42, '3b3B')
     })
+    
+    def __init__(self, brick, port, check_compatible=False):
+        super(Accelerometer, self).__init__(brick, port, check_compatible)
 
     def get_acceleration(self):
         """"Returns the acceleration along x, y, z axes. Units are unknown to

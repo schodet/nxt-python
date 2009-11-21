@@ -28,8 +28,7 @@ class Touch(BaseAnalogSensor):
     def is_pressed(self):
         return bool(self.get_input_values().scaled_value)
     
-    def get_sample(self):
-        return self.is_pressed()
+    get_sample = is_pressed
 
 
 class Light(BaseAnalogSensor):
@@ -60,9 +59,9 @@ class Light(BaseAnalogSensor):
 class Sound(BaseAnalogSensor):
     'Object for sound sensors'
 
-    def __init__(self, brick, port):
+    def __init__(self, brick, port, adjusted=True):
         super(Sound, self).__init__(brick, port)
-        self.set_adjusted(True)
+        self.set_adjusted(adjusted)
 
     def set_adjusted(self, active):
         if active:
@@ -79,7 +78,6 @@ class Sound(BaseAnalogSensor):
 
 class Ultrasonic(BaseDigitalSensor):
     """Object for ultrasonic sensors"""
-    #tested on 'V1.0', 'LEGO', 'Sonar'
 
     # I2C addresses for an Ultrasonic sensor
     I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
@@ -92,8 +90,6 @@ class Ultrasonic(BaseDigitalSensor):
         'actual_scale_divisor': (0x52, 'B'),
     })
 
-    def __init__(self, brick, port):
-        super(Ultrasonic, self).__init__(brick, port)
 
     def get_distance(self):
         'Function to get data from the ultrasonic sensor'
@@ -114,3 +110,6 @@ class Ultrasonic(BaseDigitalSensor):
             raise ValueError('Measurements are numbered 0 to 7, not ' + str(number))
         base_address, format = self.I2C_ADDRESS['measurement_byte_0']
         return self._i2c_query(base_address + number, format)[0]
+
+
+Ultrasonic.add_compatible_sensor('V1.0', 'LEGO', 'Sonar')
