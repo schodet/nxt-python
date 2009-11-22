@@ -34,6 +34,11 @@ def find_bricks(host=None, name=None):
     
     try:
         from bluetooth import BluetoothError
+
+
+
+
+
         try:
             import bluesock
             socks = bluesock.find_bricks(host, name)
@@ -50,8 +55,7 @@ def find_bricks(host=None, name=None):
 
 def find_one_brick(host=None, name=None):
     """Use to find one brick. After it returns a usbsock object or a bluesock
-    object, use .connect() to connect to the brick, which returns a brick
-    object."""
+    object, it automatically connects to it."""
     for s in find_bricks(host, name):
-        return s
+        return s.connect()
     raise BrickNotFoundError
