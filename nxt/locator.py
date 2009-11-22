@@ -39,7 +39,7 @@ def find_bricks(host=None, name=None):
             socks = bluesock.find_bricks(host, name)
             for s in socks:
                 yield s
-        except BluetoothError:
+        except (BluetoothError, IOError):# BluetoothError or IOError: #for cases such as no adapter, bluetooth throws IOError, not BluetoothError
             pass
     except ImportError:
         import sys
