@@ -224,7 +224,7 @@ class Motor(object):
         self.set_state(state)
        
         direction = 1 if power > 0 else -1
-        self._debug_out('tachocount: ' + str(current_tacho))
+        self._debug_out('tachocount: ' + str(tacho))
         tacho_target = tacho.tacho_count + tacho_limit*direction
         self._debug_out('tacho target: ' + str(tacho_target))
         current_time = time.time()
