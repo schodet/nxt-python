@@ -38,18 +38,7 @@ def find_bricks(host=None, name=None):
             socks = bluesock.find_bricks(host, name)
             for s in socks:
                 yield s
-        except:
-            #"except:" is dangerous and the code in the above try: block should
-            #be treated with extreme caution. Any errors in it will be dropped
-            #silently.
-            #This is necessary to provide a higher level of abstraction above
-            #the "bluetooth" module on linux/windows and the "lightblue" module
-            #on mac, since catching bluetooth errors would involve a non-cross-
-            #platform "import bluetooth", which also happens to break compata-
-            #bility with lightblueglue even when used externally.
-            #When testing modifications to the try: block, it may be helpful to
-            #add "import sys; print sys.exc_info()" right below this message, to
-            #print out any errors.
+        except (bluesock.bluetooth.BluetoothError, IOError):
             pass
     except ImportError:
         import sys
