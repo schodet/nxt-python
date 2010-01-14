@@ -13,8 +13,8 @@
 # GNU General Public License for more details.
 
 class BrickNotFoundError(Exception):
-	pass
-	
+    pass
+    
 class NoBackendError(Exception):
     pass
 
@@ -33,13 +33,23 @@ def find_bricks(host=None, name=None):
         print >>sys.stderr, "USB unavailable, not searching there"
     
     try:
-        from bluetooth import BluetoothError
+        import bluesock
         try:
-            import bluesock
             socks = bluesock.find_bricks(host, name)
             for s in socks:
                 yield s
-        except (BluetoothError, IOError):# BluetoothError or IOError: #for cases such as no adapter, bluetooth throws IOError, not BluetoothError
+        except:
+            #"except:" is dangerous and the code in the above try: block should
+            #be treated with extreme caution. Any errors in it will be dropped
+            #silently.
+            #This is necessary to provide a higher level of abstraction above
+            #the "bluetooth" module on linux/windows and the "lightblue" module
+            #on mac, since catching bluetooth errors would involve a non-cross-
+            #platform "import bluetooth", which also happens to break compata-
+            #bility with lightblueglue even when used externally.
+            #When testing modifications to the try: block, it may be helpful to
+            #add "import sys; print sys.exc_info()" right below this message, to
+            #print out any errors.
             pass
     except ImportError:
         import sys
