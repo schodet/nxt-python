@@ -13,8 +13,8 @@
 # GNU General Public License for more details.
 
 class BrickNotFoundError(Exception):
-    pass
-    
+	pass
+	
 class NoBackendError(Exception):
     pass
 
@@ -33,12 +33,13 @@ def find_bricks(host=None, name=None):
         print >>sys.stderr, "USB unavailable, not searching there"
     
     try:
-        import bluesock
+        from bluetooth import BluetoothError
         try:
+            import bluesock
             socks = bluesock.find_bricks(host, name)
             for s in socks:
                 yield s
-        except (bluesock.bluetooth.BluetoothError, IOError):
+        except BluetoothError:
             pass
     except ImportError:
         import sys
