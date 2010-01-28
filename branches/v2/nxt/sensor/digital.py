@@ -111,7 +111,7 @@ class BaseDigitalSensor(Sensor):
         value is a tuple of values corresponding to the format from
         self.I2C_ADDRESS dictionary.
         """
-        address, fmt = self.I2C_ADDRESS[address]
+        address, fmt = self.I2C_ADDRESS[name]
         self._i2c_command(address, value, fmt)
     
     def get_sensor_info(self): # one function instead of 3 - most times it all 3 are necessary, and it's little overhead
