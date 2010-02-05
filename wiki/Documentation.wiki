@@ -9,7 +9,7 @@ The documentation is a HUGE task...every line of code has to be analysed and put
 The locator module. The function of this module is to locate nxt brick(s). Usage is in the examples section
 
 Objects (incomplete):
-	nxt.bluesock.BlueSock object 
+	nxt.bluesock.!BlueSock object 
 		The object returned by find_one_brick() when a brick is found on a Bluetooth connection.
 		Methods (incomplete):
 			connect()
@@ -25,7 +25,7 @@ Objects (incomplete):
 				Find the next brick in the sequence. Returns the same thing as find_one_brick().
 Methods: (incomplete)
 	find_one_brick(host=None, name=None) (incomplete)
-		Use to find your Lego Mindstorms NXT brick. Returns an nxt.bluesock.BlueSock object for robots connected by Bluetooth and a nxt.usbsock.USBSock object for robot connected by USB, and throws nxt.locator.BrickNotFoundError if none can be found.
+		Use to find your Lego Mindstorms NXT brick. Returns an nxt.bluesock.!BlueSock object for robots connected by Bluetooth and a nxt.usbsock.USBSock object for robot connected by USB, and throws nxt.locator.!BrickNotFoundError if none can be found.
 	find_bricks(host=None, name=None)
 		Use to find all the bricks in the area. Returns a generator object find_bricks.
 
