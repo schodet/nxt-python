@@ -1,7 +1,7 @@
 # nxt.motor module -- Class to control LEGO Mindstorms NXT motors
 # Copyright (C) 2006  Douglas P Lau
 # Copyright (C) 2009  Marcus Wanner
-# Copyright (C) 2009  rhn
+# Copyright (C) 2009,2010  rhn
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -43,12 +43,12 @@ class BlockedException(Exception):
     pass
 
 class OutputState(object):
-    """An object holding the internal state of a motor, not including counters.
+    """An object holding the internal state of a motor, not including rotation
+    counters.
     """
     def __init__(self, values):
         (self.power, self.mode, self.regulation,
-            self.turn_ratio, self.run_state, self.tacho_limit,
-) = values
+            self.turn_ratio, self.run_state, self.tacho_limit) = values
     
     def to_list(self):
         """Returns a list of properties that can be used with set_output_state.
@@ -75,14 +75,77 @@ class OutputState(object):
 
 
 class TachoInfo:
-    """An object containing the information about the state of a motor"""
+    """An object containing the information about the rotation of a motor"""
+    PROXIMITY_THRESHOLD = 20
     def __init__(self, values):
         self.tacho_count, self.block_tacho_count, self.rotation_count = values
+    
+    def get_target(self, tacho_limit, direction):
+        """Returns a TachoInfo object which corresponds to tacho state after
+        moving for tacho_limit ticks. Direction can be 1 (add) or -1 (subtract)
+        """
+        # TODO: adjust other fields
+        if abs(direction) != 1:
+            raise ValueError('Invalid direction')
+        new_tacho = self.tacho_count + direction * tacho_limit
+        return TachoInfo([new_tacho, None, None])
+    
+    def is_greater(self, target, direction):
+        return direction * (self.tacho_count - target.tacho_count) > 0
+    
+    def is_near(self, target):
+        difference = abs(target.tacho_count - self.tacho_count)
+        return difference < self.PROXIMITY_THRESHOLD
     
     def __str__(self):
         return str((self.tacho_count, self.block_tacho_count,
                    self.rotation_count))
+
+
+class SynchronizedTacho(object): # TODO: switch to 1 being leader and 2 follower always
+    def __init__(self, leader, tacho1, tacho2):
+        self.tacho1 = tacho1
+        self.tacho2 = tacho2
+        if leader not in ('l', 'r'):
+            raise ValueError
+        self.leader = leader
+        
+    def get_target(self, tacho_limit, direction): # FIXME: this won't work with fractional coefficients
+        if self.leader == 'l':
+            tacho1 = self.tacho1.get_target(tacho_limit, direction)
+            tacho2 = None
+        else:
+            tacho1 = None
+            tacho2 = self.tacho2.get_target(tacho_limit, direction)
+        return SynchronizedTacho(self.leader, tacho1, tacho2)
     
+    def is_greater(self, other, direction):
+        if self.leader == 'l':
+            greater = self.tacho1.is_greater(other.tacho1, direction)
+        else:
+            greater = self.tacho2.is_greater(other.tacho2, direction)
+        return greater
+
+    def is_near(self, other):
+        if self.leader == 'l':
+            near = self.tacho1.is_near(other.tacho1)
+        else:
+            near = self.tacho2.is_near(other.tacho2)
+        return near
+
+    def __str__(self):
+        if self.tacho1 is not None:
+            t1 = str(self.tacho1.tacho_count)
+        else:
+            t1 = 'None'
+            
+        if self.tacho2 is not None:
+            t2 = str(self.tacho2.tacho_count)
+        else:
+            t2 = 'None'
+        
+        return t1 + ' ' + t2 + ' (' + self.leader + ')'
+
 
 def get_tacho_and_state(values):
     """A convenience function. values is the list of values from
@@ -91,21 +154,88 @@ def get_tacho_and_state(values):
     return OutputState(values[1:7]), TachoInfo(values[7:])
 
 
-class Motor(object):
+class BaseMotor(object):
+    """Base class for motors"""
     debug = 0
-    def __init__(self, brick, port):
-        self.brick = brick
-        self.port = port
-        self._read_state()
-
     def _debug_out(self, message):
         if self.debug:
             print message
 
-    def set_state(self, state):
+    def turn(self, power, tacho_units, brake=True, timeout=1, emulate=True):
+        """Use this to turn a motor. The motor will not stop until it turns the
+        desired distance.
+        power is a value between -127 and 128,
+        brake is whether or not to hold the motor after the function exits
+                 (either by reaching the distance or throwing an exception).
+        timeout is the number of seconds after which a BlockedException is
+                 raised if the motor doesn't turn
+        emulate is a boolean value. If set to False, the motor is aware of the
+                 tacho limit. If True, a run() function equivalent is used.
+                 Warning: motors remember their positions and not using emulate
+                 may lead to strange behavior, especially with synced motors
+        """
+ 
+        tacho_limit = tacho_units
+        tacho = self.get_tacho()
+        state = self._get_new_state()
+
+        # Update modifiers even if they aren't used, might have been changed
+        state.power = power
+        if not emulate:
+            state.tacho_limit = tacho_limit
+
+        self._debug_out('Updating motor information...')
+        self._set_state(state)
+       
+        direction = 1 if power > 0 else -1
+        self._debug_out('tachocount: ' + str(tacho))
+        current_time = time.time()
+        tacho_target = tacho.get_target(tacho_limit, direction)
+        
+        blocked = False
+        try:
+            while True:
+                time.sleep(self._eta(tacho, tacho_target, power) / 2)
+                
+                if not blocked: # if still blocked, don't reset the counter
+                    last_tacho = tacho
+                    last_time = current_time
+                
+                tacho = self.get_tacho()
+                current_time = time.time()
+                blocked = self._is_blocked(tacho, last_tacho, direction)
+                if blocked:
+                    print 'not advancing', last_tacho, tacho
+                    # the motor is quite imprecise, to the point of 20 tacho units 
+                    if current_time - last_time > timeout:
+                        if tacho.is_near(tacho_target):
+                            break
+                        else:
+                            raise BlockedException("Blocked!")
+                else:
+                    print 'advancing', last_tacho, tacho
+                if tacho.is_greater(tacho_target, direction):
+                    break
+        finally:
+            if brake:
+                self.brake()
+            else:
+                self.idle()
+
+
+class Motor(BaseMotor):
+    def __init__(self, brick, port):
+        self.brick = brick
+        self.port = port
+        self._read_state()
+        self.sync = 0
+        self.turn_ratio = 0
+
+    def _set_state(self, state):
         self._debug_out('Setting brick output state...')
         list_state = [self.port] + state.to_list()
         self.brick.set_output_state(*list_state)
+        print state
         self._state = state
         self._debug_out('State set.')
 
@@ -118,62 +248,56 @@ class Motor(object):
     
     #def get_tacho_and_state here would allow tacho manipulation
     
-    def get_state(self):
+    def _get_state(self):
         """Returns a copy of the current motor state for manipulation."""
         return OutputState(self._state.to_list())
+    
+    def _get_new_state(self):
+        state = self._get_state()
+        if self.sync:
+            state.mode = MODE_MOTOR_ON | MODE_REGULATED
+            state.regulation = REGULATION_MOTOR_SYNC
+            state.turn_ratio = self.turn_ratio
+        else:
+            state.mode = MODE_MOTOR_ON | MODE_REGULATED
+            state.regulation = REGULATION_MOTOR_SPEED
+        state.run_state = RUN_STATE_RUNNING
+        state.tacho_limit = LIMIT_RUN_FOREVER
+        return state
         
     def get_tacho(self):
         return self._read_state()[1]
-    
-    def reset_tacho(self):
-        pass
         
     def reset_position(self, relative):
-        """What does it do?"""
+        """Resets the counters. Relative can be True or False"""
         self.brick.reset_motor_position(self.port, relative)
 
     def run(self, power=100, regulated=False):
         '''Tells the motor to run continuously. If regulated is True, then the
-        rotation speed seems to decrease after a few seconds.
+        synchronization starts working.
         '''
-        state = self.get_state()
+        state = self._get_new_state()
         state.power = power
-        if regulated:
-            state.mode = MODE_MOTOR_ON | MODE_REGULATED
-            state.regulation = REGULATION_MOTOR_SPEED
-        else:
+        if not regulated:
             state.mode = MODE_MOTOR_ON
-            state.regulation = REGULATION_IDLE
-        state.turn_ratio = 0
-        state.run_state = RUN_STATE_RUNNING
-        state.tacho_limit = LIMIT_RUN_FOREVER
-        self.set_state(state)
+        self._set_state(state)
 
-    def hold(self):
+    def brake(self):
         """Holds the motor in place"""
-        state = self.get_state()
+        state = self._get_new_state()
         state.power = 0
         state.mode = MODE_MOTOR_ON | MODE_BRAKE | MODE_REGULATED
-        state.regulation = REGULATION_MOTOR_SPEED
-        state.run_state = RUN_STATE_RUNNING
-        state.turn_ratio = 0
-        state.tacho_limit = LIMIT_RUN_FOREVER
-        self.set_state(state)
-        
+        self._set_state(state)
 
-    def stop(self):
-        '''Tells the motor to stop whatever it's doing'''
-        state = self.get_state()
+    def idle(self):
+        '''Tells the motor to stop whatever it's doing. It also desyncs it'''
+        state = self._get_new_state()
         state.power = 0
         state.mode = MODE_IDLE
         state.regulation = REGULATION_IDLE
         state.run_state = RUN_STATE_IDLE
-        state.turn_ratio = 0
-        state.tacho_limit = LIMIT_RUN_FOREVER
-        self.set_state(state)
-    
-    release = stop # hold-release pair
-    
+        self._set_state(state)
+
     def weak_turn(self, power, tacho_units):
         """Tries to turn a motor for the specified distance. This function
         returns immediately, and it's not guaranteed that the motor turns that
@@ -182,83 +306,128 @@ class Motor(object):
         """
         tacho_limit = tacho_units
         tacho = self.get_tacho()
-        state = self.get_state()
+        state = self._get_new_state()
 
         # Update modifiers even if they aren't used, might have been changed
         state.mode = MODE_MOTOR_ON
         state.regulation = REGULATION_IDLE
-        state.turn_ratio = 0
-        state.run_state = RUN_STATE_RUNNING
         state.power = power
         state.tacho_limit = tacho_limit
 
         self._debug_out('Updating motor information...')
-        self.set_state(state)
+        self._set_state(state)
+    
+    def _eta(self, current, target, power):
+        """Returns time in seconds. Do not trust it too much"""
+        tacho = abs(current.tacho_count - target.tacho_count)
+        return (float(tacho) / abs(power)) / 5
+    
+    def _is_blocked(self, tacho, last_tacho, direction):
+        """Returns if any of the engines is blocked"""
+        return direction * (last_tacho.tacho_count - tacho.tacho_count) >= 0
+
+
+class SynchronizedMotors(BaseMotor):
+    """The object used to make two motors run in sync. Many objects may be
+    present at the same time but they can't be used at the same time.
+    Warning! Movement methods reset tacho counter.
+    """
+    debug = True
+    def __init__(self, motor1, motor2, turn_ratio):
+        self.motor1 = motor1
+        self.motor2 = motor2
+        if self.motor1.brick is not self.motor2.brick:
+            raise ValueError('motors belong to different bricks')
+        if turn_ratio not in (-100, 0, 100):
+            raise ValueError('Only -100, 0, 100 turn ratios supported')
+        self.turn_ratio = turn_ratio
+
+    def _get_new_state(self):
+        return self.motor1._get_new_state()
         
+    def _set_state(self, state):
+        self.motor1._set_state(state)
+        self.motor2._set_state(state)
+    
+    def _get_leading_motor(self): # FIXME: take motor order into account
+        if self.turn_ratio > 0:
+            return 'r'
+        else:
+            return 'l'
 
-    def turn(self, power, tacho_units, brake=True, timeout=1):
-        """Use this to turn a motor. power is a value between -127 and 128,
-        The motor will not stop until it turns the desired distance. Brake is
-        whether or not to stop the motor after the function exits (either by
-        reaching the distance or throwing an exception). timeout is the amount
-        of time after which a BlockedException is raised if the motor hasn't
-        moved.
-        """
-        def eta(tacho, power):
-            """Returns time in seconds. Do not trust it too much"""
-            return (float(tacho) / power) / 5
- 
-        tacho_limit = tacho_units
-        tacho = self.get_tacho()
-        state = self.get_state()
+    def get_tacho(self):
+        tacho1 = self.motor1.get_tacho()
+        tacho2 = self.motor2.get_tacho()
+        return SynchronizedTacho(self._get_leading_motor(), tacho1, tacho2)
 
-        # Update modifiers even if they aren't used, might have been changed
-        state.mode = MODE_MOTOR_ON
-        state.regulation = REGULATION_MOTOR_SPEED
-        state.turn_ratio = 0
-        state.run_state = RUN_STATE_RUNNING
-        state.power = power
-        state.tacho_limit = tacho_limit
+    def reset_position(self, relative):
+        """Resets the counters. Relative can be True or False"""
+        self.motor1.reset_position(relative)
+        self.motor2.reset_position(relative)
 
-        self._debug_out('Updating motor information...')
-        self.set_state(state)
+    def _enable(self): # This works as expected. I'm not sure why.
+        #self._disable()
+        self.reset_position(True)
+        self.motor1.sync = True
+        self.motor2.sync = True
+        self.motor1.turn_ratio = self.turn_ratio
+        self.motor2.turn_ratio = self.turn_ratio        
+
+    def _disable(self): # This works as expected. (tacho is reset ok)
+        self.motor1.sync = False
+        self.motor2.sync = False
+        #self.reset_position(True)
+        self.motor1.idle()
+        self.motor2.idle()
+        #self.reset_position(True)
+    
+    def idle(self):
+        self._disable()
+    
+    def brake(self):
+        self._disable() # reset the counters
+        self._enable()
+        self.motor1.brake() # brake both motors at the same time
+        self.motor2.brake()    
+        self._disable() # now brake as usual
+        self.motor1.brake()
+        self.motor2.brake() 
        
-        direction = 1 if power > 0 else -1
-        self._debug_out('tachocount: ' + str(tacho))
-        tacho_target = tacho.tacho_count + tacho_limit*direction
-        self._debug_out('tacho target: ' + str(tacho_target))
-        current_time = time.time()
-        remaining_tacho = tacho_target - tacho.tacho_count
-            
-        blocked = False
-            
-        while True:
-            self._debug_out('tachocount: ' + str(tacho.tacho_count))                
-            self._debug_out('tachocount: ' + str(tacho_target))
-            
-            if remaining_tacho * direction <= 0:
-                break
-            time.sleep(eta(remaining_tacho, power) / 2)
-            
-            if not blocked: # if already blocked, don't reset the counter
-                last_remaining_tacho = remaining_tacho
-                last_time = current_time
-            
-            tacho = self.get_tacho()
-            current_time = time.time()
-            remaining_tacho = tacho_target - tacho.tacho_count
-            
-            blocked = (last_remaining_tacho - remaining_tacho) * direction <= 0
-            if blocked:
-#                print 'not advancing', last_remaining_tacho, remaining_tacho    
-                if current_time - last_time > timeout:
-                    if brake:
-                        self.hold()
-                    else:
-                        self.stop()
-                    raise BlockedException("Blocked!")
-  #          else:
-    #            print 'advancing', last_remaining_tacho, remaining_tacho
-
-        if brake:
-            self.hold()
+    def run(self, power=100):
+        """Warning! After calling this method, make sure to call idle. The
+        motors are reported to behave wildly otherwise.
+        """
+        self._enable()
+        self.motor1.run(power, True)
+        self.motor2.run(power, True)
+    
+    def turn(self, power, tacho_units, brake=True, timeout=1):
+        self._enable()
+        # non-emulation is a nightmare, tacho is being counted differently
+        BaseMotor.turn(self, power, tacho_units, brake, timeout, emulate=True)
+    
+    def _eta(self, tacho, target, power):
+        if self._get_leading_motor() == 'l':
+            motor = self.motor1
+            tacho = tacho.tacho1
+            target = target.tacho1
+        else:
+            motor = self.motor2
+            tacho = tacho.tacho2
+            target = target.tacho2
+        eta = motor._eta(tacho, target, power)
+        return eta
+    
+    def _is_blocked(self, tacho, last_tacho, direction):
+        if self._get_leading_motor() == 'l': # they're synced, no need to check both
+            motor = self.motor1
+            tacho = tacho.tacho1
+            last_tacho = last_tacho.tacho1
+        else:
+            motor = self.motor2
+            tacho = tacho.tacho2
+            last_tacho = last_tacho.tacho2
+        
+        # the leading motor always goes in the direction's direction
+        blocked = motor._is_blocked(tacho, last_tacho, direction)
+        return blocked

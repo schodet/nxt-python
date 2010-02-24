@@ -40,7 +40,6 @@ class BaseDigitalSensor(Sensor):
     I2C_ADDRESS = {'version': (0x00, '8s'),
         'product_id': (0x08, '8s'),
         'sensor_type': (0x10, '8s'),
-        'sensor_info': (0x00, '8s8s8s'),
 #        0x11: ('factory_zero', 1),      # is this really correct?
         'factory_scale_factor': (0x12, 'B'),
         'factory_scale_divisor': (0x13, 'B'),
@@ -76,8 +75,8 @@ class BaseDigitalSensor(Sensor):
         """Writes an i2c value to the given address. value must be a string. value is
         a tuple of values corresponding to the given format.
         """
-        value = struct.pack(fmt, value)
-        msg = chr(self.I2C_DEV) + chr(address) + chr(value)
+        value = struct.pack(format, *value)
+        msg = chr(self.I2C_DEV) + chr(address) + value
         self.brick.ls_write(self.port, msg, 0)
 
     def _i2c_query(self, address, format):
@@ -114,10 +113,11 @@ class BaseDigitalSensor(Sensor):
         address, fmt = self.I2C_ADDRESS[name]
         self._i2c_command(address, value, fmt)
     
-    def get_sensor_info(self): # one function instead of 3 - most times it all 3 are necessary, and it's little overhead
-        strings = self.read_value('sensor_info')
-        strings = (s.split('\0')[0] for s in strings) # cut off whatever's past \0
-        return SensorInfo(*strings)
+    def get_sensor_info(self):
+        version = self.read_value('version')[0].split('\0')[0]
+        product_id = self.read_value('product_id')[0].split('\0')[0]
+        sensor_type = self.read_value('sensor_type')[0].split('\0')[0]
+        return SensorInfo(version, product_id, sensor_type)
         
     @classmethod
     def add_compatible_sensor(cls, version, product_id, sensor_type):
