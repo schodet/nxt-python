@@ -1,5 +1,5 @@
 #summary Documentation (not finished)
-#labels Featured,Phase-Implementation
+#labels Phase-Implementation
 =Documentation (not finished)=
 
 The documentation is a HUGE task...every line of code has to be analysed and put together into one big (understandable) chunk of text, so it will take a while. If anyone wants to help, just make a patch file for the svn. This is what I have so far:
