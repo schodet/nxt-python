@@ -1,0 +1,14 @@
+#summary Short Instructions for new users.
+#labels Featured,Phase-Deploy
+
+If you don't have any experience with python, please follow one of the many tutorials available on the internet. To follow this guide, you will need to have a basic understanding of the syntax of python, know how to run a python file, and a have working python installation.
+
+If you have not yet [Installation installed] nxt-python, please do so before trying to use it.
+
+First, look at the .py files in the examples directory of the package or svn trunk you downloaded. Try running one or more of them, if you have a NXT brick handy. If you don't get any errors and the brick does something, your installation is working. If you do run into problems which you can't fix on your own, try asking for help at the [http://http://groups.google.com/group/nxt-python mailing list].
+
+Once you have run an example, try changing it to get different results. For example, try making the spin.py file run the motors for longer or use different ports. Or, combine elements of the mary.py and sensors.py scripts so that the robot plays different tones based on the distance an object is from the ultrasonic sensor. The more experimentation you do, the better.
+
+Once you understand how the examples are controlling the brick, you can start making your own scripts from scratch. The code in the examples is mostly boilerplate stuff and therefore in public domain, so feel free to copy it into your projects, regardless of their licensing.
+
+If you have any trouble with this document, please refer to Issue 4 in the bug tracker or ask around in the mailing list.
