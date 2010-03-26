@@ -49,4 +49,4 @@ The Mac installation instructions have not been tested and are not guaranteed to
 
 Now that you have successfully installed NXT_python and one or both of the communication drivers (USB or Bluetooth), you can start using your nxt brick.
 
-See [http://code.google.com/p/nxt-python/wiki/Documentation the documentation page] or the examples in the examples folder for usage instructions.
+See [http://code.google.com/p/nxt-python/wiki/Tutorial the tutorial page] or the examples in the examples folder for usage instructions.
