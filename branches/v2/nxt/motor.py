@@ -13,7 +13,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-'Use for motor control'
+"""Use for motor control"""
 
 import time
 import warnings
@@ -102,49 +102,29 @@ class TachoInfo:
                    self.rotation_count))
 
 
-class SynchronizedTacho(object): # TODO: switch to 1 being leader and 2 follower always
-    def __init__(self, leader, tacho1, tacho2):
-        self.tacho1 = tacho1
-        self.tacho2 = tacho2
-        if leader not in ('l', 'r'):
-            raise ValueError
-        self.leader = leader
+class SynchronizedTacho(object):
+    def __init__(self, leader_tacho, follower_tacho):
+        self.leader_tacho = leader_tacho
+        self.follower_tacho = follower_tacho
         
-    def get_target(self, tacho_limit, direction): # FIXME: this won't work with fractional coefficients
-        if self.leader == 'l':
-            tacho1 = self.tacho1.get_target(tacho_limit, direction)
-            tacho2 = None
-        else:
-            tacho1 = None
-            tacho2 = self.tacho2.get_target(tacho_limit, direction)
-        return SynchronizedTacho(self.leader, tacho1, tacho2)
+    def get_target(self, tacho_limit, direction):
+        """This method will leave follower's target as None"""
+        leader_tacho = self.leader_tacho.get_target(tacho_limit, direction)
+        return SynchronizedTacho(leader_tacho, None)
     
     def is_greater(self, other, direction):
-        if self.leader == 'l':
-            greater = self.tacho1.is_greater(other.tacho1, direction)
-        else:
-            greater = self.tacho2.is_greater(other.tacho2, direction)
-        return greater
+        return self.leader_tacho.is_greater(other.leader_tacho, direction)
 
     def is_near(self, other):
-        if self.leader == 'l':
-            near = self.tacho1.is_near(other.tacho1)
-        else:
-            near = self.tacho2.is_near(other.tacho2)
-        return near
+        return self.leader_tacho.is_near(other.leader_tacho)
 
     def __str__(self):
-        if self.tacho1 is not None:
-            t1 = str(self.tacho1.tacho_count)
-        else:
-            t1 = 'None'
-            
-        if self.tacho2 is not None:
-            t2 = str(self.tacho2.tacho_count)
+        if self.follower_tacho is not None:
+            t2 = str(self.follower_tacho.tacho_count)
         else:
             t2 = 'None'
-        
-        return t1 + ' ' + t2 + ' (' + self.leader + ')'
+        t1 = str(self.leader_tacho.tacho_count)
+        return 'tacho: ' + t1 + ' ' + t2
 
 
 def get_tacho_and_state(values):
@@ -333,52 +313,57 @@ class SynchronizedMotors(BaseMotor):
     Warning! Movement methods reset tacho counter.
     """
     debug = True
-    def __init__(self, motor1, motor2, turn_ratio):
-        self.motor1 = motor1
-        self.motor2 = motor2
-        if self.motor1.brick is not self.motor2.brick:
+    def __init__(self, leader, follower, turn_ratio):
+        """Turn ratio can be >= 0 only! If you want to have it reversed,
+        change motor order.
+        """
+        if follower.brick != leader.brick:
             raise ValueError('motors belong to different bricks')
-        if turn_ratio not in (-100, 0, 100):
-            raise ValueError('Only -100, 0, 100 turn ratios supported')
-        self.turn_ratio = turn_ratio
+        self.leader = leader
+        self.follower = follower
+        
+        if turn_ratio < 0:
+            raise ValueError('Turn ratio <0. Change motor order instead!')
+
+        if self.leader.port == self.follower.port:
+            raise ValueError("The same motor passed twice")
+        elif self.leader.port > self.follower.port:
+            self.turn_ratio = turn_ratio
+        else:
+            print 'reversed'
+            self.turn_ratio = -turn_ratio
 
     def _get_new_state(self):
-        return self.motor1._get_new_state()
+        return self.leader._get_new_state()
         
     def _set_state(self, state):
-        self.motor1._set_state(state)
-        self.motor2._set_state(state)
-    
-    def _get_leading_motor(self): # FIXME: take motor order into account
-        if self.turn_ratio > 0:
-            return 'r'
-        else:
-            return 'l'
+        self.leader._set_state(state)
+        self.follower._set_state(state)
 
     def get_tacho(self):
-        tacho1 = self.motor1.get_tacho()
-        tacho2 = self.motor2.get_tacho()
-        return SynchronizedTacho(self._get_leading_motor(), tacho1, tacho2)
+        leadertacho = self.leader.get_tacho()
+        followertacho = self.follower.get_tacho()
+        return SynchronizedTacho(leadertacho, followertacho)
 
     def reset_position(self, relative):
         """Resets the counters. Relative can be True or False"""
-        self.motor1.reset_position(relative)
-        self.motor2.reset_position(relative)
+        self.leader.reset_position(relative)
+        self.follower.reset_position(relative)
 
     def _enable(self): # This works as expected. I'm not sure why.
         #self._disable()
         self.reset_position(True)
-        self.motor1.sync = True
-        self.motor2.sync = True
-        self.motor1.turn_ratio = self.turn_ratio
-        self.motor2.turn_ratio = self.turn_ratio        
+        self.leader.sync = True
+        self.follower.sync = True
+        self.leader.turn_ratio = self.turn_ratio
+        self.follower.turn_ratio = self.turn_ratio        
 
     def _disable(self): # This works as expected. (tacho is reset ok)
-        self.motor1.sync = False
-        self.motor2.sync = False
+        self.leader.sync = False
+        self.follower.sync = False
         #self.reset_position(True)
-        self.motor1.idle()
-        self.motor2.idle()
+        self.leader.idle()
+        self.follower.idle()
         #self.reset_position(True)
     
     def idle(self):
@@ -387,47 +372,34 @@ class SynchronizedMotors(BaseMotor):
     def brake(self):
         self._disable() # reset the counters
         self._enable()
-        self.motor1.brake() # brake both motors at the same time
-        self.motor2.brake()    
+        self.leader.brake() # brake both motors at the same time
+        self.follower.brake()
         self._disable() # now brake as usual
-        self.motor1.brake()
-        self.motor2.brake() 
+        self.leader.brake()
+        self.follower.brake()
        
     def run(self, power=100):
         """Warning! After calling this method, make sure to call idle. The
         motors are reported to behave wildly otherwise.
         """
         self._enable()
-        self.motor1.run(power, True)
-        self.motor2.run(power, True)
+        self.leader.run(power, True)
+        self.follower.run(power, True)
     
     def turn(self, power, tacho_units, brake=True, timeout=1):
         self._enable()
         # non-emulation is a nightmare, tacho is being counted differently
-        BaseMotor.turn(self, power, tacho_units, brake, timeout, emulate=True)
+        try:
+            if power < 0:
+                self.leader, self.follower = self.follower, self.leader
+            BaseMotor.turn(self, power, tacho_units, brake, timeout, emulate=True)
+        finally:
+            if power < 0:
+                self.leader, self.follower = self.follower, self.leader
     
     def _eta(self, tacho, target, power):
-        if self._get_leading_motor() == 'l':
-            motor = self.motor1
-            tacho = tacho.tacho1
-            target = target.tacho1
-        else:
-            motor = self.motor2
-            tacho = tacho.tacho2
-            target = target.tacho2
-        eta = motor._eta(tacho, target, power)
-        return eta
+        return self.leader._eta(tacho.leader_tacho, target.leader_tacho, power)
     
     def _is_blocked(self, tacho, last_tacho, direction):
-        if self._get_leading_motor() == 'l': # they're synced, no need to check both
-            motor = self.motor1
-            tacho = tacho.tacho1
-            last_tacho = last_tacho.tacho1
-        else:
-            motor = self.motor2
-            tacho = tacho.tacho2
-            last_tacho = last_tacho.tacho2
-        
-        # the leading motor always goes in the direction's direction
-        blocked = motor._is_blocked(tacho, last_tacho, direction)
-        return blocked
+        # no need to check both, they're synced
+        return self.leader._is_blocked(tacho.leader_tacho, last_tacho.leader_tacho, direction)
