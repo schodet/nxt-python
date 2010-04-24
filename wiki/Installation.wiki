@@ -8,7 +8,7 @@ You will need a recent 2.x version of Python, most systems already have this ins
 
 Open a terminal window, and use the `svn checkout http://nxt-python.googlecode.com/svn/trunk/ nxt-python` command to download the source. Run `cd nxt-python` to move to the directory that you put it in. Then, as root (e.g. sudo) run `python setup.py install`. If the word ‘error’ is not anywhere in the text that is printed, then great. If it is, then follow the error instructions to resolve the issue (or ask about it at the [http://groups.google.com/group/nxt-python mailing list], and we'll try to help you out). 
 
-            For USB communications, download and install [http://sourceforge.net/projects/pyusb/ PyUSB] according to the instructions included in it. As root, run the command `groupadd lego`, then `usermod –a –G lego <username>` (where `<username>` is the name of the user account that you will be using to program your NXT). Then make a file at /etc/udev/rules.d/70-lego.rules containing exactly: 
+            For USB communications, download and install [http://sourceforge.net/projects/pyusb/ PyUSB] according to the instructions included in it. (Note: This next step may not be necessary on some newer systems which give any user control over USB devices by default, but it can't hurt and is therefore recommended) As root, run the command `groupadd lego`, then `usermod –a –G lego <username>` (where `<username>` is the name of the user account that you will be using to program your NXT). Then make a file at /etc/udev/rules.d/70-lego.rules containing exactly: 
 {{{
 BUS=="usb", SYSFS{idVendor}=="0694", GROUP="lego", MODE="0660"
 }}}
