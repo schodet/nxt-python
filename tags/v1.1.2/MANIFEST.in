@@ -1,0 +1,3 @@
+include docs/*.html *.url *.css *.txt
+include LICENSE
+include examples/*.py
