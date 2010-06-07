@@ -255,7 +255,7 @@ class UltrasonicSensor(DigitalSensor):
 		sleep(0.1)  # Give I2C time to initialize
 
 	def get_sample(self):
-		'Function to get data from ultrasonic sensors, synonmous to self.get_sample()'
+		'Function to get data from ultrasonic sensors'
 		self.set_command_state(CommandState.SINGLE_SHOT)
 		return self.get_measurement_byte_0()
 
