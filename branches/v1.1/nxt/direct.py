@@ -13,6 +13,7 @@
 # GNU General Public License for more details.
 
 'Use for direct communication with the NXT ***EXTREMELY ADVANCED USERS ONLY***'
+import time
 
 def _create(opcode):
 	'Create a simple direct telegram'
@@ -152,6 +153,7 @@ def _parse_ls_get_status(tgram):
 
 def ls_write(opcode, port, tx_data, rx_bytes):
 	'Write a low-speed command to a sensor (ultrasonic)'
+	time.sleep(0.005)
 	tgram = _create(opcode)
 	tgram.add_u8(port)
 	tgram.add_u8(len(tx_data))
