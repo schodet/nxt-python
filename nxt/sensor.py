@@ -124,7 +124,6 @@ class DigitalSensor(Sensor):
 		if not self.lastpoll: self.lastpoll = time.time()
 		if self.lastpoll+0.02 > time.time():
 			diff = time.time() - self.lastpoll
-			print diff
 			time.sleep(0.02 - diff)
 		self.brick.ls_write(self.port, msg, n_bytes)
 		self._ls_get_status(n_bytes)
