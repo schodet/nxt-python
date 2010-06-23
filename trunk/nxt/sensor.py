@@ -93,6 +93,7 @@ class _Meta(type):
 			q = _make_query(address, n_bytes)
 			setattr(cls, 'get_' + name, q)
 
+import time
 class DigitalSensor(Sensor):
 	'Object for digital sensors'
 
@@ -102,6 +103,7 @@ class DigitalSensor(Sensor):
 
 	def __init__(self, brick, port):
 		super(DigitalSensor, self).__init__(brick, port)
+		self.lastpoll = None
 
 	def _ls_get_status(self, n_bytes):
 		for n in range(3):
@@ -119,9 +121,15 @@ class DigitalSensor(Sensor):
 
 	def i2c_query(self, address, n_bytes):
 		msg = chr(DigitalSensor.I2C_DEV) + chr(address)
+		if not self.lastpoll: self.lastpoll = time.time()
+		if self.lastpoll+0.02 > time.time():
+			diff = time.time() - self.lastpoll
+			print diff
+			time.sleep(0.02 - diff)
 		self.brick.ls_write(self.port, msg, n_bytes)
 		self._ls_get_status(n_bytes)
 		data = self.brick.ls_read(self.port)
+		self.lastpoll = time.time()
 		if len(data) < n_bytes:
 			raise I2CError, 'Read failure'
 		return data[-n_bytes:]
@@ -240,7 +248,6 @@ class SoundSensor(AnalogSensor):
 		else:
 			self.sensor_type = Type.SOUND_DB
 		self.set_input_mode()
-
 
 class UltrasonicSensor(DigitalSensor):
 	'Object for ultrasonic sensors'
