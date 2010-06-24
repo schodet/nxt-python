@@ -27,8 +27,8 @@ HTAccelerometer = hitechnic.Accelerometer
 
 
 def get_sensor(brick, port):
-    """Tries to detect the sensor type and return a relevant instantiated
-    class.
+    """Tries to detect the sensor type and return the correct sensor
+    object.
     """
     base_sensor = BaseDigitalSensor(brick, port, False)
     info = base_sensor.get_sensor_info()

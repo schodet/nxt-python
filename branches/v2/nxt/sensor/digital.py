@@ -16,7 +16,7 @@
 from nxt.error import I2CError, I2CPendingError
 
 from common import *
-from time import sleep
+from time import sleep, time
 import struct
 
 
@@ -52,6 +52,7 @@ class BaseDigitalSensor(Sensor):
         """
         super(BaseDigitalSensor, self).__init__(brick, port)
         self.set_input_mode(Type.LOW_SPEED_9V, Mode.RAW)
+        self.lastpoll = None
         sleep(0.1)  # Give I2C time to initialize
         if check_compatible:
             sensor = self.get_sensor_info()
@@ -86,9 +87,14 @@ class BaseDigitalSensor(Sensor):
         """
         n_bytes = struct.calcsize(format)
         msg = chr(self.I2C_DEV) + chr(address)
+        if not self.lastpoll: self.lastpoll = time()
+        if self.lastpoll+0.02 > time():
+            diff = time() - self.lastpoll
+            sleep(0.02 - diff)
         self.brick.ls_write(self.port, msg, n_bytes)
         self._ls_get_status(n_bytes)
         data = self.brick.ls_read(self.port)
+        self.lastpoll = time()
         if len(data) < n_bytes:
             raise I2CError, 'Read failure'
         return struct.unpack(format, data[-n_bytes:]) # TODO: why could there be more than n_bytes? 
