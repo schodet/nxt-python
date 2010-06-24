@@ -35,6 +35,13 @@ class Type(object):
 	CUSTOM = 0x09
 	LOW_SPEED = 0x0A
 	LOW_SPEED_9V = 0x0B # Low-speed I2C (Ultrasonic sensor)
+	HIGH_SPEED = 0x0C #Possible other mode for I2C; may be used by future sensors.
+	COLORFULL = 0x0D  #NXT 2.0 color sensor in full color mode (color sensor mode)
+	COLORRED = 0x0E   #NXT 2.0 color sensor with red light on  (light sensor mode)
+	COLORGREEN = 0x0F #NXT 2.0 color sensor with green light on (light sensor mode)
+	COLORBLUE = 0x10  #NXT 2.0 color sensor in with blue light on (light sensor mode)
+	COLORNONE = 0x11  #NXT 2.0 color sensor in with light off (light sensor mode)
+	COLOREXIT =0x12   #NXT 2.0 color sensor internal state  (not sure what this is for yet)
 
 class Mode(object):
 	'Namespace for enumeration of the mode of sensor'
@@ -233,6 +240,59 @@ class LightSensor(AnalogSensor):
 			self.sensor_type = Type.LIGHT_INACTIVE
 		self.set_input_mode()
 
+class ColorSensor(AnalogSensor):
+	'Object for color sensors'
+# this is a class for the lego NXT 2.0 RGB color sensor
+# not to be confused with the hitechnic color sensor
+# the color sensor can run in two modes:
+# a light sensor which returns the reflected light from the lamp that is
+# currently on (red, green, blue, off/ambient) on a scale of 1-1023
+# a color sensor that returns a 1-6 decimal value corresponding to
+# (black, blue, green, yellow, red, white) unfortunately the RGB values
+# are not sent over the wire
+ 
+# TODO: calibration 
+ 
+#note: if you create a new object everytime you make a call the light 
+# will flash on an off because each time the object is created the light
+# color is set to  none
+ 
+	def __init__(self, brick, port):
+		super(ColorSensor, self).__init__(brick, port)
+		self.set_light_color(None)
+ 
+	def get_input_values(self):
+		values = self.brick.get_input_values(self.port)
+		(self.port, self.valid, self.calibrated, self.sensor_type,
+			self.mode, self.raw_ad_value, self.normalized_ad_value,
+			self.scaled_value, self.calibrated_value) = values
+		return values
+ 
+	def set_light_color(self, color):
+		if color == 'red':
+			self.sensor_type = Type.COLORRED
+		elif color == 'green':
+			self.sensor_type = Type.COLORGREEN
+		elif color == 'blue':
+			self.sensor_type = Type.COLORBLUE
+		elif color == 'full':
+			self.sensor_type = Type.COLORFULL
+		elif color == 'off':
+			self.sensor_type = Type.COLORNONE
+		else:
+			self.sensor_type = Type.COLORNONE
+		self.set_input_mode()
+ 
+	def get_color(self):
+		self.set_light_color('full')
+		self.get_input_values()
+		return self.scaled_value
+ 
+	def get_reflected_light(self, color):
+		self.set_light_color(color)
+		self.get_input_values()
+		return self.scaled_value
+
 class SoundSensor(AnalogSensor):
 	'Object for sound sensors'
 
@@ -308,3 +368,28 @@ class AccelerometerSensor(DigitalSensor):
 
 		return self.xval, self.yval, self.zval
 
+
+class GyroSensor(AnalogSensor):
+        'Object for gyro sensors'
+#This class is for the hitechnic gryo accelerometer. When the gryo is
+#not moving there will be a constant offset that will change with 
+#temperature and other ambient factors. It might be appropriate to 
+#write a calibration function to account for this offset.
+#
+#TODO: calibration
+
+	def __init__(self, brick, port):
+		super(GyroSensor, self).__init__(brick, port)
+		self.sensor_type = Type.ANGLE
+		self.set_input_mode()
+ 
+	def get_input_values(self):
+		values = self.brick.get_input_values(self.port)
+		(self.port, self.valid, self.calibrated, self.sensor_type,
+			self.mode, self.raw_ad_value, self.normalized_ad_value,
+			self.scaled_value, self.calibrated_value) = values
+		return values
+ 
+	def get_sample(self):
+		self.get_input_values() 
+		return self.scaled_value
