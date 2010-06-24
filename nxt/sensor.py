@@ -12,7 +12,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from time import sleep
+from time import sleep, time
 from nxt.error import I2CError, I2CPendingError
 
 PORT_1 = 0x00
@@ -93,7 +93,6 @@ class _Meta(type):
 			q = _make_query(address, n_bytes)
 			setattr(cls, 'get_' + name, q)
 
-import time
 class DigitalSensor(Sensor):
 	'Object for digital sensors'
 
@@ -121,14 +120,14 @@ class DigitalSensor(Sensor):
 
 	def i2c_query(self, address, n_bytes):
 		msg = chr(DigitalSensor.I2C_DEV) + chr(address)
-		if not self.lastpoll: self.lastpoll = time.time()
-		if self.lastpoll+0.02 > time.time():
-			diff = time.time() - self.lastpoll
-			time.sleep(0.02 - diff)
+		if not self.lastpoll: self.lastpoll = time()
+		if self.lastpoll+0.02 > time():
+			diff = time() - self.lastpoll
+			sleep(0.02 - diff)
 		self.brick.ls_write(self.port, msg, n_bytes)
 		self._ls_get_status(n_bytes)
 		data = self.brick.ls_read(self.port)
-		self.lastpoll = time.time()
+		self.lastpoll = time()
 		if len(data) < n_bytes:
 			raise I2CError, 'Read failure'
 		return data[-n_bytes:]
