@@ -33,6 +33,14 @@ class Type(object):
 	CUSTOM = 0x09
 	LOW_SPEED = 0x0A
 	LOW_SPEED_9V = 0x0B # Low-speed I2C (Ultrasonic sensor)
+	HIGH_SPEED = 0x0C #Possibly other mode for I2C; may be used by future sensors.
+	COLORFULL = 0x0D  #NXT 2.0 color sensor in full color mode (color sensor mode)
+	COLORRED = 0x0E   #NXT 2.0 color sensor with red light on  (light sensor mode)
+	COLORGREEN = 0x0F #NXT 2.0 color sensor with green light on (light sensor mode)
+	COLORBLUE = 0x10  #NXT 2.0 color sensor in with blue light on (light sensor mode)
+	COLORNONE = 0x11  #NXT 2.0 color sensor in with light off (light sensor mode)
+	COLOREXIT = 0x12  #NXT 2.0 color sensor internal state  (not sure what this is for yet)
+
 
 class Mode(object):
 	'Namespace for enumeration of the mode of sensor'

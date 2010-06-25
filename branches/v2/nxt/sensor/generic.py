@@ -2,6 +2,7 @@
 # Copyright (C) 2006,2007  Douglas P Lau
 # Copyright (C) 2009  Marcus Wanner, Paulo Vieira
 # Copyright (C) 2009  rhn
+# Copyright (C) 2010  melducky
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -111,5 +112,24 @@ class Ultrasonic(BaseDigitalSensor):
         base_address, format = self.I2C_ADDRESS['measurement_byte_0']
         return self._i2c_query(base_address + number, format)[0]
 
-
 Ultrasonic.add_compatible_sensor('V1.0', 'LEGO', 'Sonar')
+
+
+class Color20(BaseAnalogSensor):
+    def set_light_color(self, color):
+        """color should be one of the COLOR* Type namespace values, e.g. COLORBLUE"""
+        self.set_input_mode(color, Mode.RAW)
+
+    def get_light_color(self):
+        raw_reading = self.get_input_values()
+        return raw_reading.sensor_type
+
+    def get_reflected_light(self, color):
+        self.set_light_color(color)
+        raw_reading = self.get_input_values()
+        return raw_reading.scaled_value
+    
+    def get_color(self):
+        self.get_reflected_light(ColorType.FULL)
+    
+    get_sample = get_color
