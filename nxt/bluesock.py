@@ -1,5 +1,5 @@
 # nxt.bluesock module -- Bluetooth socket communication with LEGO Minstorms NXT
-# Copyright (C) 2006-2007  Douglas P Lau
+# Copyright (C) 2006, 2007  Douglas P Lau
 # Copyright (C) 2009  Marcus Wanner
 #
 # This program is free software: you can redistribute it and/or modify
@@ -12,17 +12,14 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-try:
-    import bluetooth
-except ImportError:
-    import lightblueglue as bluetooth
+import bluetooth
 import os
 from .brick import Brick
 
 class BlueSock(object):
 
-    bsize = 118 # Bluetooth socket block size
-    PORT = 1    # Standard NXT rfcomm port
+    bsize = 118  # Bluetooth socket block size
+    PORT = 1     # Standard NXT rfcomm port
 
     def __init__(self, host):
         self.host = host
