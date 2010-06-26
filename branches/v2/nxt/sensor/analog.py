@@ -1,7 +1,6 @@
 # nxt.sensor.analog module -- submodule for use with analog sensors
 # Copyright (C) 2006,2007  Douglas P Lau
-# Copyright (C) 2009  Marcus Wanner, Paulo Vieira
-# Copyright (C) 2009  rhn
+# Copyright (C) 2009  Marcus Wanner, Paulo Vieira, rhn
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

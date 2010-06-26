@@ -1,7 +1,6 @@
 # nxt.sensor.mindsensors module -- Classes implementing Mindsensors sensors
 # Copyright (C) 2006,2007  Douglas P Lau
-# Copyright (C) 2009  Marcus Wanner, Paulo Vieira
-# Copyright (C) 2009  rhn
+# Copyright (C) 2009  Marcus Wanner, Paulo Vieira, rhn
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,7 +33,8 @@ class SumoEyesReading:
         self.right = right or both
     
     def __str__(self):
-        return '(left: ' + str(self.left) + ', right: ' + str(self.right) + ')'
+        return '(left: ' + str(self.left) + ', right: ' + str(self.right) + ')'
+
 
 class SumoEyes(BaseAnalogSensor):
     """The class to control Mindsensors Sumo sensor. Warning: long range not
@@ -84,13 +84,13 @@ class Compass(BaseDigitalSensor):
     # TODO: ADPA, calibration
     I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
     I2C_ADDRESS.update({'command': (0x41, 'B'),
-        'heading': (0x42, '<H'),
-        'x_offset': (0x44, '<H'),
-        'y_offset': (0x46, '<H'),
-        'x_range': (0x48, '<H'),
-        'y_range': (0x4A, '<H'),
-        'x_raw': (0x4C, '<H'),
-        'y_raw': (0x4E, '<H'),
+                        'heading': (0x42, '<H'),
+                        'x_offset': (0x44, '<H'),
+                        'y_offset': (0x46, '<H'),
+                        'x_range': (0x48, '<H'),
+                        'y_range': (0x4A, '<H'),
+                        'x_raw': (0x4C, '<H'),
+                        'y_raw': (0x4E, '<H'),
     })
 
     def __init__(self, brick, port, check_compatible=False):

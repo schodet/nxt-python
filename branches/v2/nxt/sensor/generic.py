@@ -1,8 +1,7 @@
 # nxt.sensor.generic module -- Classes to read LEGO Mindstorms NXT sensors
 # Copyright (C) 2006,2007  Douglas P Lau
-# Copyright (C) 2009  Marcus Wanner, Paulo Vieira
-# Copyright (C) 2009  rhn
-# Copyright (C) 2010  melducky
+# Copyright (C) 2009  Marcus Wanner, Paulo Vieira, rhn
+# Copyright (C) 2010  melducky, Marcus Wanner
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -116,13 +115,17 @@ Ultrasonic.add_compatible_sensor('V1.0', 'LEGO', 'Sonar')
 
 
 class Color20(BaseAnalogSensor):
+    def __init__(self, brick, port):
+        super(Light, self).__init__(brick, port)
+        self.set_light_color(Type.COLORFULL)
+    
     def set_light_color(self, color):
         """color should be one of the COLOR* Type namespace values, e.g. Type.COLORBLUE"""
         self.set_input_mode(color, Mode.RAW)
 
     def get_light_color(self):
-        raw_reading = self.get_input_values()
-        return raw_reading.sensor_type
+        """Returns one of the COLOR* Type namespace values, e.g. Type.COLORRED"""
+        return self.get_input_values().sensor_type
 
     def get_reflected_light(self, color):
         self.set_light_color(color)

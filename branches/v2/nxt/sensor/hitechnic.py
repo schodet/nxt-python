@@ -1,7 +1,7 @@
 # nxt.sensor.hitechnic module -- Classes to read HiTechnic sensors
 # Copyright (C) 2006,2007  Douglas P Lau
-# Copyright (C) 2009  Marcus Wanner, Paulo Vieira
-# Copyright (C) 2009 rhn
+# Copyright (C) 2009  Marcus Wanner, Paulo Vieira, rhn
+# Copyright (C) 2010  rhn, Marcus Wanner, melducky
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,8 +14,8 @@
 # GNU General Public License for more details.
 
 from .common import *
-from .digital import BaseDigitalSensor, SensorInfo
-
+from .digital import BaseDigitalSensor
+from .analog import BaseAnalogSensor
 
 class CompassMode:
     MEASUREMENT = 0x00
@@ -52,7 +52,6 @@ Compass.add_compatible_sensor('\xfdV1.23  ', 'HiTechnc', 'Compass ')
 class Acceleration:
     def __init__(self, x, y, z):
         self.x, self.y, self.z =x, y, z
-        
 
 class Accelerometer(BaseDigitalSensor):
     'Object for Accelerometer sensors. Thanks to Paulo Vieira. Broken by rhn.'
@@ -78,3 +77,27 @@ class Accelerometer(BaseDigitalSensor):
         return Acceleration(x, y, z)
     
     get_sample = get_acceleration
+
+
+class Gyro(BaseAnalogSensor):
+    'Object for gyro sensors'
+#This class is for the hitechnic gryo sensor. When the gryo is not
+#moving there will be a constant offset that will change with 
+#temperature and other ambient factors. The calibrate() function
+#takes the currect value and uses it to offset subsequesnt ones.
+
+    def __init__(self, brick, port):
+        super(GyroSensor, self).__init__(brick, port)
+        self.set_input_mode(Type.ANGLE, Mode.RAW)
+        self.offset = 0
+    
+    def get_rotation_speed(self):
+        return self.get_input_values().scaled_value - self.offset
+    
+    def set_zero(self, value):
+        self.offset = value
+    
+    def calibrate(self):
+        self.set_zero(self.get_rotation_speed())
+    
+    get_sample = get_rotation_speed
