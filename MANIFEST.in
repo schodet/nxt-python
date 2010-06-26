@@ -1,2 +1,3 @@
 include docs/*.html *.url *.css *.txt
-include README.txt LICENSE.txt
+include README LICENSE
+include examples/*.py
