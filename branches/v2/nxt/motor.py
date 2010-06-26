@@ -1,7 +1,7 @@
 # nxt.motor module -- Class to control LEGO Mindstorms NXT motors
 # Copyright (C) 2006  Douglas P Lau
-# Copyright (C) 2009  Marcus Wanner
-# Copyright (C) 2009,2010  rhn
+# Copyright (C) 2009  Marcus Wanner, rhn
+# Copyright (C) 2010  rhn
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

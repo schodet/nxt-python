@@ -90,6 +90,9 @@ class Ultrasonic(BaseDigitalSensor):
         'actual_scale_divisor': (0x52, 'B'),
     })
 
+    def __init__(self, brick, port):
+        super(Ultrasonic, self).__init__(brick, port)
+        self.set_input_mode(Type.LOW_SPEED_9V, Mode.RAW)
 
     def get_distance(self):
         'Function to get data from the ultrasonic sensor'

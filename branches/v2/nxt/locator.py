@@ -1,5 +1,5 @@
 # nxt.locator module -- Locate LEGO Minstorms NXT bricks via USB or Bluetooth
-# Copyright (C) 2006-2007  Douglas P Lau
+# Copyright (C) 2006, 2007  Douglas P Lau
 # Copyright (C) 2009  Marcus Wanner
 #
 # This program is free software: you can redistribute it and/or modify
