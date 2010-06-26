@@ -117,7 +117,7 @@ Ultrasonic.add_compatible_sensor('V1.0', 'LEGO', 'Sonar')
 
 class Color20(BaseAnalogSensor):
     def set_light_color(self, color):
-        """color should be one of the COLOR* Type namespace values, e.g. COLORBLUE"""
+        """color should be one of the COLOR* Type namespace values, e.g. Type.COLORBLUE"""
         self.set_input_mode(color, Mode.RAW)
 
     def get_light_color(self):
@@ -130,6 +130,6 @@ class Color20(BaseAnalogSensor):
         return raw_reading.scaled_value
     
     def get_color(self):
-        self.get_reflected_light(ColorType.FULL)
+        self.get_reflected_light(Type.COLORFULL)
     
     get_sample = get_color
