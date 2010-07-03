@@ -119,7 +119,7 @@ Ultrasonic.add_compatible_sensor('V1.0', 'LEGO', 'Sonar')
 
 class Color20(BaseAnalogSensor):
     def __init__(self, brick, port):
-        super(Light, self).__init__(brick, port)
+        super(Color20, self).__init__(brick, port)
         self.set_light_color(Type.COLORFULL)
     
     def set_light_color(self, color):
