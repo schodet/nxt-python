@@ -1,0 +1,119 @@
+#summary How to port digital sensor code from 1.x to 2.x, plus information useful when adding support for a new sensor.
+#labels Phase-Implementation
+
+Note: This guide is adapted from an email sent to me by rhn, who wrote the new sensor code. It has not been tested and may need significant modification to work correctly. If you spot any problems with it, send me an email or post a comment.
+
+Let's say you have a sensor which allows you to read a signed integer temperature value stored in 2 bytes in big-endian order at address `0x66`.
+
+=Subclassing `BaseDigitalSensor`=
+`BaseDigitalSensor` manages setting up the digital sensor and massively helps reading values from it. There are three things it requires to work: setting up static variables, initialization and creating a method for getting the value.
+
+If you want to initialize something yourself, then create an `__init__` method and use `super(TemperatureSensor, self).__init__()` instead of `BaseDigitalSensor.__init__(self)`. I don't remember why I used the `super()` method, but I rarely use it, so I must have had a reason...
+`__init__` got a new argument, `check_compatible`. We'll get back to that later, but for now it must be hardcoded as False due to not all sensors having compatibility information.
+
+To read or write i²c values in a convenient manner, you can use the `I2C_ADDRESS` dictionary. It tells `BaseDigitalSensor` how to find values on the i²c bus. The format is: `{name: (address, type)}`. Name is a string you want to use, address is location of the first byte on i²c bus, and type is a string telling how to read the data. The type string is passed to `struct.unpack()` or `struct.pack()`, so take a look there.
+The dictionary MUST BE COPIED BEFORE USING! It's a static variable of `BaseDigitalSensor`, which means if you modify it once, it gets changed everywhere. If you copy it with:
+{{{
+    I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
+}}}
+
+then you "cover" the old one with the copy (in this class's namespace).
+Now you can add the entry for temperature:
+{{{
+    I2C_ADDRESS.update({'temperature': (0x66, '>h')})
+}}}
+
+There should be at least two methods for getting the value. One is called `get_sample()` and it should do "the right thing". In case of a temperature sensor, return the temperature. If it's a sound sensor, return sound value; if the sensor measures acceleration, then return the measured acceleration (notice that Accelerometer class returns a class called Acceleration!).
+The rest of the methods should be called `get_X`, where `X` is the actual name of what you want to read. This comes in handy when the sensor can read multiple different things, and it makes the programmer more aware of what he/she is really doing. The `get_sample()` method should point to one of these. In our case, it's `get_temperature()`.
+Now that you've set up the name to address dictionary, you can forget about i²c and read the value with `self.read_value()`. It takes the name you entered previously and returns what `struct.unpack()` returned. NOTE: `struct.unpack()` always returns tuples, even if you read 1 argument:
+{{{
+   def get_temperature(self):
+        """Returns temperature in Celsius."""
+        # return self.read_value('temperature') # WRONG! returns (23,)
+        return self.read_value('temperature')[0] # correct, returns 23
+}}}
+
+Congratulations! You have a working sensor. It should be something like:
+
+{{{
+class TemperatureSensor(BaseDigitalSensor):
+    I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
+    I2C_ADDRESS.update({'temperature': (0x66, '>h')})
+    def __init__(self, brick, port, check_compatible=False):
+        if check_compatible:
+            print "sorry, it's not supported yet"
+        super(TemperatureSensor, self).__init__(beick, port, False)
+
+    def get_temperature(self):
+        """Returns temperature in Celsius."""
+        # return self.read_value('temperature') # WRONG! returns (23,)
+        return self.read_value('temperature')[0] # correct, returns 23
+    
+    def get_sample(self):
+        return self.get_temperature()
+
+#    get_sample = get_temperature # this works, too
+}}}
+
+=Modes and writing=
+Suppose the sensor can present the temperature in two modes, and uses another i²c address to do it. It's a single byte at address `0x41`, which can take the values of `0x1` for Celsius, `0x2` for Fahrenheit and `0x3` for Kelvin. After writing to the field, the value of temperature address changes. You can also read the mode at any moment.
+
+The first necessary thing is adding more entries in `I2C_ADDRESS`:
+{{{
+    I2C_ADDRESS.update({'temperature': (0x66, '>h')})
+}}}
+becomes
+{{{
+    I2C_ADDRESS.update({'temperature': (0x66, '>h')},
+                       {'mode': (0x41, 'B')})
+}}}
+
+Next, adding a method to read the mode:
+{{{
+    def get_mode(self):
+        """Returns the mode."""
+        return self.read_value('mode')[0]
+}}}
+
+Finally, setting the mode by writing to `0x41`. It's achieved in a similar way as reading. Function called `write_value()` takes the name of the field and the values tuple. Warning: it's a tuple again, even with one single argument. The code:
+{{{
+    def set_mode(self, mode):
+#        self.write_value('mode', 0x1) # Nay.
+        self.write_value('mode', (0x1, )) # Yea. One-element tuple.
+}}}
+
+Don't hesitate to add fake enumerations:
+{{{
+class TemperatureMode:
+    CELSIUS = 0x1
+    FAHRENHEIT = 0x2
+    KELVIN = 0x3
+}}}
+
+The user can do:
+{{{
+>>> thermometer.set_mode(TemperatureMode.Celsius)
+}}}
+and it will work well. Passing string arguments makes `set_mode()` unnecessarily complex and prevents IDEs from completing your syntax.
+
+=Checking for sensor compatibility=
+The new version of sensors module can prevent you from accidentally breaking your digital sensors! It's being done by checking the identification data of a sensor and comparing it to what the sensor class is compatible with. It's off by default, since one sensor can sometimes return different identification data depending on the wind speed, but it works in most cases.
+This feature is what `check_compatible()` was for. Creating a digital sensor on a port with a different digital sensor connected will raise an error.
+
+To make use of it with our temperature sensor, we need to check its identification data and pass it to `BaseDigitalSensor`. Fortunately, all sensors have the same addresses for this, and the code is already in `BaseDigitalSensor`. Just call:
+{{{
+>>> sensor_info = thermometer.get_sensor_info()
+>>> print sensor_info
+Tutorial: Temp, v0.1
+}}}
+
+`sensor_info` is a `SensorInfo` object and contains the exact strings.
+
+After you have the data, add the following line immediately after the class declaration:
+{{{
+TemperatureSensor.add_compatible_sensor('v0.1', 'Tutorial', 'Temp')
+}}}
+
+NOTE: this function is smart enough to ignore trailing `'\x00'` but include all other characters in the call. You can also call it multiple times to indicate that sensors with other identification data are compatible.
+
+NOTE: If you put None instead of some of the arguments, the system will assume the class is compatible regardless of its value, but I don't remember how it worked and can't figure it out now ;) 
