@@ -70,7 +70,7 @@ class Accelerometer(BaseDigitalSensor):
         """"Returns the acceleration along x, y, z axes. Units are unknown to
         me.
         """
-        xh, yh, zh, xl, yl, zl = self.read_values('all_data')
+        xh, yh, zh, xl, yl, zl = self.read_value('all_data')
         x = xh << 2 + xl
         y = yh << 2 + yl
         z = zh << 2 + yl
@@ -87,7 +87,7 @@ class Gyro(BaseAnalogSensor):
 #takes the currect value and uses it to offset subsequesnt ones.
 
     def __init__(self, brick, port):
-        super(GyroSensor, self).__init__(brick, port)
+        super(Gyro, self).__init__(brick, port)
         self.set_input_mode(Type.ANGLE, Mode.RAW)
         self.offset = 0
     

@@ -102,7 +102,7 @@ class Ultrasonic(BaseDigitalSensor):
             
     def get_measurement_units(self):
         return self.read_value('measurement_units')[0].split('\0')[0]
-		
+
     def get_all_measurements(self):
         "Returns all the past readings in measurement_byte_0 through 7"
         return self.read_value('measurements')
@@ -121,7 +121,7 @@ class Color20(BaseAnalogSensor):
     def __init__(self, brick, port):
         super(Color20, self).__init__(brick, port)
         self.set_light_color(Type.COLORFULL)
-    
+
     def set_light_color(self, color):
         """color should be one of the COLOR* Type namespace values, e.g. Type.COLORBLUE"""
         self.set_input_mode(color, Mode.RAW)
@@ -132,10 +132,10 @@ class Color20(BaseAnalogSensor):
 
     def get_reflected_light(self, color):
         self.set_light_color(color)
-        raw_reading = self.get_input_values()
-        return raw_reading.scaled_value
+        return self.get_input_values().scaled_value
     
     def get_color(self):
         self.get_reflected_light(Type.COLORFULL)
+        return self.get_input_values().scaled_value
     
     get_sample = get_color
