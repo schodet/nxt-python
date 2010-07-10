@@ -76,7 +76,6 @@ class OutputState(object):
 
 class TachoInfo:
     """An object containing the information about the rotation of a motor"""
-    PROXIMITY_THRESHOLD = 20
     def __init__(self, values):
         self.tacho_count, self.block_tacho_count, self.rotation_count = values
     
@@ -93,9 +92,9 @@ class TachoInfo:
     def is_greater(self, target, direction):
         return direction * (self.tacho_count - target.tacho_count) > 0
     
-    def is_near(self, target):
+    def is_near(self, target, threshold):
         difference = abs(target.tacho_count - self.tacho_count)
-        return difference < self.PROXIMITY_THRESHOLD
+        return difference < threshold
     
     def __str__(self):
         return str((self.tacho_count, self.block_tacho_count,
@@ -116,7 +115,7 @@ class SynchronizedTacho(object):
         return self.leader_tacho.is_greater(other.leader_tacho, direction)
 
     def is_near(self, other):
-        return self.leader_tacho.is_near(other.leader_tacho)
+        return self.leader_tacho.is_near(other.leader_tacho, 45) #may not be a good value, should test this
 
     def __str__(self):
         if self.follower_tacho is not None:
@@ -143,8 +142,12 @@ class BaseMotor(object):
 
     def turn(self, power, tacho_units, brake=True, timeout=1, emulate=True):
         """Use this to turn a motor. The motor will not stop until it turns the
-        desired distance.
-        power is a value between -127 and 128,
+        desired distance. Accuracy is much better over a USB connection than
+        with bluetooth...
+        power is a value between -127 and 128 (an absolute value greater than
+                 64 is recommended)
+        tacho_units is the number of degrees to turn the motor. values smaller
+                 than 50 are not recommended and may have strange results.
         brake is whether or not to hold the motor after the function exits
                  (either by reaching the distance or throwing an exception).
         timeout is the number of seconds after which a BlockedException is
@@ -154,8 +157,23 @@ class BaseMotor(object):
                  Warning: motors remember their positions and not using emulate
                  may lead to strange behavior, especially with synced motors
         """
- 
+  
         tacho_limit = tacho_units
+ 
+        if tacho_limit < 0:
+            raise ValueError, "tacho_units must be greater than 0!"
+ 
+        if str(type(self.brick.sock)) == "<class 'nxt.bluesock.BlueSock'>":
+            threshold = 70
+        elif str(type(self.brick.sock)) == "<class 'nxt.usbsock.USBSock'>":
+            threshold = 4
+        else:
+            print "Warning: Socket object does not of a known type."
+            print "The name is: " + str(type(self.brick.sock))
+            print "Please report this problem to the developers!"
+            print "For now, accuracy will not be optimal; continuing happily..."
+            threshold = 30 #compromise
+
         tacho = self.get_tacho()
         state = self._get_new_state()
 
@@ -175,7 +193,7 @@ class BaseMotor(object):
         blocked = False
         try:
             while True:
-                time.sleep(self._eta(tacho, tacho_target, power) / 2)
+                time.sleep(0.0001) #was: (self._eta(tacho, tacho_target, power) / 2)
                 
                 if not blocked: # if still blocked, don't reset the counter
                     last_tacho = tacho
@@ -185,16 +203,16 @@ class BaseMotor(object):
                 current_time = time.time()
                 blocked = self._is_blocked(tacho, last_tacho, direction)
                 if blocked:
-                    print 'not advancing', last_tacho, tacho
-                    # the motor is quite imprecise, to the point of 20 tacho units 
+                    self._debug_out(('not advancing', last_tacho, tacho))
+                    # the motor can be up to 80+ degrees in either direction from target when using bluetooth
                     if current_time - last_time > timeout:
-                        if tacho.is_near(tacho_target):
+                        if tacho.is_near(tacho_target, threshold):
                             break
                         else:
                             raise BlockedException("Blocked!")
                 else:
-                    print 'advancing', last_tacho, tacho
-                if tacho.is_greater(tacho_target, direction):
+                    self._debug_out(('advancing', last_tacho, tacho))
+                if tacho.is_near(tacho_target, threshold) or tacho.is_greater(tacho_target, direction):
                     break
         finally:
             if brake:
@@ -215,7 +233,7 @@ class Motor(BaseMotor):
         self._debug_out('Setting brick output state...')
         list_state = [self.port] + state.to_list()
         self.brick.set_output_state(*list_state)
-        print state
+        self._debug_out(state)
         self._state = state
         self._debug_out('State set.')
 
@@ -311,8 +329,8 @@ class SynchronizedMotors(BaseMotor):
     """The object used to make two motors run in sync. Many objects may be
     present at the same time but they can't be used at the same time.
     Warning! Movement methods reset tacho counter.
+    THIS CODE IS EXPERIMENTAL!!!
     """
-    debug = True
     def __init__(self, leader, follower, turn_ratio):
         """Turn ratio can be >= 0 only! If you want to have it reversed,
         change motor order.
@@ -330,7 +348,7 @@ class SynchronizedMotors(BaseMotor):
         elif self.leader.port > self.follower.port:
             self.turn_ratio = turn_ratio
         else:
-            print 'reversed'
+            self._debug_out('reversed')
             self.turn_ratio = -turn_ratio
 
     def _get_new_state(self):
@@ -366,8 +384,13 @@ class SynchronizedMotors(BaseMotor):
         self.follower.idle()
         #self.reset_position(True)
     
-    def idle(self):
-        self._disable()
+    def run(self, power=100):
+        """Warning! After calling this method, make sure to call idle. The
+        motors are reported to behave wildly otherwise.
+        """
+        self._enable()
+        self.leader.run(power, True)
+        self.follower.run(power, True)
     
     def brake(self):
         self._disable() # reset the counters
@@ -377,15 +400,10 @@ class SynchronizedMotors(BaseMotor):
         self._disable() # now brake as usual
         self.leader.brake()
         self.follower.brake()
-       
-    def run(self, power=100):
-        """Warning! After calling this method, make sure to call idle. The
-        motors are reported to behave wildly otherwise.
-        """
-        self._enable()
-        self.leader.run(power, True)
-        self.follower.run(power, True)
-    
+
+    def idle(self):
+        self._disable()
+
     def turn(self, power, tacho_units, brake=True, timeout=1):
         self._enable()
         # non-emulation is a nightmare, tacho is being counted differently
