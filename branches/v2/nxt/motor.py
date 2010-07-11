@@ -114,8 +114,8 @@ class SynchronizedTacho(object):
     def is_greater(self, other, direction):
         return self.leader_tacho.is_greater(other.leader_tacho, direction)
 
-    def is_near(self, other):
-        return self.leader_tacho.is_near(other.leader_tacho, 45) #may not be a good value, should test this
+    def is_near(self, other, threshold):
+        return self.leader_tacho.is_near(other.leader_tacho, threshold)
 
     def __str__(self):
         if self.follower_tacho is not None:
@@ -166,7 +166,7 @@ class BaseMotor(object):
         if str(type(self.brick.sock)) == "<class 'nxt.bluesock.BlueSock'>":
             threshold = 70
         elif str(type(self.brick.sock)) == "<class 'nxt.usbsock.USBSock'>":
-            threshold = 4
+            threshold = 5
         else:
             print "Warning: Socket object does not of a known type."
             print "The name is: " + str(type(self.brick.sock))
@@ -193,7 +193,7 @@ class BaseMotor(object):
         blocked = False
         try:
             while True:
-                time.sleep(0.0001) #was: (self._eta(tacho, tacho_target, power) / 2)
+                time.sleep(self._eta(tacho, tacho_target, power) / 2)
                 
                 if not blocked: # if still blocked, don't reset the counter
                     last_tacho = tacho
