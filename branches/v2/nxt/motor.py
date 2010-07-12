@@ -163,15 +163,11 @@ class BaseMotor(object):
         if tacho_limit < 0:
             raise ValueError, "tacho_units must be greater than 0!"
  
-        if str(type(self.brick.sock)) == "<class 'nxt.bluesock.BlueSock'>":
+        if self.method == 'bluetooth':
             threshold = 70
-        elif str(type(self.brick.sock)) == "<class 'nxt.usbsock.USBSock'>":
+        elif self.method == 'usb':
             threshold = 5
         else:
-            print "Warning: Socket object does not of a known type."
-            print "The name is: " + str(type(self.brick.sock))
-            print "Please report this problem to the developers!"
-            print "For now, accuracy will not be optimal; continuing happily..."
             threshold = 30 #compromise
 
         tacho = self.get_tacho()
@@ -228,6 +224,17 @@ class Motor(BaseMotor):
         self._read_state()
         self.sync = 0
         self.turn_ratio = 0
+        if str(type(self.brick.sock)) == "<class 'nxt.bluesock.BlueSock'>":
+            self.method = 'bluetooth'
+        elif str(type(self.brick.sock)) == "<class 'nxt.usbsock.USBSock'>":
+            self.method = 'usb'
+        else:
+            print "Warning: Socket object does not of a known type."
+            print "The name is: " + str(type(self.brick.sock))
+            print "Please report this problem to the developers!"
+            print "For now, turn() accuracy will not be optimal."
+            print "Continuing happily..."
+            self.method = None
 
     def _set_state(self, state):
         self._debug_out('Setting brick output state...')
@@ -339,6 +346,7 @@ class SynchronizedMotors(BaseMotor):
             raise ValueError('motors belong to different bricks')
         self.leader = leader
         self.follower = follower
+        self.method = self.leader.method #being from the same brick, they both have the same com method.
         
         if turn_ratio < 0:
             raise ValueError('Turn ratio <0. Change motor order instead!')
