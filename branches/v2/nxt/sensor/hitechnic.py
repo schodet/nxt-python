@@ -47,6 +47,7 @@ class Compass(BaseDigitalSensor):
          self.write_value('mode', (mode, ))
          
 Compass.add_compatible_sensor('\xfdV1.23  ', 'HiTechnc', 'Compass ')
+Compass.add_compatible_sensor('\xfdV2.1   ', 'HITECHNC', 'Compass ')
 
 
 class Acceleration:
@@ -54,7 +55,7 @@ class Acceleration:
         self.x, self.y, self.z =x, y, z
 
 class Accelerometer(BaseDigitalSensor):
-    'Object for Accelerometer sensors. Thanks to Paulo Vieira. Broken by rhn.'
+    'Object for Accelerometer sensors. Thanks to Paulo Vieira.'
     I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
     I2C_ADDRESS.update({'x_axis_high': (0x42, 'b'),
         'y_axis_high': (0x43, 'b'),
@@ -77,6 +78,8 @@ class Accelerometer(BaseDigitalSensor):
         return Acceleration(x, y, z)
     
     get_sample = get_acceleration
+
+Accelerometer.add_compatible_sensor('\xfdV1.1   ', 'HITECHNC', 'Accel.  ')
 
 
 class Gyro(BaseAnalogSensor):
