@@ -31,7 +31,7 @@ To use NXT-Python on Mac, you will need Python 2.4 or higher (but not 3.x).
 
 Make sure you have [http://pyobjc.sourceforge.net/software/ PyObjC] installed; this comes preinstalled with Mac OS X v10.5 (Leopard) and anything newer, but if you have an earlier version of OS X you will need to install it yourself. Then, install [http://lightblue.sourceforge.net/ LightBlue], a Bluetooth library for Mac (USB is currently not supported and will not work, as far as I know, though you're welcome to experiment).
 
-Install nxt-python by downloading the latest svn as per the Linux instrucations. Note that that the 1.1.x source zip WILL NOT WORK with this guide. Newer versions such as 1.2 will work, but have not been released yet at the time of this writing. Open a terminal, move to the source directory using `cd`, and run `python setup.py install`. To test the installation, run one of the programs in the examples directory.
+Install nxt-python by downloading the latest svn as per the Linux instrucations. Note that that the 1.1.x source package(s) WILL NOT WORK with this guide (though newer versions such as 1.2 or 2.x will work, but have yet to be released at the time of this writing. Open a terminal, move to the source directory using `cd`, and run `python setup.py install`. To test the installation, run one of the programs in the examples directory.
 
 ===What if I already have !LightBlue Glue installed?===
 
