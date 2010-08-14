@@ -29,7 +29,7 @@ class SensorInfo:
     def clarifybinary(self, instr, label):
         outstr = ''
         outstr += (label + ': `' + instr + '`\n')
-        for char in outstr:
+        for char in instr:
             outstr += (hex(ord(char))+', ')
         outstr += ('\n')
         return outstr
