@@ -1,7 +1,7 @@
 # nxt.sensor module -- Classes to read LEGO Mindstorms NXT sensors
 # Copyright (C) 2006,2007  Douglas P Lau
-# Copyright (C) 2009  Marcus Wanner, Paulo Vieira
-# Copyright (C) 2009  rhn
+# Copyright (C) 2009  Marcus Wanner, Paulo Vieira, rhn
+# Copyright (C) 2010  Marcus Wanner
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,9 +26,20 @@ class SensorInfo:
         self.product_id = product_id
         self.sensor_type = sensor_type
     
+    def clarifybinary(self, instr, label):
+        outstr = ''
+        outstr += (label + ': `' + instr + '`\n')
+        for char in outstr:
+            outstr += (hex(ord(char))+', ')
+        outstr += ('\n')
+        return outstr
+    
     def __str__(self):
-        return self.product_id + ': ' + self.sensor_type + ', ' + self.version
-
+        outstr = ''
+        outstr += (self.clarifybinary(self.version, 'Version'))
+        outstr += (self.clarifybinary(self.product_id, 'Product ID'))
+        outstr += (self.clarifybinary(self.sensor_type, 'Type'))
+        return outstr
 
 class BaseDigitalSensor(Sensor):
     """Object for digital sensors. I2C_ADDRESS is the dictionary storing name
@@ -40,12 +51,12 @@ class BaseDigitalSensor(Sensor):
     I2C_ADDRESS = {'version': (0x00, '8s'),
         'product_id': (0x08, '8s'),
         'sensor_type': (0x10, '8s'),
-#        0x11: ('factory_zero', 1),      # is this really correct?
+#        'factory_zero': (0x11, 1),      # is this really correct?
         'factory_scale_factor': (0x12, 'B'),
         'factory_scale_divisor': (0x13, 'B'),
     }
     
-    def __init__(self, brick, port, check_compatible=True):
+    def __init__(self, brick, port, check_compatible=False):
         """Creates a BaseDigitalSensor. If check_compatible is True, queries
         the sensor for its name, and if a wrong sensor class was used, raises a
         TypeError.
@@ -58,9 +69,13 @@ class BaseDigitalSensor(Sensor):
             sensor = self.get_sensor_info()
             if not sensor in self.compatible_sensors:
                 raise TypeError('Wrong sensor class chosen for sensor ' + 
-                          str(sensor) + ', you could damage the sensor if you'
-                          " used it. If you know what you're doing, call it"
-                          ' with check_compatible=False')
+                          str(sensor) + '. In rare cases, writing the wrong'
+                          'vales to the I2C bus can damage the sensor. If you'
+                          'are using the correct sensor object for the sensor,'
+                          'this message is likely in error and you should go'
+                          'ahead and call the function with "check_compatible='
+                          'False" and file a bug report, including the output'
+                          'of printing get_sensor_info()')
 
     def _ls_get_status(self, n_bytes):
         for n in range(3):

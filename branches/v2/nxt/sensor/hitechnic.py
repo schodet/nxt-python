@@ -1,7 +1,7 @@
 # nxt.sensor.hitechnic module -- Classes to read HiTechnic sensors
 # Copyright (C) 2006,2007  Douglas P Lau
 # Copyright (C) 2009  Marcus Wanner, Paulo Vieira, rhn
-# Copyright (C) 2010  rhn, Marcus Wanner, melducky
+# Copyright (C) 2010  rhn, Marcus Wanner, melducky, Samuel Leeman-Munk
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -36,6 +36,41 @@ class Compass(BaseDigitalSensor):
         return self.read_value('heading')[0]
     
     get_sample = get_heading
+
+    def get_relative_heading(self,target=0):
+        """This function is untested but should work.
+        If it does work, please post a message to the mailing list
+        or email marcusw@cox.net. If it doesn't work, please file
+        an issue in the bug tracker.
+        """
+        rheading = self.get_sample()-target
+        if rheading > 180:
+            rheading -= 360
+        elif rheading < -180:
+            rheading += 360
+        return rheading	
+    
+    #this deserves a little explanation:
+    #if max > min, it's straightforward, but
+    #if min > max, it switches the values of max and min
+    #and returns true if heading is NOT between the new max and min
+    def is_in_range(self,min,max):
+        """This function is untested but should work.
+        If it does work, please post a message to the mailing list
+        or email marcusw@cox.net. If it doesn't work, please file
+        an issue in the bug tracker.
+        """
+        reversed = False
+        if min > max:
+            (max,min) = (min,max)
+            reversed = True
+        heading = self.get_sample()
+        in_range = (heading > min) and (heading < max)
+        #an xor handles the reversal
+        #a faster, more compact way of saying
+        #if !reversed return in_range
+        #if reversed return !in_range
+        return bool(reversed) ^ bool(in_range) 
 
     def get_mode(self):
         return self.read_value('mode')[0]
