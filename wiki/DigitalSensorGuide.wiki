@@ -104,14 +104,21 @@ To make use of it with our temperature sensor, we need to check its identificati
 {{{
 >>> sensor_info = thermometer.get_sensor_info()
 >>> print sensor_info
-Tutorial: Temp, v0.1
-}}}
+Version: `�V1.23  `
+0xfd, 0x56, 0x31, 0x2e, 0x32, 0x33, 0x20, 0x20, 
+Product ID: `HiTechnc`
+0x48, 0x69, 0x54, 0x65, 0x63, 0x68, 0x6e, 0x63, 
+Type: `Compass `
+0x43, 0x6f, 0x6d, 0x70, 0x61, 0x73, 0x73, 0x20, 
 
-`sensor_info` is a `SensorInfo` object and contains the exact strings.
+}}}
+(here we use the data from the !HiTechnic Compass sensor as an example...if we were really using a temperature sensor, the output obviously would be different)
+
+The hex numbers below each field string are provided in case of binary chars in the strings, seen as the "�" in the first string. Looking at the hex, we can see that the corresponding number is 0xfd. In a database entry, this would be represented as "\xfd".
 
 After you have the data, add the following line immediately after the class declaration:
 {{{
-TemperatureSensor.add_compatible_sensor('v0.1', 'Tutorial', 'Temp')
+TemperatureSensor.add_compatible_sensor('\xfdV1.23  ', 'HiTechnc', 'Compass ')
 }}}
 
 NOTE: this function is smart enough to ignore trailing `'\x00'` but include all other characters in the call. You can also call it multiple times to indicate that sensors with other identification data are compatible.
