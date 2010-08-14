@@ -85,8 +85,8 @@ class CompassSensor(sensor.DigitalSensor):
 	
 	#this deserves a little explanation:
 	#if max > min, it's straightforward, but
-	#if min < max, it switches the values of max and min
-	#and returns true iff heading is NOT between the new max and min
+	#if min > max, it switches the values of max and min
+	#and returns true if heading is NOT between the new max and min
 	def is_in_range(self,min,max):
 		reversed = False
 		if min > max:
