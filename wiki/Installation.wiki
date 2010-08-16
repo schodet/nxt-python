@@ -31,15 +31,17 @@ To use NXT-Python on Mac, you will need Python 2.4 or higher (but not 3.x).
 
 Make sure you have [http://pyobjc.sourceforge.net/software/ PyObjC] installed; this comes preinstalled with Mac OS X v10.5 (Leopard) and anything newer, but if you have an earlier version of OS X you will need to install it yourself. Then, install [http://lightblue.sourceforge.net/ LightBlue], a Bluetooth library for Mac (USB is currently not supported and will not work, as far as I know, though you're welcome to experiment).
 
-Install nxt-python by downloading the latest svn as per the Linux instrucations. Note that that the 1.1.x source package(s) WILL NOT WORK with this guide (though newer versions such as 1.2 or 2.x will work, but have yet to be released at the time of this writing. Open a terminal, move to the source directory using `cd`, and run `python setup.py install`. To test the installation, run one of the programs in the examples directory.
+Download nxt-python from the svn with `svn checkout http://nxt-python.googlecode.com/svn/trunk/ nxt-python` in a terminal or by fetching and extracting the latest source package from the downloads page. Open a terminal, move to the nxt-python directory using `cd nxt-python`, and run `python setup.py install`. To test the installation, run one of the programs in the examples directory
 
-===What if I already have !LightBlue Glue installed?===
+Note: This guide only works with versions 1.2.0, trunk r109, or branches/v2 r164 or greater (excluding v2.0 betas 0 and 1).
+
+===What if I already have !LightBlue Glue installed with an older version of nxt-python or NXT_Python?===
 
 If you have an existing [http://www.cs.wlu.edu/~levy/software/nxt_lightblue_glue/ LightBlue Glue] setup, you can update by doing the following:
 
-Install the latest svn. After doing this, you can remove your bluetooth.py directory (~/nxt_lightblue_glue in the setup example) and the PYTHONPATH line to that you added to your .profile or .bashrc.
+Install the latest svn. After doing this, remove your bluetooth.py directory (~/nxt_lightblue_glue in the setup example) and the PYTHONPATH line to that you added to your .profile or .bashrc.
 
-Note that if you do not delete the bluetooth.py directory or PYTHONPATH enrty, NXT-Python _should_ still work fine (untested like the rest of this section), it will just use the external !LightBlue Glue instead of the new internal one.
+Note that if you do not delete the bluetooth.py directory or PYTHONPATH enrty, NXT-Python _should_ still work fine, it will just use the external !LightBlue Glue instead of the new internal one.
 
 ===Disclaimer===
 
