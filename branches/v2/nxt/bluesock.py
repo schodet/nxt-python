@@ -12,7 +12,10 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-import bluetooth
+try:
+    import bluetooth
+except ImportError:
+    import lightblueglue as bluetooth
 import os
 from .brick import Brick
 
