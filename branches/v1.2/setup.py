@@ -8,7 +8,7 @@ readme.close()
 
 setup(
 	name='nxt-python',
-	version='1.1',
+	version='1.2',
 	author='Douglas Lau, Marcus Wanner',
 	author_email='dplau@comcast.net, marcusw@cox.net',
 	description='LEGO Mindstorms NXT Control Package',
