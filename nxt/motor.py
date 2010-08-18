@@ -72,88 +72,71 @@ class Motor(object):
         self._debug_out('State got.')
         return values
 
-    def reset_position(self, relative):
-        self.brick.reset_motor_position(self.port, relative)
+        def reset_position(self, relative):
+            self.brick.reset_motor_position(self.port, relative)
 
-    def run(self, power=100, regulated=1):
-        '''Unlike update(), set_power() tells the motor to run continuously.'''
-        self.power = power
-        if regulated:
-            self.mode = MODE_MOTOR_ON | MODE_REGULATED
-            self.regulation = REGULATION_MOTOR_SPEED
-        else:
-            self.mode = MODE_MOTOR_ON
-            self.regulation = REGULATION_IDLE
-        self.turn_ratio = 0
-        self.run_state = RUN_STATE_RUNNING
-        self.tacho_limit = LIMIT_RUN_FOREVER
-        self.set_output_state()
-
-    def stop(self, braking=1):
-        '''Tells the motor to stop.'''
-        self.power = 0
-        if braking:
-            self.mode = MODE_MOTOR_ON | MODE_BRAKE | MODE_REGULATED
-            self.regulation = REGULATION_MOTOR_SPEED
-            self.run_state = RUN_STATE_RUNNING
-        else:
-            self.mode = MODE_IDLE
-            self.regulation = REGULATION_IDLE
-            self.run_state = RUN_STATE_IDLE
-        self.turn_ratio = 0
-        self.tacho_limit = LIMIT_RUN_FOREVER
-        self.set_output_state()
-
-    def update(self, power, tacho_limit, braking=False, max_retries=-1):
-        '''Use this to run a motor. power is a value between -127 and 128, tacho_limit is
-the number of degrees to apply power for. Braking is wether or not to stop the
-motor after turning the specified degrees (unreliable). max_retries is the
-maximum times an internal loop of the braking function runs, so it doesn't get
-caught in an infinite loop (deprecated, do not use).'''
-        if max_retries != -1:
-            print 'Warning: max_retries is deprecated and is not longer needed, please do not use it!'
+    def update(self, power, tacho_limit, braking=False):
+        '''Use this to run a motor. power is a value between -127 and 128, tacho_limit is the
+number of degrees to apply power for. Braking is wether or not to stop the motor
+after turning the specified degrees (Under construction).'''
 
         if braking:
             direction = (power > 0)*2-1
-            if abs(power) < 50:
-                power = 50 * direction
             self.get_output_state()
             starting_tacho_count = self.tacho_count
+
             self._debug_out('tachocount: '+str(starting_tacho_count))
+            
             tacho_target = starting_tacho_count + tacho_limit*direction
+            
             self._debug_out('tacho target: '+str(tacho_target))
 
-        # Update modifiers even if they aren't used, might have been changed
         self.mode = MODE_MOTOR_ON
-        self.regulation = REGULATION_IDLE
-        self.turn_ratio = 0
         self.run_state = RUN_STATE_RUNNING
         self.power = power
         self.tacho_limit = tacho_limit
+        
         self._debug_out('Updating motor information...')
         
         if braking:
-            self.run(power)
+
+            self.update(power, 1, 0)
+            
             current_tacho = 0
-            retries = 0
-            delta = abs(power)*0.5 #the amount of error allowed in stopping (to correct for latency)
             
             while 1:
+                
                 self._debug_out('checking tachocount...')
+
+                olderTachoCount = current_tacho
                 self.get_output_state()
                 current_tacho = self.tacho_count
+                
                 self._debug_out('tachocount: '+str(current_tacho))
                 
-                if ((power >= 0 and (current_tacho >= tacho_target - delta)) or
-                    (power <  0 and (current_tacho <= tacho_target + delta))):
+                if current_tacho<tacho_target+10 and current_tacho>tacho_target-10:
+                    
                     self._debug_out('tachocount good, breaking from loop...')
+                    
                     break
+                
                 else:
-                    self._debug_out('tachocount bad, trying again...')
- 
-            self.stop(1)
+                    if current_tacho==olderTachoCount: #motor hasn't moved
+                    
+                        self._debug_out('tachocount bad, giving extra power...')
+
+                        self.update(power, 1, 0)
+                    else:
+                        self._debug_out('tachocount bad, waiting...')
+
+            self._debug_out('going in reverse...')
+            
+            self.update(direction*60, 1)
+            time.sleep(0.01)
+            self.mode = MODE_BRAKE
+            self.set_output_state()
+
             self._debug_out('difference from goal: '+str(self.get_output_state()[7]-tacho_target))
 
-        else:
-            self.set_output_state()
-            self._debug_out('Updating finished. ending tachocount: '+str(self.get_output_state()[7]))
+        self.set_output_state()
+        self._debug_out('Updating finished. ending tachocount: '+str(self.get_output_state()[7]))

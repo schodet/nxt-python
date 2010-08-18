@@ -9,15 +9,6 @@ Releases halted in May 2007.
 NXT-Python is based on NXT_Python, but is significantly newer, and, as time
 goes on, different/better. This is NXT-Python.
 
-For support, you can ask on the mailing list at:
-http://groups.google.com/group/nxt-python
-You can report bugs to the bug tracker here:
-http://code.google.com/p/nxt-python/issues/list
-
-Note: NXT-Python has not been tested and may not work with
-custom nxt firmware versions (if you don't know what that means, you don't
-need to worry about it).
-
 Requirements:
 
 	* Python 2.6 (http://www.python.org)
@@ -31,11 +22,11 @@ Installation:
 	* In package directory, run "python setup.py install" (as root), or if
 		under windows, copy the nxt folder to the site-packages
 		directory in your python installation.
-	* For USB on Linux, at a root terminal type:
-		groupadd lego
-		usermod -a -G lego [username]
-		echo 'BUS=="usb", SYSFS{idVendor}=="0694", GROUP="lego", MODE="0660"' > \
-			/etc/udev/rules.d/70-lego.rules
+	* For USB on Linux, create udev rule:
+
+Create file at /etc/udev/rules.d/70-lego.rules, containing one line:
+
+BUS=="usb", SYSFS{idVendor}=="0694", GROUP="lego", MODE="0660"
 
 Contact:
 	NXT_Python's Author:
