@@ -49,14 +49,14 @@ A few improvements to nxt.server module.
 
 ==Version 1.x==
 
-===Version 1.0 (tags/1.0.0 in the svn)===
+===Version 1.0 (svn/tags/1.0.0)===
 Experimental support for motor braking.
 Some improvements to the server module, like multiple motor control.
 
 ====Version 1.0.1====
 Motor braking bugfix by Steve Castellotti.
 
-===Version 1.1.0===
+===Version 1.1 (svn/tags/1.1.0)===
 New motor functions, namely run() and stop().
 Motor braking is finally usable!
 Slightly changed behavior when there are errors searching for a brick.
