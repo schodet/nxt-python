@@ -201,7 +201,11 @@ def _parse_boot(tgram):
 
 def set_brick_name(opcode, bname):
     tgram = _create(opcode)
-    # FIXME: validate brick name
+    if len(bname) > 15:
+        print "Warning! Brick name %s will be truncated to %s!" % (bname, bname[0:15])
+        bname = bname[0:15]
+    elif len(bname) < 15:
+        bname += '\x00' * (15-len(bname)) #fill the extra chars with nulls
     tgram.add_string(len(bname), bname)
     return tgram
 
