@@ -21,7 +21,7 @@ You will need Python 2.x (NOT 3.x), the newer the better. Older versions may hav
 
 Install [http://tortoisesvn.net/downloads TortiseSVN]. Create a new folder somewhere and call it something meaningful, like "nxt-python". Right click on the folder and click SVN Checkout. Copy and Paste "http://nxt-python.googlecode.com/svn/trunk/" to the top text box and click OK. After it finishes, double click on the folder to open it. Then double click on install.bat. If a black window appears, flashes some data, then disappears, it worked. If it doesn't disappear, follow the instructions on the screen.
 
-            For USB communications, you need to install [http://sourceforge.net/projects/pyusb/ PyUSB].
+            For USB communications, you need to install [http://sourceforge.net/projects/pyusb/ PyUSB]. USB has a history of being dodgy on Windows, so if the brick can't be found when it should, try bluetooth.
 
             For Bluetooth communications, download and install [http://code.google.com/p/pybluez/downloads/list PyBluez]. You will also need a compatible Bluetooth dongle, if your computer doesn’t already support Bluetooth.
 
@@ -31,7 +31,7 @@ To use NXT-Python on Mac, you will need Python 2.4 or higher (but not 3.x).
 
 Make sure you have [http://pyobjc.sourceforge.net/software/ PyObjC] installed; this comes preinstalled with Mac OS X v10.5 (Leopard) and anything newer, but if you have an earlier version of OS X you will need to install it yourself. Then, install [http://lightblue.sourceforge.net/ LightBlue], a Bluetooth library for Mac (USB is currently not supported and will not work, as far as I know, though you're welcome to experiment).
 
-Download nxt-python from the svn with `svn checkout http://nxt-python.googlecode.com/svn/trunk/ nxt-python` in a terminal or by fetching and extracting the latest source package from the downloads page. Open a terminal, move to the nxt-python directory using `cd nxt-python`, and run `python setup.py install`. To test the installation, run one of the programs in the examples directory
+Download nxt-python from the svn with `svn checkout http://nxt-python.googlecode.com/svn/trunk/ nxt-python` in a terminal (you may have to install subversion from MacPorts first) or by fetching and extracting the latest source package from the downloads page. Open a terminal, move to the nxt-python directory using `cd nxt-python`, and run `python setup.py install`. To test the installation, run one of the programs in the examples directory
 
 Note: This guide only works with versions 1.2.0, trunk r109, or branches/v2 r164 or greater (excluding v2.0 betas 0 and 1).
 
