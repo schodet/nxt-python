@@ -131,7 +131,7 @@ class DigitalSensor(Sensor):
 			diff = time() - self.lastpoll
 			sleep(0.02 - diff)
 		self.brick.ls_write(self.port, msg, n_bytes)
-		#when on USB, a slight pause (~0.0035s) here MAY increase performance very slightly -- YMMV
+		#when on USB, a slight pause (~3.5ms) here MAY increase performance very slightly (~1ms off of ~32ms) -- YMMV
 		data = self._ls_read()
 		self.lastpoll = time()
 		if len(data) < n_bytes:
