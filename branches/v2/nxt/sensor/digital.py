@@ -77,15 +77,14 @@ class BaseDigitalSensor(Sensor):
                           'False" and file a bug report, including the output'
                           'of printing get_sensor_info()')
 
-    def _ls_get_status(self, n_bytes):
+    def _ls_read(self):
         for n in range(3):
             try:
-                b = self.brick.ls_get_status(self.port)
-                if b >= n_bytes:
-                    return b
-            except I2CPendingError:
-                sleep(0.01)
-        raise I2CError, 'ls_get_status timeout'
+                return self.brick.ls_read(self.port)
+            except I2CError:
+                pass
+        raise I2CError, 'ls_read timeout'
+
 
     def _i2c_command(self, address, value, format):
         """Writes an i2c value to the given address. value must be a string. value is
@@ -107,8 +106,9 @@ class BaseDigitalSensor(Sensor):
             diff = time() - self.lastpoll
             sleep(0.02 - diff)
         self.brick.ls_write(self.port, msg, n_bytes)
-        self._ls_get_status(n_bytes)
-        data = self.brick.ls_read(self.port)
+        #self._ls_get_status(n_bytes)
+        #data = self.brick.ls_read(self.port)
+        data = self._ls_read()
         self.lastpoll = time()
         if len(data) < n_bytes:
             raise I2CError, 'Read failure'
