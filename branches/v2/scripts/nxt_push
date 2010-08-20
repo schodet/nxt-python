@@ -46,8 +46,4 @@ def write_file(b, fname):
         f.close()
 
 if __name__ == '__main__':
-    sock = nxt.locator.find_one_brick()
-    if sock:
-        b = sock.connect()
-        write_file(b, sys.argv[1])
-        sock.close()
+    write_file(nxt.locator.find_one_brick(), sys.argv[1])

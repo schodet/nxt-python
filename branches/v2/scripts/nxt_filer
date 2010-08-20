@@ -158,9 +158,6 @@ class NXT_Filer(gtk.Window):
 
 if __name__ == '__main__':
     # FIXME: add dialog with progress bar when scanning bluetooth devices
-    sock = nxt.locator.find_one_brick()
-    if sock:
-        b = sock.connect()
-        win = NXT_Filer(b)
-        win.show_all()
-        gtk.main()
+    win = NXT_Filer(nxt.locator.find_one_brick())
+    win.show_all()
+    gtk.main()
