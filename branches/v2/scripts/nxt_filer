@@ -22,22 +22,10 @@ import nxt.locator
 from nxt.brick import FileFinder, FileReader, FileWriter
 
 def read_file(b, fname):
-    # FIXME: change to "with" syntax for python 2.5
-    # with FileReader(b, fname) as r:
-    #   with open(fname, 'wb') as f:
-    #       for data in r:
-    #           f.write(data)
-    r = FileReader(b, fname)
-    r.__enter__()
-    try:
-        f = open(fname, 'wb')
-        try:
+    with FileReader(b, fname) as r:
+        with open(fname, 'wb') as f:
             for data in r:
                 f.write(data)
-        finally:
-            f.close()
-    finally:
-        r.__exit__(None, None, None)
 
 class NXTListing(gtk.ListStore):
 
