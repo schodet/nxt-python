@@ -17,7 +17,7 @@
 import sys
 import nxt.locator
 from nxt.brick import FileWriter
-from nxt.error import FileExistsError
+from nxt.error import FileNotFound
 
 def _write_file(b, fname, data):
     w = FileWriter(b, fname, len(data))
@@ -28,16 +28,15 @@ def _write_file(b, fname, data):
     w.close()
 
 def write_file(b, fname):
-    # FIXME: change to "with" syntax for python 2.5
     f = open(fname)
     data = f.read()
     f.close()
     try:
-        _write_file(b, fname, data)
-    except FileExistsError:
-        print 'Overwriting %s on NXT' % fname
         b.delete(fname)
-        _write_file(b, fname, data)
+        print 'Overwriting %s on NXT' % fname
+    except FileNotFound:
+        pass
+    _write_file(b, fname, data)
 
 if __name__ == '__main__':
     write_file(nxt.locator.find_one_brick(), sys.argv[1])
