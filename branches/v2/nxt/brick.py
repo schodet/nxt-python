@@ -1,6 +1,7 @@
 # nxt.brick module -- Classes to represent LEGO Mindstorms NXT bricks
 # Copyright (C) 2006  Douglas P Lau
 # Copyright (C) 2009  Marcus Wanner, rhn
+# Copyright (C) 2010  rhn
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -45,22 +46,26 @@ class FileFinder(object):
         self.handle = None
     
     def _close(self):
-        if self.handle:
+        if self.handle is not None:
             self.brick.close(self.handle)        
+            self.handle = None
     
     def __del__(self):
         self._close()
 
     def __iter__(self):
+        results = []
         self.handle, fname, size = self.brick.find_first(self.pattern)
-        yield (fname, size)
+        results.append((fname, size))
         while True:
             try:
                 handle, fname, size = self.brick.find_next(self.handle)
-                yield (fname, size)
+                results.append((fname, size))
             except FileNotFound:
                 self._close()
                 break
+        for result in results:
+            yield result
 
 
 def File(brick, name, mode='r', size=None):
@@ -103,7 +108,9 @@ class FileReader(object):
         return ''.join(data)
     
     def close(self):
-        self.brick.close(self.handle)
+        if self.handle is not None:
+            self.brick.close(self.handle)
+            self.handle = None
            
     def __del__(self):
         self.close()
@@ -137,7 +144,9 @@ class FileWriter(object):
         self.close()
         
     def close(self):
-        self.brick.close(self.handle)
+        if self.handle is not None:
+            self.brick.close(self.handle)
+            self.handle = None
     
     def tell(self):
         return self._position
@@ -172,6 +181,7 @@ class ModuleFinder(object):
     def _close(self):
         if self.handle:
             self.brick.close(self.handle)
+            self.handle = None
     
     def __del__(self):
         self._close()

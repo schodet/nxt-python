@@ -2,6 +2,7 @@
 #
 # nxt_filer program -- Simple GUI to manage files on a LEGO Mindstorms NXT
 # Copyright (C) 2006  Douglas P Lau
+# Copyright (C) 2010  rhn
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -46,30 +47,18 @@ class NXTListing(gtk.ListStore):
         self.populate(brick, '*.*')
 
     def populate(self, brick, pattern):
-        # FIXME: change to "with" syntax for python 2.5
-        # with FileFinder(b, pattern) as f:
-        #    for (fname, size) in f:
-        #        print '%s\t%s' % (fname, size)
         f = FileFinder(brick, pattern)
-        try:
-            for (fname, size) in f:
-                self.append((fname, str(size)))
-        finally:
-            f.__exit__(None, None, None)
+        for (fname, size) in f:
+            self.append((fname, str(size)))
 
-def write_file(b, fname, fil):
-    # FIXME: change to "with" syntax for python 2.5
-    # with FileWriter(b, fname) as w:
-    #    for size in w:
-    #        print 'Wrote %d bytes' % size
-    w = FileWriter(b, fname, fil)
-    w.__enter__()
-    try:
-        for size in w:
-            print 'Wrote %d bytes' % size
-    finally:
-        w.__exit__(None, None, None)
-
+def write_file(b, fname, data):
+    w = FileWriter(b, fname, len(data))
+    print 'Pushing %s (%d bytes) ...' % (fname, w.size),
+    sys.stdout.flush()
+    w.write(data)
+    print 'wrote %d bytes' % len(data)
+    w.close()
+        
 def write_files(b, names):
     for fname in names.split('\r\n'):
         if fname:
@@ -81,11 +70,7 @@ def write_files(b, names):
             finally:
                 url.close()
             print 'name %s, size: %d ' % (bname, len(data))
-            fil = cStringIO.StringIO(data)
-            try:
-                write_file(b, bname, fil)
-            finally:
-                fil.close()
+            write_file(b, bname, data)
 
 class NXT_Filer(gtk.Window):
     TARGETS = gtk.target_list_add_uri_targets()
