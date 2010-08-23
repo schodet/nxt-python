@@ -1,0 +1,107 @@
+#!/usr/bin/env python
+#
+# nxt_sensor_report -- Program which guides the user through the
+# process of reporting the identification of his digital sensors for
+# the type checking database.
+# Copyright (C) 2010 Marcus Wanner
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+import nxt.locator, nxt.error, time
+from nxt.sensor import *
+
+def waitforuser(prompt):
+    raw_input(prompt)
+
+def getuserbool(prompt):
+    while 1:
+        ans = raw_input(prompt + " [y/n] ")
+        if ans == 'n' or ans == 'N':
+            return 0
+        elif ans == 'y' or ans == 'Y':
+            return 1
+        else:
+            print "Please answer y or n."
+
+def getuserstring(prompt):
+    return raw_input(prompt+' ')
+
+def main():
+    print "Welcome to the type checking database sensor type reporting system."
+    print "Throughout this process, no data will be automatically sent anywhere and the program will not connect to the internet."
+    waitforuser("Please connect your brick now. When you have, press enter.")
+    while 1:
+        try:
+            print "Searching..."
+            b = nxt.locator.find_one_brick()
+            break
+        except nxt.locator.BrickNotFoundError:
+            if getuserbool("Brick not found. Try again?"):
+                continue
+            else:
+                exit(1)
+    print "Connected to brick!"
+    print "Please get all your sensors together and line them up in a row."
+    waitforuser("Connect the first sensor to port 1 of the NXT. Press enter when you're ready.")
+    def newsensor(): return getuserbool("If you have any more sensors to connect, plug one in and answer y when you're ready. If all your sensors have been tested, answer n.")
+    report = "-=-=-=-=-Digital-=-=-Sensor-=-=-Identification-=-=-Report-=-=-=-=-\n"
+    report += "Generated: %s\n\n" % time.asctime()
+    while 1:
+        s = BaseDigitalSensor(b, PORT_1)
+        try:
+            ident = str(s.get_sensor_info())
+            print "Connected to sensor and read identification!"
+        except nxt.error.DirProtError:
+            print "Sensor is not a digital sensor and therefore has no identification."
+            if newsensor(): continue
+            else: break
+        while 1:
+            name = getuserstring("What is the sensor's name, or what does it do?")
+            if len(name) == 0:
+                print "Please enter some text...I really need to know this."
+                continue
+            else:
+                break
+        maker = getuserstring("What is the sensor's manufacturer (optional)?")
+        comments = getuserstring("Any other information or comments about the sensor, like its appearance, a link to where one can buy the sensor, etc. (optional)?")
+        report += "Sensor name: %s\n" % name
+        if len(maker):
+            report += "Manufacturer: %s\n" % maker
+        if len(comments):
+            report += "Comments: %s\n" % comments
+        report += ident
+        report += '\n'
+        if newsensor(): continue
+        else: break
+    feedback = getuserstring("Do you have any comments or notes? Any feedback about the reporting process? (optional)")
+    if len(feedback):
+        report += "Comments/notes/feedback: %s\n" % feedback
+    waitforuser("I am going to print the report to this screen. Press enter when you're ready.")
+    print report
+    if getuserbool("Would you like me to save the report to a file?"):
+        while 1:
+            filename = getuserstring("Please enter a filename (if a file exists, it will be overwritten).")
+            try:
+                outfile = open(filename, 'w')
+                break
+            except:
+                print "I couldn't write to that file. Please enter a different name."
+                continue
+        outfile.write(report)
+        outfile.close()
+        print "Report has been saved. Please attach the file to an email to marcusw@cox.net."
+    else:
+        print "Please copy the report above into an email to marcusw@cox.net."
+    waitforuser("Thank you very much for participating! Press enter to close the program.")
+
+if __name__ == '__main__':
+    main()
+
