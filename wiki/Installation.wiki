@@ -6,7 +6,7 @@
 
 You will need a recent 2.x version of Python, most systems already have this installed. However, as more distributions move to 3.x (which is not compatible with nxt-python), you may need to install a 2.x version in addition using your package manager.
 
-Open a terminal window, and use the `svn checkout http://nxt-python.googlecode.com/svn/trunk/ nxt-python` command to download the source. Run `cd nxt-python` to move to the directory that you put it in. Then, as root (e.g. sudo) run `python setup.py install`. If the word ‘error’ is not anywhere in the text that is printed, then great. If it is, then follow the error instructions to resolve the issue (or ask about it at the [http://groups.google.com/group/nxt-python mailing list], and we'll try to help you out). 
+Download the latest source package and extract it. Open a terminal and run `cd nxt-python` (or whatever directory you put it in). Then, as root (e.g. sudo) run `python setup.py install`. If the word ‘error’ is not anywhere in the text that is printed, then great. If it is, then follow the error instructions to resolve the issue (or ask about it at the [http://groups.google.com/group/nxt-python mailing list], and we'll try to help you out). 
 
             For USB communications, download and install [http://sourceforge.net/projects/pyusb/ PyUSB] according to the instructions included in it. (Note: This next step may not be necessary on some newer systems which give any user control over USB devices by default, but it can't hurt and is therefore recommended) As root, run the command `groupadd lego`, then `usermod –a –G lego <username>` (where `<username>` is the name of the user account that you will be using to program your NXT). Then make a file at /etc/udev/rules.d/70-lego.rules containing exactly (note that after this you will need to log out and then back in and then restart udev or your whole system): 
 {{{
@@ -19,7 +19,7 @@ BUS=="usb", ATTRS{idVendor}=="0694", GROUP="lego", MODE="0660"
 
 You will need Python 2.x (NOT 3.x), the newer the better. Older versions may have problems.
 
-Install [http://tortoisesvn.net/downloads TortiseSVN]. Create a new folder somewhere and call it something meaningful, like "nxt-python". Right click on the folder and click SVN Checkout. Copy and Paste "http://nxt-python.googlecode.com/svn/trunk/" to the top text box and click OK. After it finishes, double click on the folder to open it. Then double click on install.bat. If a black window appears, flashes some data, then disappears, it worked. If it doesn't disappear, follow the instructions on the screen.
+Download the latest installer for your architecture (32-bit or 64-bit) and run it. Follow the instructions and it will set everything up for you.
 
             For USB communications, you need to install [http://sourceforge.net/projects/pyusb/ PyUSB]. USB has a history of being dodgy on Windows, so if the brick can't be found when it should, try bluetooth.
 
@@ -31,7 +31,7 @@ To use NXT-Python on Mac, you will need Python 2.4 or higher (but not 3.x).
 
 Make sure you have [http://pyobjc.sourceforge.net/software/ PyObjC] installed; this comes preinstalled with Mac OS X v10.5 (Leopard) and anything newer, but if you have an earlier version of OS X you will need to install it yourself. Then, install [http://lightblue.sourceforge.net/ LightBlue], a Bluetooth library for Mac (USB is currently not supported and will not work, as far as I know, though you're welcome to experiment).
 
-Download nxt-python from the svn with `svn checkout http://nxt-python.googlecode.com/svn/trunk/ nxt-python` in a terminal (you may have to install subversion from MacPorts first) or by fetching and extracting the latest source package from the downloads page. Open a terminal, move to the nxt-python directory using `cd nxt-python`, and run `python setup.py install`. To test the installation, run one of the programs in the examples directory
+Download the latest source package from the downloads page and extract it. Open a terminal, move to the nxt-python directory using `cd nxt-python` (or whatever directory you put it in), and run `python setup.py install`. To test the installation, run one of the programs in the examples directory
 
 Note: This guide only works with versions 1.2.0, trunk r109, or branches/v2 r164 or greater (excluding v2.0 betas 0 and 1).
 
