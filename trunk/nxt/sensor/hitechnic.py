@@ -81,8 +81,8 @@ class Compass(BaseDigitalSensor):
              raise ValueError('Invalid mode specified: ' + str(mode))
          self.write_value('mode', (mode, ))
          
-Compass.add_compatible_sensor('\xfdV1.23  ', 'HiTechnc', 'Compass ')
-Compass.add_compatible_sensor('\xfdV2.1   ', 'HITECHNC', 'Compass ')
+Compass.add_compatible_sensor(None, 'HiTechnc', 'Compass ') #Tested with version '\xfdV1.23  '
+Compass.add_compatible_sensor(None, 'HITECHNC', 'Compass ') #Tested with version '\xfdV2.1   '
 
 
 class Acceleration:
@@ -114,7 +114,84 @@ class Accelerometer(BaseDigitalSensor):
     
     get_sample = get_acceleration
 
-Accelerometer.add_compatible_sensor('\xfdV1.1   ', 'HITECHNC', 'Accel.  ')
+Accelerometer.add_compatible_sensor(None, 'HiTechnc', 'Accel.  ')
+Accelerometer.add_compatible_sensor(None, 'HITECHNC', 'Accel.  ') #Tested with version '\xfdV1.1   '
+
+
+class CompassMode:
+    ACTIVE = 0x00 #get measurements using get_active_color
+    PASSIVE = 0x01 #get measurements using get_passive_color
+    RAW = 0x03 #get measurements using get_passive_color
+    BLACK_CALIBRATION = 0x42 #hold away from objects, results saved in EEPROM
+    WHITE_CALIBRATION = 0x43 #hold in front of white surface, results saved in EEPROM
+    LED_POWER_LOW = 0x4C #saved in EEPROM, must calibrate after using
+    LED_POWER_HIGH = 0x48 #saved in EEPROM, must calibrate after using
+    RANGE_NEAR = 0x4E #saved in EEPROM, only affects active mode
+    RANGE_FAR = 0x46 #saved in EEPROM, only affects active mode, more susceptable to noise
+    FREQ_50 = 0x35 #saved in EEPROM, use when local wall power is 50Hz
+    FREQ_60 = 0x36 #saved in EEPROM, use when local wall power is 60Hz
+
+class ActiveColor:
+    def __init__(self, number, red, green, blue, white, index, normred, normgreen, normblue):
+        self.number, self.red, self.green, self.blue, self.white, self.index, self.normred, self.normgreen, self.normblue = number, red, green, blue, white, index, normred, normgreen, normblue
+
+class PassiveColor:
+    #also holds raw mode data
+    def __init__(self, red, green, blue, white):
+        self.red, self.green, self.blue, self.white = red, green, blue, white
+
+class Colorv2(BaseDigitalSensor):
+    """Object for HiTechnic Color v2 Sensors. Coded to HiTechnic's specs for the sensor
+but not tested. Please report whether this worked for you or not!"""
+    I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
+    I2C_ADDRESS.update({
+        'mode': (0x41, 'b'),
+        'number': (0x42, 'b'),
+        'red': (0x43, 'b'),
+        'green': (0x44, 'b'),
+        'blue': (0x45, 'b'),
+        'white': (0x46, 'b')
+        'index': (0x47, 'b'),
+        'normred': (0x48, 'b'),
+        'normgreen': (0x49, 'b'),
+        'normblue': (0x4A, 'b'),
+        'all_data': (0x42, '9b'),
+        'rawred': (0x42, '<H'),
+        'rawgreen': (0x44, '<H'),
+        'rawblue': (0x46, '<H'),
+        'rawwhite': (0x48, '<H')
+    })
+    
+    def __init__(self, brick, port, check_compatible=False):
+        super(Colorv2, self).__init__(brick, port, check_compatible)
+
+    def get_active_color(self):
+        """"Returns color values when in active mode.
+        """
+        number, red, green, blue, white, index, normred, normgreen, normblue = self.read_value('all_data')
+        return ActiveColor(number, red, green, blue, white, index, normred, normgreen, normblue)
+    
+    get_sample = get_active_color
+    
+    def get_passive_color(self):
+        """"Returns color values when in passive or raw mode.
+        """
+        red = self.read_value('rawred')
+        green = self.read_value('rawgreen')
+        blue = self.read_value('rawblue')
+        white = self.read_value('rawwhite')
+        return PassiveColor(red, green, blue, white)
+    
+    def get_mode(self):
+        return self.read_value('mode')
+    
+    def set_mode(self, mode)
+        self.write_value('mode', (mode, ))
+
+Colorv2.add_compatible_sensor(None, 'HiTechnc', 'ColorPD')
+Colorv2.add_compatible_sensor(None, 'HITECHNC', 'ColorPD')
+Colorv2.add_compatible_sensor(None, 'HiTechnc', 'ColorPD ')
+Colorv2.add_compatible_sensor(None, 'HITECHNC', 'ColorPD ')
 
 
 class Gyro(BaseAnalogSensor):
