@@ -145,21 +145,22 @@ class Colorv2(BaseDigitalSensor):
 but not tested. Please report whether this worked for you or not!"""
     I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
     I2C_ADDRESS.update({
-        'mode': (0x41, 'b'),
-        'number': (0x42, 'b'),
-        'red': (0x43, 'b'),
-        'green': (0x44, 'b'),
-        'blue': (0x45, 'b'),
-        'white': (0x46, 'b')
-        'index': (0x47, 'b'),
-        'normred': (0x48, 'b'),
-        'normgreen': (0x49, 'b'),
-        'normblue': (0x4A, 'b'),
-        'all_data': (0x42, '9b'),
+        'mode': (0x41, 'B'),
+        'number': (0x42, 'B'),
+        'red': (0x43, 'B'),
+        'green': (0x44, 'B'),
+        'blue': (0x45, 'B'),
+        'white': (0x46, 'B')
+        'index': (0x47, 'B'),
+        'normred': (0x48, 'B'),
+        'normgreen': (0x49, 'B'),
+        'normblue': (0x4A, 'B'),
+        'all_data': (0x42, '9B'),
         'rawred': (0x42, '<H'),
         'rawgreen': (0x44, '<H'),
         'rawblue': (0x46, '<H'),
-        'rawwhite': (0x48, '<H')
+        'rawwhite': (0x48, '<H'),
+        'all_raw_data': (0x42, '<4H')
     })
     
     def __init__(self, brick, port, check_compatible=False):
@@ -176,10 +177,7 @@ but not tested. Please report whether this worked for you or not!"""
     def get_passive_color(self):
         """"Returns color values when in passive or raw mode.
         """
-        red = self.read_value('rawred')
-        green = self.read_value('rawgreen')
-        blue = self.read_value('rawblue')
-        white = self.read_value('rawwhite')
+        red, green, blue, white = self.read_value('all_raw_data')
         return PassiveColor(red, green, blue, white)
     
     def get_mode(self):
