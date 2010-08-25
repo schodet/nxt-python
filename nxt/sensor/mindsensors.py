@@ -144,4 +144,4 @@ class IRLong(BaseDigitalSensor):
     def get_max_distance(self):
         return self.read_value('max_distance')[0]
 
-IRLong.add_compatible_sensor('V1.20', 'mndsnsrs', 'DIST')
+IRLong.add_compatible_sensor(None, 'mndsnsrs', 'DIST') #Tested with version 'V1.20'
