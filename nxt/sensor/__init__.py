@@ -25,6 +25,8 @@ import hitechnic
 HTCompass = hitechnic.Compass
 HTAccelerometer = hitechnic.Accelerometer
 HTGyro = hitechnic.Gyro
+HTColorv2 = hitechnic.Colorv2
+HTEOPD = hitechnic.EOPD
 
 
 def get_sensor(brick, port):

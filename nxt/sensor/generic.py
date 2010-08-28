@@ -114,7 +114,7 @@ class Ultrasonic(BaseDigitalSensor):
         base_address, format = self.I2C_ADDRESS['measurement_byte_0']
         return self._i2c_query(base_address + number, format)[0]
 
-Ultrasonic.add_compatible_sensor('V1.0', 'LEGO', 'Sonar')
+Ultrasonic.add_compatible_sensor(None, 'LEGO', 'Sonar') #Tested with version 'V1.0'
 
 
 class Color20(BaseAnalogSensor):
