@@ -103,8 +103,7 @@ class Accelerometer(BaseDigitalSensor):
         super(Accelerometer, self).__init__(brick, port, check_compatible)
 
     def get_acceleration(self):
-        """"Returns the acceleration along x, y, z axes. Units are unknown to
-        me.
+        """Returns the acceleration along x, y, z axes. Units are unknown to me.
         """
         xh, yh, zh, xl, yl, zl = self.read_value('all_data')
         x = xh << 2 + xl
@@ -118,7 +117,30 @@ Accelerometer.add_compatible_sensor(None, 'HiTechnc', 'Accel.  ')
 Accelerometer.add_compatible_sensor(None, 'HITECHNC', 'Accel.  ') #Tested with version '\xfdV1.1   '
 
 
-class CompassMode:
+class EOPD(BaseAnalogSensor):
+    """Object for HiTechnic Electro-Optical Proximity Detection sensors. Coded to
+HiTechnic's specs for the sensor but not tested. Please report whether this
+worked for you or not!
+    """
+    def __init__(self, brick, port, illuminated=True):
+        super(Light, self).__init__(brick, port)
+
+    def set_range_long(self):
+        self.set_input_mode(Type.LIGHT_ACTIVE, Mode.RAW)
+
+    def set_range_short(self):
+        self.set_input_mode(Type.LIGHT_INACTIVE, Mode.RAW)
+    
+    def get_raw_value(self):
+        return 1023 - self.get_input_values().scaled_value
+    
+    def get_processed_value(self):
+        return sqrt(self.get_raw_value() * 10)
+    
+    get_sample = get_processed_value
+
+
+class ColorMode:
     ACTIVE = 0x00 #get measurements using get_active_color
     PASSIVE = 0x01 #get measurements using get_passive_color
     RAW = 0x03 #get measurements using get_passive_color
