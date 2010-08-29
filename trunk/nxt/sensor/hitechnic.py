@@ -117,6 +117,117 @@ Accelerometer.add_compatible_sensor(None, 'HiTechnc', 'Accel.  ')
 Accelerometer.add_compatible_sensor(None, 'HITECHNC', 'Accel.  ') #Tested with version '\xfdV1.1   '
 
 
+class IRReceiverSpeeds:
+    def __init__(self, m1A, m1B, m2A, m2B, m3A, m3B, m4A, m4B):
+        self.m1A, self.m1B, self.m2A, self.m2B, self.m3A, self.m3B, self.m4A, self.m4B = m1A, m1B, m2A, m2B, m3A, m3B, m4A, m4B
+        self.channel_1 = (m1A, m1B)
+        self.channel_2 = (m2A, m2B)
+        self.channel_3 = (m3A, m3B)
+        self.channel_4 = (m4A, m4B)
+
+class IRReceiver(BaseDigitalSensor):
+    """Object for HiTechnic IRReceiver sensors for use with LEGO Power Functions IR
+Remotes. Coded to HiTechnic's specs for the sensor but not tested. Please report
+whether this worked for you or not!
+    """
+    I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
+    I2C_ADDRESS.update({
+        'm1A': (0x42, 'b'),
+        'm1B': (0x43, 'b'),
+        'm2A': (0x44, 'b'),
+        'm2B': (0x45, 'b'),
+        'm3A': (0x46, 'b'),
+        'm3B': (0x47, 'b'),
+        'm4A': (0x48, 'b'),
+        'm4B': (0x49, 'b'),
+        'all_data': (0x42, '8b')
+    })
+    
+    def __init__(self, brick, port, check_compatible=False):
+        super(IRReceiver, self).__init__(brick, port, check_compatible)
+
+    def get_speeds(self):
+        """Returns the motor speeds for motors A and B on channels 1-4.
+Values are -128, -100, -86, -72, -58, -44, -30, -16, 0, 16, 30, 44, 58, 72, 86
+and 100. -128 specifies motor brake mode. Note that no motors are actually
+being controlled here!
+        """
+        m1A, m1B, m2A, m2B, m3A, m3B, m4A, m4B = self.read_value('all_data')
+        return IRReceiverSpeeds(m1A, m1B, m2A, m2B, m3A, m3B, m4A, m4B)
+    
+    get_sample = get_speeds
+
+IRReceiver.add_compatible_sensor(None, 'HiTechnc', 'IRRecv  ')
+IRReceiver.add_compatible_sensor(None, 'HITECHNC', 'IRRecv  ')
+
+
+class IRSeekerDSPMode:
+    #Modes for modulated (AC) data.
+    AC_DSP_1200Hz = 0x00
+    AC_DSP_600Hz = 0x01
+
+class IRSeekerDCData:
+    def __init__(self, x, y, z):
+        self.direction, self.sensor_1, self.sensor_2, self.sensor_3, self.sensor_4, self.sensor_5, self.sensor_mean = direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5, sensor_mean
+
+class IRSeekerACData:
+    def __init__(self, x, y, z):
+        self.direction, self.sensor_1, self.sensor_2, self.sensor_3, self.sensor_4, self.sensor_5 = direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5
+
+class IRSeekerv2(BaseDigitalSensor):
+    """Object for HiTechnic IRSeeker sensors. Coded to HiTechnic's specs for the sensor
+but not tested. Please report whether this worked for you or not!
+    """
+    I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
+    I2C_ADDRESS.update({
+        'mode': (0x41, 'b'),
+        'DC_direction': (0x42, 'b'),
+        'DC_sensor_1': (0x43, 'b'),
+        'DC_sensor_2': (0x44, 'b'),
+        'DC_sensor_3': (0x45, 'b'),
+        'DC_sensor_4': (0x46, 'b'),
+        'DC_sensor_5': (0x47, 'b'),
+        'DC_sensor_mean': (0x48, 'b'),
+        'all_DC': (0x42, '7b'),
+        'AC_direction': (0x49, 'b'),
+        'AC_sensor_1': (0x4A, 'b'),
+        'AC_sensor_2': (0x4B, 'b'),
+        'AC_sensor_3': (0x4C, 'b'),
+        'AC_sensor_4': (0x4D, 'b'),
+        'AC_sensor_5': (0x4E, 'b'),
+        'all_AC': (0x49, '6b')
+    })
+    I2C_DEV = BaseDigitalSensor.I2C_DEV.copy()
+    I2C_DEV = 0x10 #different from standard 0x02
+    
+    def __init__(self, brick, port, check_compatible=False):
+        super(IRSeekerv2, self).__init__(brick, port, check_compatible)
+
+    def get_dc_values(self):
+        """Returns the unmodulated (DC) values.
+        """
+        direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5, sensor_mean = self.read_value('all_DC')
+        return IRSeekerDCData(direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5, sensor_mean)
+    
+    def get_ac_values(self):
+        """Returns the modulated (AC) values. 600Hz and 1200Hz modes can be selected
+between by using the set_dsp_mode() function.
+        """
+        direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5 = self.read_value('all_AC')
+        return IRSeekerACData(direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5)
+    
+    def get_dsp_mode(self):
+        return self.read_value('mode')[0]
+    
+    def set_dsp_mode(self, mode):
+        self.write_value('mode', (mode, ))
+    
+    get_sample = get_ac_values
+
+IRSeekerv2.add_compatible_sensor(None, 'HiTechnc', 'NewIRDir')
+IRSeekerv2.add_compatible_sensor(None, 'HITECHNC', 'NewIRDir')
+
+
 class EOPD(BaseAnalogSensor):
     """Object for HiTechnic Electro-Optical Proximity Detection sensors. Coded to
 HiTechnic's specs for the sensor but not tested. Please report whether this
@@ -189,7 +300,7 @@ but not tested. Please report whether this worked for you or not!"""
         super(Colorv2, self).__init__(brick, port, check_compatible)
 
     def get_active_color(self):
-        """"Returns color values when in active mode.
+        """Returns color values when in active mode.
         """
         number, red, green, blue, white, index, normred, normgreen, normblue = self.read_value('all_data')
         return ActiveColor(number, red, green, blue, white, index, normred, normgreen, normblue)
@@ -197,13 +308,13 @@ but not tested. Please report whether this worked for you or not!"""
     get_sample = get_active_color
     
     def get_passive_color(self):
-        """"Returns color values when in passive or raw mode.
+        """Returns color values when in passive or raw mode.
         """
         red, green, blue, white = self.read_value('all_raw_data')
         return PassiveColor(red, green, blue, white)
     
     def get_mode(self):
-        return self.read_value('mode')
+        return self.read_value('mode')[0]
     
     def set_mode(self, mode)
         self.write_value('mode', (mode, ))

@@ -27,6 +27,8 @@ HTAccelerometer = hitechnic.Accelerometer
 HTGyro = hitechnic.Gyro
 HTColorv2 = hitechnic.Colorv2
 HTEOPD = hitechnic.EOPD
+HTIRReceiver = hitechnic.IRReceiver
+HTIRSeekerv2 = hitechnic.IRSeekerv2
 
 
 def get_sensor(brick, port):
