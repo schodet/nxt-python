@@ -20,7 +20,15 @@ from .generic import Touch, Light, Sound, Ultrasonic, Color20
 import mindsensors
 MSSumoEyes = mindsensors.SumoEyes
 MSCompass = mindsensors.Compass
-MSIRLong = mindsensors.IRLong
+MSDIST = mindsensors.DIST
+MSRTC = mindsensors.RTC
+MSACCL = mindsensors.ACCL
+MSServo = mindsensors.Servo
+MSMTRMUX = mindsensors.MTRMUX
+MSLineLeader = mindsensors.LineLeader
+MSMMX = mindsensors.MMX
+MSPS2 = mindsensors.PS2
+MSHID = mindsensors.HID
 import hitechnic
 HTCompass = hitechnic.Compass
 HTAccelerometer = hitechnic.Accelerometer
