@@ -25,7 +25,6 @@ class CompassMode:
 
 class Compass(BaseDigitalSensor):
     """Hitechnic compass sensor."""
-
     I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
     I2C_ADDRESS.update({'heading': (0x44, '<H'),
                         'mode': (0x41, 'B'),
@@ -99,7 +98,7 @@ class Accelerometer(BaseDigitalSensor):
         'all_data': (0x42, '3b3B')
     })
     
-    def __init__(self, brick, port, check_compatible=False):
+    def __init__(self, brick, port, check_compatible=True):
         super(Accelerometer, self).__init__(brick, port, check_compatible)
 
     def get_acceleration(self):
@@ -143,7 +142,7 @@ whether this worked for you or not!
         'all_data': (0x42, '8b')
     })
     
-    def __init__(self, brick, port, check_compatible=False):
+    def __init__(self, brick, port, check_compatible=True):
         super(IRReceiver, self).__init__(brick, port, check_compatible)
 
     def get_speeds(self):
@@ -197,10 +196,9 @@ but not tested. Please report whether this worked for you or not!
         'AC_sensor_5': (0x4E, 'b'),
         'all_AC': (0x49, '6b')
     })
-    I2C_DEV = BaseDigitalSensor.I2C_DEV.copy()
     I2C_DEV = 0x10 #different from standard 0x02
     
-    def __init__(self, brick, port, check_compatible=False):
+    def __init__(self, brick, port, check_compatible=True):
         super(IRSeekerv2, self).__init__(brick, port, check_compatible)
 
     def get_dc_values(self):
@@ -283,7 +281,7 @@ but not tested. Please report whether this worked for you or not!"""
         'red': (0x43, 'B'),
         'green': (0x44, 'B'),
         'blue': (0x45, 'B'),
-        'white': (0x46, 'B')
+        'white': (0x46, 'B'),
         'index': (0x47, 'B'),
         'normred': (0x48, 'B'),
         'normgreen': (0x49, 'B'),
@@ -296,7 +294,7 @@ but not tested. Please report whether this worked for you or not!"""
         'all_raw_data': (0x42, '<4H')
     })
     
-    def __init__(self, brick, port, check_compatible=False):
+    def __init__(self, brick, port, check_compatible=True):
         super(Colorv2, self).__init__(brick, port, check_compatible)
 
     def get_active_color(self):
@@ -316,7 +314,7 @@ but not tested. Please report whether this worked for you or not!"""
     def get_mode(self):
         return self.read_value('mode')[0]
     
-    def set_mode(self, mode)
+    def set_mode(self, mode):
         self.write_value('mode', (mode, ))
 
 Colorv2.add_compatible_sensor(None, 'HiTechnc', 'ColorPD')

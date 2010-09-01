@@ -56,10 +56,10 @@ class BaseDigitalSensor(Sensor):
         'factory_scale_divisor': (0x13, 'B'),
     }
     
-    def __init__(self, brick, port, check_compatible=False):
+    def __init__(self, brick, port, check_compatible=True):
         """Creates a BaseDigitalSensor. If check_compatible is True, queries
-        the sensor for its name, and if a wrong sensor class was used, raises a
-        TypeError.
+        the sensor for its name, and if a wrong sensor class was used, prints
+        a warning.
         """
         super(BaseDigitalSensor, self).__init__(brick, port)
         self.set_input_mode(Type.LOW_SPEED_9V, Mode.RAW)
@@ -68,14 +68,13 @@ class BaseDigitalSensor(Sensor):
         if check_compatible:
             sensor = self.get_sensor_info()
             if not sensor in self.compatible_sensors:
-                raise TypeError('Wrong sensor class chosen for sensor ' + 
-                          str(sensor) + '. In rare cases, writing the wrong'
-                          'vales to the I2C bus can damage the sensor. If you'
-                          'are using the correct sensor object for the sensor,'
-                          'this message is likely in error and you should go'
-                          'ahead and call the function with "check_compatible='
-                          'False" and file a bug report, including the output'
-                          'of printing get_sensor_info()')
+                print ('WARNING: Wrong sensor class chosen for sensor ' + 
+                          str(sensor.product_id) + ' on port ' + str(port) + '. ' + """
+You may be using the wrong type of sensor or may have connected the cable
+incorrectly. If you are sure you're using the correct sensor class for the
+sensor, this message is likely in error and you should disregard it and file a
+bug report, including the output of get_sensor_info(). This message can be
+suppressed by passing "check_compatible=False" when creating the sensor object.""")
 
     def _ls_read(self):
         for n in range(3):
@@ -106,8 +105,6 @@ class BaseDigitalSensor(Sensor):
             diff = time() - self.lastpoll
             sleep(0.02 - diff)
         self.brick.ls_write(self.port, msg, n_bytes)
-        #self._ls_get_status(n_bytes)
-        #data = self.brick.ls_read(self.port)
         data = self._ls_read()
         self.lastpoll = time()
         if len(data) < n_bytes:
