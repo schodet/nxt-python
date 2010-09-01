@@ -94,7 +94,7 @@ class Compass(BaseDigitalSensor):
                         'y_raw': (0x4E, '<H'),
     })
     
-    def __init__(self, brick, port, check_compatible=False):
+    def __init__(self, brick, port, check_compatible=True):
         super(Compass, self).__init__(brick, port, check_compatible)
         self.write_value('command', (CompassCommand.MAP_HEADING_INTEGER, )) # is this necessary?
 
@@ -295,7 +295,7 @@ class ACCL(BaseDigitalSensor):
                         'z_range_MSB':  (0x56, '<B'),
                       })
 
-    def __init__(self, brick, port, check_compatible=False):
+    def __init__(self, brick, port, check_compatible=True):
         super(ACCL, self).__init__(brick, port, check_compatible)
 
     def command(self, command):
@@ -342,7 +342,7 @@ class MTRMUX(BaseDigitalSensor):
                       })
     I2C_DEV = 0xB4
     
-    def __init__(self, brick, port, check_compatible=False):
+    def __init__(self, brick, port, check_compatible=True):
         super(MTRMUX, self).__init__(brick, port, check_compatible)
 
     def command(self, command):
@@ -411,7 +411,7 @@ class LineLeader(BaseDigitalSensor):
                         'uncal_sensor8_voltage_byte1':(0x82, '<B'),
                       })
     
-    def __init__(self, brick, port, check_compatible=False):
+    def __init__(self, brick, port, check_compatible=True):
         super(LineLeader, self).__init__(brick, port, check_compatible)
 
     def command(self, command):
@@ -511,7 +511,7 @@ class Servo(BaseDigitalSensor):
                 'P':  (0x50),   #Pause Macro
                 }
 
-    def __init__(self, brick, port, check_compatible=False):
+    def __init__(self, brick, port, check_compatible=True):
         super(Servo, self).__init__(brick, port, check_compatible)
         
     def command(self, command):
@@ -580,7 +580,7 @@ class MMX(BaseDigitalSensor):
                   })      
     I2C_DEV = 0x06
     
-    def __init__(self, brick, port, check_compatible=False):
+    def __init__(self, brick, port, check_compatible=True):
         super(MMX, self).__init__(brick, port, check_compatible)
     
     def command(self, command):
@@ -664,7 +664,7 @@ class HID(BaseDigitalSensor):
                         })
     I2C_DEV = 0x04
 
-    def __init__(self, brick, port, check_compatible=False):
+    def __init__(self, brick, port, check_compatible=True):
         super(HID, self).__init__(brick, port, check_compatible)
 
     def command(self, command):
@@ -700,7 +700,7 @@ class PS2(BaseDigitalSensor):
                         'y_right_joystick': (0x47, '<B'),
                         })
     
-    def __init__(self, brick, port, check_compatible=False):
+    def __init__(self, brick, port, check_compatible=True):
         super(PS2, self).__init__(brick, port, check_compatible)
     
     def command(self, command):

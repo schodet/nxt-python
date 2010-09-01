@@ -78,8 +78,6 @@ class Sound(BaseAnalogSensor):
 
 class Ultrasonic(BaseDigitalSensor):
     """Object for ultrasonic sensors"""
-
-    # I2C addresses for an Ultrasonic sensor
     I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
     I2C_ADDRESS.update({'measurement_units': (0x14, '7s'),
         'continuous_measurement_interval': (0x40, 'B'),
@@ -90,7 +88,7 @@ class Ultrasonic(BaseDigitalSensor):
         'actual_scale_divisor': (0x52, 'B'),
     })
 
-    def __init__(self, brick, port, check_compatible=False):
+    def __init__(self, brick, port, check_compatible=True):
         super(Ultrasonic, self).__init__(brick, port, check_compatible)
         self.set_input_mode(Type.LOW_SPEED_9V, Mode.RAW)
 
