@@ -19,7 +19,7 @@ from .digital import BaseDigitalSensor
 from .generic import Touch, Light, Sound, Ultrasonic, Color20
 import mindsensors
 MSSumoEyes = mindsensors.SumoEyes
-MSCompass = mindsensors.Compass
+MSCompassv2 = mindsensors.Compassv2
 MSDIST = mindsensors.DIST
 MSRTC = mindsensors.RTC
 MSACCL = mindsensors.ACCL

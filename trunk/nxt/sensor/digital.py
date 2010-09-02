@@ -36,9 +36,9 @@ class SensorInfo:
     
     def __str__(self):
         outstr = ''
-        outstr += (self.clarifybinary(self.version, 'Version'))
-        outstr += (self.clarifybinary(self.product_id, 'Product ID'))
-        outstr += (self.clarifybinary(self.sensor_type, 'Type'))
+        outstr += (self.clarifybinary(str(self.version), 'Version'))
+        outstr += (self.clarifybinary(str(self.product_id), 'Product ID'))
+        outstr += (self.clarifybinary(str(self.sensor_type), 'Type'))
         return outstr
 
 class BaseDigitalSensor(Sensor):
@@ -112,7 +112,7 @@ suppressed by passing "check_compatible=False" when creating the sensor object."
         return struct.unpack(format, data[-n_bytes:]) # TODO: why could there be more than n_bytes? 
         
     def read_value(self, name):
-        """Reads an value from the sensor. Name must be a string found in
+        """Reads a value from the sensor. Name must be a string found in
         self.I2C_ADDRESS dictionary. Entries in self.I2C_ADDRESS are in the
         name: (address, format) form, with format as in the struct module.
         Be careful on unpacking single variables - struct module puts them in
@@ -140,7 +140,7 @@ suppressed by passing "check_compatible=False" when creating the sensor object."
     @classmethod
     def add_compatible_sensor(cls, version, product_id, sensor_type):
         """Adds an entry in the compatibility table for the sensor. If version
-        is None, then it's the default class for this model. If sensor_type is
+        is None, then it's the default class for this model. If product_id is
         None, then this is the default class for this vendor.
         """
         try:
@@ -153,16 +153,6 @@ suppressed by passing "check_compatible=False" when creating the sensor object."
             add_mapping(cls, version, product_id, sensor_type)
             
             
-class CommandState(object):
-    'Namespace for enumeration of the command state of sensors'
-    # NOTE: just a namespace (enumeration)
-    OFF = 0x00
-    SINGLE_SHOT = 0x01
-    CONTINUOUS_MEASUREMENT = 0x02
-    EVENT_CAPTURE = 0x03 # Check for ultrasonic interference
-    REQUEST_WARM_RESET = 0x04
-
-
 class SCompatibility(SensorInfo):
     """An object that helps manage the sensor mappings"""
     def __eq__(self, other):
@@ -175,7 +165,6 @@ class SCompatibility(SensorInfo):
             return (self.version == other.version and
                     self.product_id == other.product_id and
                     self.sensor_type == other.sensor_type)
-
 
 sensor_mappings = {}
 

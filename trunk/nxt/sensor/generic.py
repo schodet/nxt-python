@@ -74,20 +74,28 @@ class Sound(BaseAnalogSensor):
         return self.get_input_values().scaled_value
     
     get_sample = get_loudness
-	
+
 
 class Ultrasonic(BaseDigitalSensor):
     """Object for ultrasonic sensors"""
     I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
     I2C_ADDRESS.update({'measurement_units': (0x14, '7s'),
         'continuous_measurement_interval': (0x40, 'B'),
-        'command_state': (0x41, 'B'),
+        'command': (0x41, 'B'),
         'measurement_byte_0': (0x42, 'B'),
         'measurements': (0x42, 'B' * 8),
         'actual_scale_factor': (0x51, 'B'),
         'actual_scale_divisor': (0x52, 'B'),
     })
-
+    
+    class Commands:
+        'Namespace for enumeration of the command state of sensors'
+        OFF = 0x00
+        SINGLE_SHOT = 0x01
+        CONTINUOUS_MEASUREMENT = 0x02
+        EVENT_CAPTURE = 0x03 # Check for ultrasonic interference
+        REQUEST_WARM_RESET = 0x04
+    
     def __init__(self, brick, port, check_compatible=True):
         super(Ultrasonic, self).__init__(brick, port, check_compatible)
         self.set_input_mode(Type.LOW_SPEED_9V, Mode.RAW)
@@ -111,6 +119,9 @@ class Ultrasonic(BaseDigitalSensor):
             raise ValueError('Measurements are numbered 0 to 7, not ' + str(number))
         base_address, format = self.I2C_ADDRESS['measurement_byte_0']
         return self._i2c_query(base_address + number, format)[0]
+
+    def command(self, command):
+        self.write_value('command', (command, ))
 
 Ultrasonic.add_compatible_sensor(None, 'LEGO', 'Sonar') #Tested with version 'V1.0'
 

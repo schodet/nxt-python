@@ -17,11 +17,6 @@ from .common import *
 from .digital import BaseDigitalSensor
 from .analog import BaseAnalogSensor
 
-class CompassMode:
-    MEASUREMENT = 0x00
-    CALIBRATION = 0x43
-    CALIBRATION_FAILED = 0x02
-
 
 class Compass(BaseDigitalSensor):
     """Hitechnic compass sensor."""
@@ -29,7 +24,12 @@ class Compass(BaseDigitalSensor):
     I2C_ADDRESS.update({'heading': (0x44, '<H'),
                         'mode': (0x41, 'B'),
     })
-
+    
+    class Modes:
+        MEASUREMENT = 0x00
+        CALIBRATION = 0x43
+        CALIBRATION_FAILED = 0x02
+    
     def get_heading(self):
         """Returns heading from North in degrees."""
         return self.read_value('heading')[0]
@@ -84,10 +84,6 @@ Compass.add_compatible_sensor(None, 'HiTechnc', 'Compass ') #Tested with version
 Compass.add_compatible_sensor(None, 'HITECHNC', 'Compass ') #Tested with version '\xfdV2.1   '
 
 
-class Acceleration:
-    def __init__(self, x, y, z):
-        self.x, self.y, self.z =x, y, z
-
 class Accelerometer(BaseDigitalSensor):
     'Object for Accelerometer sensors. Thanks to Paulo Vieira.'
     I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
@@ -97,6 +93,10 @@ class Accelerometer(BaseDigitalSensor):
         'xyz_short': (0x42, '3b'),
         'all_data': (0x42, '3b3B')
     })
+    
+    class Acceleration:
+        def __init__(self, x, y, z):
+            self.x, self.y, self.z =x, y, z
     
     def __init__(self, brick, port, check_compatible=True):
         super(Accelerometer, self).__init__(brick, port, check_compatible)
@@ -108,21 +108,13 @@ class Accelerometer(BaseDigitalSensor):
         x = xh << 2 + xl
         y = yh << 2 + yl
         z = zh << 2 + yl
-        return Acceleration(x, y, z)
+        return self.Acceleration(x, y, z)
     
     get_sample = get_acceleration
 
 Accelerometer.add_compatible_sensor(None, 'HiTechnc', 'Accel.  ')
 Accelerometer.add_compatible_sensor(None, 'HITECHNC', 'Accel.  ') #Tested with version '\xfdV1.1   '
 
-
-class IRReceiverSpeeds:
-    def __init__(self, m1A, m1B, m2A, m2B, m3A, m3B, m4A, m4B):
-        self.m1A, self.m1B, self.m2A, self.m2B, self.m3A, self.m3B, self.m4A, self.m4B = m1A, m1B, m2A, m2B, m3A, m3B, m4A, m4B
-        self.channel_1 = (m1A, m1B)
-        self.channel_2 = (m2A, m2B)
-        self.channel_3 = (m3A, m3B)
-        self.channel_4 = (m4A, m4B)
 
 class IRReceiver(BaseDigitalSensor):
     """Object for HiTechnic IRReceiver sensors for use with LEGO Power Functions IR
@@ -141,6 +133,14 @@ whether this worked for you or not!
         'm4B': (0x49, 'b'),
         'all_data': (0x42, '8b')
     })
+
+    class SpeedReading:
+        def __init__(self, m1A, m1B, m2A, m2B, m3A, m3B, m4A, m4B):
+            self.m1A, self.m1B, self.m2A, self.m2B, self.m3A, self.m3B, self.m4A, self.m4B = m1A, m1B, m2A, m2B, m3A, m3B, m4A, m4B
+            self.channel_1 = (m1A, m1B)
+            self.channel_2 = (m2A, m2B)
+            self.channel_3 = (m3A, m3B)
+            self.channel_4 = (m4A, m4B)
     
     def __init__(self, brick, port, check_compatible=True):
         super(IRReceiver, self).__init__(brick, port, check_compatible)
@@ -152,26 +152,13 @@ and 100. -128 specifies motor brake mode. Note that no motors are actually
 being controlled here!
         """
         m1A, m1B, m2A, m2B, m3A, m3B, m4A, m4B = self.read_value('all_data')
-        return IRReceiverSpeeds(m1A, m1B, m2A, m2B, m3A, m3B, m4A, m4B)
+        return self.SpeedReading(m1A, m1B, m2A, m2B, m3A, m3B, m4A, m4B)
     
     get_sample = get_speeds
 
 IRReceiver.add_compatible_sensor(None, 'HiTechnc', 'IRRecv  ')
 IRReceiver.add_compatible_sensor(None, 'HITECHNC', 'IRRecv  ')
 
-
-class IRSeekerDSPMode:
-    #Modes for modulated (AC) data.
-    AC_DSP_1200Hz = 0x00
-    AC_DSP_600Hz = 0x01
-
-class IRSeekerDCData:
-    def __init__(self, x, y, z):
-        self.direction, self.sensor_1, self.sensor_2, self.sensor_3, self.sensor_4, self.sensor_5, self.sensor_mean = direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5, sensor_mean
-
-class IRSeekerACData:
-    def __init__(self, x, y, z):
-        self.direction, self.sensor_1, self.sensor_2, self.sensor_3, self.sensor_4, self.sensor_5 = direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5
 
 class IRSeekerv2(BaseDigitalSensor):
     """Object for HiTechnic IRSeeker sensors. Coded to HiTechnic's specs for the sensor
@@ -198,6 +185,19 @@ but not tested. Please report whether this worked for you or not!
     })
     I2C_DEV = 0x10 #different from standard 0x02
     
+    class DSPModes:
+        #Modes for modulated (AC) data.
+        AC_DSP_1200Hz = 0x00
+        AC_DSP_600Hz = 0x01
+    
+    class DCData:
+        def __init__(self, x, y, z):
+            self.direction, self.sensor_1, self.sensor_2, self.sensor_3, self.sensor_4, self.sensor_5, self.sensor_mean = direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5, sensor_mean
+    
+    class ACData:
+        def __init__(self, x, y, z):
+            self.direction, self.sensor_1, self.sensor_2, self.sensor_3, self.sensor_4, self.sensor_5 = direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5
+    
     def __init__(self, brick, port, check_compatible=True):
         super(IRSeekerv2, self).__init__(brick, port, check_compatible)
 
@@ -205,14 +205,14 @@ but not tested. Please report whether this worked for you or not!
         """Returns the unmodulated (DC) values.
         """
         direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5, sensor_mean = self.read_value('all_DC')
-        return IRSeekerDCData(direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5, sensor_mean)
+        return self.DCData(direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5, sensor_mean)
     
     def get_ac_values(self):
         """Returns the modulated (AC) values. 600Hz and 1200Hz modes can be selected
 between by using the set_dsp_mode() function.
         """
         direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5 = self.read_value('all_AC')
-        return IRSeekerACData(direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5)
+        return self.ACData(direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5)
     
     def get_dsp_mode(self):
         return self.read_value('mode')[0]
@@ -249,28 +249,6 @@ worked for you or not!
     get_sample = get_processed_value
 
 
-class ColorMode:
-    ACTIVE = 0x00 #get measurements using get_active_color
-    PASSIVE = 0x01 #get measurements using get_passive_color
-    RAW = 0x03 #get measurements using get_passive_color
-    BLACK_CALIBRATION = 0x42 #hold away from objects, results saved in EEPROM
-    WHITE_CALIBRATION = 0x43 #hold in front of white surface, results saved in EEPROM
-    LED_POWER_LOW = 0x4C #saved in EEPROM, must calibrate after using
-    LED_POWER_HIGH = 0x48 #saved in EEPROM, must calibrate after using
-    RANGE_NEAR = 0x4E #saved in EEPROM, only affects active mode
-    RANGE_FAR = 0x46 #saved in EEPROM, only affects active mode, more susceptable to noise
-    FREQ_50 = 0x35 #saved in EEPROM, use when local wall power is 50Hz
-    FREQ_60 = 0x36 #saved in EEPROM, use when local wall power is 60Hz
-
-class ActiveColor:
-    def __init__(self, number, red, green, blue, white, index, normred, normgreen, normblue):
-        self.number, self.red, self.green, self.blue, self.white, self.index, self.normred, self.normgreen, self.normblue = number, red, green, blue, white, index, normred, normgreen, normblue
-
-class PassiveColor:
-    #also holds raw mode data
-    def __init__(self, red, green, blue, white):
-        self.red, self.green, self.blue, self.white = red, green, blue, white
-
 class Colorv2(BaseDigitalSensor):
     """Object for HiTechnic Color v2 Sensors. Coded to HiTechnic's specs for the sensor
 but not tested. Please report whether this worked for you or not!"""
@@ -294,6 +272,28 @@ but not tested. Please report whether this worked for you or not!"""
         'all_raw_data': (0x42, '<4H')
     })
     
+    class Modes:
+        ACTIVE = 0x00 #get measurements using get_active_color
+        PASSIVE = 0x01 #get measurements using get_passive_color
+        RAW = 0x03 #get measurements using get_passive_color
+        BLACK_CALIBRATION = 0x42 #hold away from objects, results saved in EEPROM
+        WHITE_CALIBRATION = 0x43 #hold in front of white surface, results saved in EEPROM
+        LED_POWER_LOW = 0x4C #saved in EEPROM, must calibrate after using
+        LED_POWER_HIGH = 0x48 #saved in EEPROM, must calibrate after using
+        RANGE_NEAR = 0x4E #saved in EEPROM, only affects active mode
+        RANGE_FAR = 0x46 #saved in EEPROM, only affects active mode, more susceptable to noise
+        FREQ_50 = 0x35 #saved in EEPROM, use when local wall power is 50Hz
+        FREQ_60 = 0x36 #saved in EEPROM, use when local wall power is 60Hz
+
+    class ActiveData:
+        def __init__(self, number, red, green, blue, white, index, normred, normgreen, normblue):
+            self.number, self.red, self.green, self.blue, self.white, self.index, self.normred, self.normgreen, self.normblue = number, red, green, blue, white, index, normred, normgreen, normblue
+
+    class PassiveData:
+        #also holds raw mode data
+        def __init__(self, red, green, blue, white):
+            self.red, self.green, self.blue, self.white = red, green, blue, white
+    
     def __init__(self, brick, port, check_compatible=True):
         super(Colorv2, self).__init__(brick, port, check_compatible)
 
@@ -301,7 +301,7 @@ but not tested. Please report whether this worked for you or not!"""
         """Returns color values when in active mode.
         """
         number, red, green, blue, white, index, normred, normgreen, normblue = self.read_value('all_data')
-        return ActiveColor(number, red, green, blue, white, index, normred, normgreen, normblue)
+        return self.ActiveData(number, red, green, blue, white, index, normred, normgreen, normblue)
     
     get_sample = get_active_color
     
@@ -309,7 +309,7 @@ but not tested. Please report whether this worked for you or not!"""
         """Returns color values when in passive or raw mode.
         """
         red, green, blue, white = self.read_value('all_raw_data')
-        return PassiveColor(red, green, blue, white)
+        return self.PassiveData(red, green, blue, white)
     
     def get_mode(self):
         return self.read_value('mode')[0]
