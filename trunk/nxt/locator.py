@@ -30,7 +30,7 @@ def find_bricks(host=None, name=None):
     except ImportError:
         usb_available = False
         import sys
-        print >>sys.stderr, "USB unavailable, not searching there"
+        print >>sys.stderr, "USB module unavailable, not searching there"
     
     try:
         from bluetooth import BluetoothError
@@ -43,9 +43,9 @@ def find_bricks(host=None, name=None):
             pass
     except ImportError:
         import sys
-        print >>sys.stderr, "Bluetooth unavailable, not searching there"
+        print >>sys.stderr, "Bluetooth module unavailable, not searching there"
         if not usb_available:
-            raise NoBackendError("Neither USB nor Bluetooth could be used!")
+            raise NoBackendError("Neither USB nor Bluetooth could be used! Did you install PyUSB or PyBluez?")
     
 
 def find_one_brick(host=None, name=None):
