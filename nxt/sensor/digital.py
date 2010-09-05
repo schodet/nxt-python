@@ -76,14 +76,15 @@ sensor, this message is likely in error and you should disregard it and file a
 bug report, including the output of get_sensor_info(). This message can be
 suppressed by passing "check_compatible=False" when creating the sensor object.""")
 
-    def _ls_read(self):
+    def _ls_get_status(self, n_bytes):
         for n in range(3):
             try:
-                return self.brick.ls_read(self.port)
-            except I2CError:
-                pass
-        raise I2CError, 'ls_read timeout'
-
+                b = self.brick.ls_get_status(self.port)
+                if b >= n_bytes:
+                    return b
+            except I2CPendingError:
+                sleep(0.01)
+        raise I2CError, 'ls_get_status timeout'
 
     def _i2c_command(self, address, value, format):
         """Writes an i2c value to the given address. value must be a string. value is
@@ -105,7 +106,8 @@ suppressed by passing "check_compatible=False" when creating the sensor object."
             diff = time() - self.lastpoll
             sleep(0.02 - diff)
         self.brick.ls_write(self.port, msg, n_bytes)
-        data = self._ls_read()
+        self._ls_get_status(n_bytes)
+        data = self.brick.ls_read(self.port)
         self.lastpoll = time()
         if len(data) < n_bytes:
             raise I2CError, 'Read failure'
