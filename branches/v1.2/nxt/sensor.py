@@ -14,7 +14,6 @@
 
 from time import sleep, time
 from nxt.error import I2CError, I2CPendingError
-import sys
 
 PORT_1 = 0x00
 PORT_2 = 0x01
@@ -112,13 +111,15 @@ class DigitalSensor(Sensor):
 		super(DigitalSensor, self).__init__(brick, port)
 		self.lastpoll = None
 
-	def _ls_read(self):
+	def _ls_get_status(self, n_bytes):
 		for n in range(3):
 			try:
-				return self.brick.ls_read(self.port)
-			except I2CError:
-				pass
-		raise I2CError, 'ls_read timeout'
+				b = self.brick.ls_get_status(self.port)
+				if b >= n_bytes:
+					return b
+			except I2CPendingError:
+				sleep(0.01)
+		raise I2CError, 'ls_get_status timeout'
 
 	def i2c_command(self, address, value):
 		msg = chr(DigitalSensor.I2C_DEV) + chr(address) + chr(value)
@@ -131,8 +132,8 @@ class DigitalSensor(Sensor):
 			diff = time() - self.lastpoll
 			sleep(0.02 - diff)
 		self.brick.ls_write(self.port, msg, n_bytes)
-		#when on USB, a slight pause (~3.5ms) here MAY increase performance very slightly (~1ms off of ~32ms) -- YMMV
-		data = self._ls_read()
+		self._ls_get_status(n_bytes)
+		data = self.brick.ls_read(self.port)
 		self.lastpoll = time()
 		if len(data) < n_bytes:
 			raise I2CError, 'Read failure'
