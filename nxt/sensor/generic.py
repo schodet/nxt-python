@@ -83,17 +83,17 @@ class Ultrasonic(BaseDigitalSensor):
         'continuous_measurement_interval': (0x40, 'B'),
         'command': (0x41, 'B'),
         'measurement_byte_0': (0x42, 'B'),
-        'measurements': (0x42, 'B' * 8),
+        'measurements': (0x42, '8B'),
         'actual_scale_factor': (0x51, 'B'),
         'actual_scale_divisor': (0x52, 'B'),
     })
     
     class Commands:
-        'Namespace for enumeration of the command state of sensors'
+        'These are for passing to command()'
         OFF = 0x00
         SINGLE_SHOT = 0x01
         CONTINUOUS_MEASUREMENT = 0x02
-        EVENT_CAPTURE = 0x03 # Check for ultrasonic interference
+        EVENT_CAPTURE = 0x03 #Optimize results when other Ultrasonic sensors running
         REQUEST_WARM_RESET = 0x04
     
     def __init__(self, brick, port, check_compatible=True):
@@ -122,6 +122,15 @@ class Ultrasonic(BaseDigitalSensor):
 
     def command(self, command):
         self.write_value('command', (command, ))
+    
+    def get_interval(self):
+        'Get the sample interval for continuous measurement mode -- Unknown units'
+        return self.read_value('continuous_measurement_interval')
+    
+    def set_interval(self, interval):
+        """Set the sample interval for continuous measurement mode.
+Unknown units; default is 1"""
+        self.write_value('continuous_measurement_interval', interval)
 
 Ultrasonic.add_compatible_sensor(None, 'LEGO', 'Sonar') #Tested with version 'V1.0'
 
