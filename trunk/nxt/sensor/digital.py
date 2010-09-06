@@ -65,6 +65,9 @@ class BaseDigitalSensor(Sensor):
         self.set_input_mode(Type.LOW_SPEED_9V, Mode.RAW)
         self.lastpoll = None
         sleep(0.1)  # Give I2C time to initialize
+        #Don't do type checking if this class has no compatible sensors listed.
+        try: self.compatible_sensors
+        except AttributeError: check_compatible = False
         if check_compatible:
             sensor = self.get_sensor_info()
             if not sensor in self.compatible_sensors:
@@ -97,7 +100,7 @@ suppressed by passing "check_compatible=False" when creating the sensor object."
     def _i2c_query(self, address, format):
         """Reads an i2c value from given address, and returns a value unpacked
         according to the given format. Format is the same as in the struct
-        module.
+        module. See http://docs.python.org/library/struct.html#format-strings
         """
         n_bytes = struct.calcsize(format)
         msg = chr(self.I2C_DEV) + chr(address)
