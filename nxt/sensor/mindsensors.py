@@ -260,37 +260,31 @@ class RTC(BaseDigitalSensor):
 class ACCL(BaseDigitalSensor):
     """Class for Accelerometer sensor"""
     I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
-    I2C_ADDRESS.update({'command':      (0x41, '<B'),
-                        'x_tilt':       (0x42, '<B'),
-                        'y_tilt':       (0x43, '<B'),
-                        'z_tilt':       (0x44, '<B'),
+    I2C_ADDRESS.update({'sensitivity':  (0x19, '<B'),
+                        'command':      (0x41, '<B'),
+                        'x_tilt':       (0x42, '<b'),
+                        'y_tilt':       (0x43, '<b'),
+                        'z_tilt':       (0x44, '<b'),
 
-                        'x_accel_LSB':   (0x45, '<H'),
-                        'x_accel_MSB':   (0x46, '<B'),
+                        'x_accel':   (0x45, '<h'),
+                        'y_accel':  (0x47, '<h'),
+                        'z_accel':  (0x49, '<h'),
 
-                        'y_accel_LSB':  (0x47, '<H'),
-                        'y_accel_MSB':  (0x48, '<B'),
+                        'x_offset': (0x4B, '<h'),
+                        'x_range':  (0x4D, '<h'),
 
-                        'z_accel_LSB':  (0x49, '<H'),
-                        'z_accel_MSB':  (0x4A, '<B'),
+                        'y_offset': (0x4F, '<h'),
+                        'y_range':  (0x51, '<h'),
 
-                        'x_offset_LSB': (0x4B, '<H'),
-                        'x_offset_MSB': (0x4C, '<B'),
-                        'x_range_LSB':  (0x4D, '<H'),
-                        'x_range_MSB':  (0x4E, '<B'),
-
-                        'y_offset_LSB': (0x4F, '<H'),
-                        'y_offset_MSB': (0x50, '<B'),
-                        'y_range_LSB':  (0x51, '<H'),
-                        'y_range_MSB':  (0x52, '<B'),
-
-                        'z_offset_LSB': (0x53, '<H'),
-                        'z_offset_MSB': (0x54, '<B'),
-                        'z_range_LSB':  (0x55, '<H'),
-                        'z_range_MSB':  (0x56, '<B'),
+                        'z_offset': (0x53, '<h'),
+                        'z_range':  (0x55, '<h'),
                       })
     
     class Commands:
+        SENS_15G = '1' #Alt. 2.5G (sensors older than V3.20)
+        SENS_2G = '2' #Alt .3.3G
+        SENS_4G = '3' #Alt. 6.7G
+        SENS_6G = '4' #Alt. 10G
         X_CALIBRATION = 'X' #Acquire X point calibration
         X_CAL_AND_END = 'x' #X point calibration and end calibration
         Y_CALIBRATION = 'Y' #Acquire Y point calibration
@@ -313,18 +307,26 @@ class ACCL(BaseDigitalSensor):
         return self.read_value(xyz)[0]
     
     def get_accel(self, letter):
-        xyz = str(letter) + '_accel_LSB'
+        xyz = str(letter) + '_accel'
         return self.read_value(xyz)[0]
     
     def get_sample(self):
         return (self.get_accel('x'), self.get_accel('y'), self.get_accel('z'))
 
-    def offset(self, letter, value):
-        xyz = str(letter) + '_offset_LSB'
+    def get_offset(self, letter):
+        xyz = str(letter) + '_offset'
+        return self.read_value(xyz)[0]
+
+    def get_range(self, letter):
+        xyz = str(letter) + '_range'
+        return self.read_value(xyz)[0]
+
+    def set_offset(self, letter, value):
+        xyz = str(letter) + '_offset'
         self.write_value(xyz, (value, ))
 
     def set_range(self, letter, value):
-        xyz = str(letter) + '_range_LSB'
+        xyz = str(letter) + '_range'
         self.write_value(xyz, (value, ))
 
 ACCL.add_compatible_sensor(None, 'mndsnsrs', 'ACCL-NX') #Tested with version 'V3.20'
@@ -380,7 +382,7 @@ class LineLeader(BaseDigitalSensor):
     """Class for Line Sensor Array"""
     I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
     I2C_ADDRESS.update({'command':   (0x41, '<B'),
-                        'steering':  (0x42, '<B'),
+                        'steering':  (0x42, '<b'),
                         'average':   (0x43, '<B'),
                         'result':    (0x44, '<B'),
                         'set_point': (0x45, '<B'),
@@ -415,6 +417,7 @@ class LineLeader(BaseDigitalSensor):
                         'uncal_sensor6_voltage_byte1':(0x7E, '<B'),
                         'uncal_sensor7_voltage_byte1':(0x80, '<B'),
                         'uncal_sensor8_voltage_byte1':(0x82, '<B'),
+                        'all_uncal_readings':         (0x74, '<8B'),
                       })
     
     class Commands:
@@ -437,15 +440,19 @@ class LineLeader(BaseDigitalSensor):
         self.write_value('command', (value, ))
 
     def get_steering(self):
+        'Value to add to the left and subtract from the right motor\'s power.'
         return self.read_value('steering')[0]
 
     def get_average(self):
+        'Weighted average; greater as line is closer to right edge. 0 for no line.'
         return self.read_value('average')[0]
 
     def get_result(self):
+        'Bitmap, one bit for each sensor'
         return self.read_value('result')[0]
 
     def set_point(self, value):
+        'Average value for steering to gravitate to. 10 (left) to 80 (right).'
         self.write_value('set_point', (value, ))
 
     def pid(self, pid, value):
@@ -468,6 +475,9 @@ class LineLeader(BaseDigitalSensor):
     def get_uncal_reading(self, number):
         addressname = 'uncal_sensor' + str(number) + '_voltage_byte1'
         return self.read_value(addressname)[0]
+    
+    def get_uncal_all(self):
+        return self.read_value('all_uncal_readings')
 
 LineLeader.add_compatible_sensor(None, 'mndsnsrs', 'LineLdr') #Tested with version 'V1.16'
 

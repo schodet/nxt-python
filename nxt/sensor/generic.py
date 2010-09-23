@@ -35,10 +35,8 @@ class Light(BaseAnalogSensor):
     """Object for light sensors. It automatically turns off light when it's not
     used.
     """
-    # TODO: A program may be running in the background. Leave the turning off to the user?
     def __init__(self, brick, port, illuminated=True):
         super(Light, self).__init__(brick, port)
-        self.set_illuminated(illuminated)
 
     def set_illuminated(self, active):
         if active:
@@ -51,9 +49,6 @@ class Light(BaseAnalogSensor):
         return self.get_input_values().scaled_value	
     
     get_sample = get_lightness
-    
-    def __del__(self):
-        self.set_illuminated(False)
 
 
 class Sound(BaseAnalogSensor):
