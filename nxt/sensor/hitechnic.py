@@ -53,23 +53,24 @@ class Compass(BaseDigitalSensor):
     #if max > min, it's straightforward, but
     #if min > max, it switches the values of max and min
     #and returns true if heading is NOT between the new max and min
-    def is_in_range(self,min,max):
+    def is_in_range(self,minval,maxval):
         """This function is untested but should work.
         If it does work, please post a message to the mailing list
         or email marcusw@cox.net. If it doesn't work, please file
         an issue in the bug tracker.
         """
-        reversed = False
-        if min > max:
-            (max,min) = (min,max)
-            reversed = True
+        if minval > maxval:
+            (maxval,minval) = (minval,maxval)
+            inverted = True
+        else:
+            inverted = False
         heading = self.get_sample()
-        in_range = (heading > min) and (heading < max)
+        in_range = (heading > minval) and (heading < maxval)
         #an xor handles the reversal
         #a faster, more compact way of saying
         #if !reversed return in_range
         #if reversed return !in_range
-        return bool(reversed) ^ bool(in_range) 
+        return bool(inverted) ^ bool(in_range) 
 
     def get_mode(self):
         return self.read_value('mode')[0]
@@ -96,7 +97,7 @@ class Accelerometer(BaseDigitalSensor):
     
     class Acceleration:
         def __init__(self, x, y, z):
-            self.x, self.y, self.z =x, y, z
+            self.x, self.y, self.z = x, y, z
     
     def __init__(self, brick, port, check_compatible=True):
         super(Accelerometer, self).__init__(brick, port, check_compatible)
@@ -166,22 +167,22 @@ but not tested. Please report whether this worked for you or not!
     """
     I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
     I2C_ADDRESS.update({
-        'mode': (0x41, 'b'),
-        'DC_direction': (0x42, 'b'),
-        'DC_sensor_1': (0x43, 'b'),
-        'DC_sensor_2': (0x44, 'b'),
-        'DC_sensor_3': (0x45, 'b'),
-        'DC_sensor_4': (0x46, 'b'),
-        'DC_sensor_5': (0x47, 'b'),
-        'DC_sensor_mean': (0x48, 'b'),
-        'all_DC': (0x42, '7b'),
-        'AC_direction': (0x49, 'b'),
-        'AC_sensor_1': (0x4A, 'b'),
-        'AC_sensor_2': (0x4B, 'b'),
-        'AC_sensor_3': (0x4C, 'b'),
-        'AC_sensor_4': (0x4D, 'b'),
-        'AC_sensor_5': (0x4E, 'b'),
-        'all_AC': (0x49, '6b')
+        'dspmode': (0x41, 'B'),
+        'DC_direction': (0x42, 'B'),
+        'DC_sensor_1': (0x43, 'B'),
+        'DC_sensor_2': (0x44, 'B'),
+        'DC_sensor_3': (0x45, 'B'),
+        'DC_sensor_4': (0x46, 'B'),
+        'DC_sensor_5': (0x47, 'B'),
+        'DC_sensor_mean': (0x48, 'B'),
+        'all_DC': (0x42, '7B'),
+        'AC_direction': (0x49, 'B'),
+        'AC_sensor_1': (0x4A, 'B'),
+        'AC_sensor_2': (0x4B, 'B'),
+        'AC_sensor_3': (0x4C, 'B'),
+        'AC_sensor_4': (0x4D, 'B'),
+        'AC_sensor_5': (0x4E, 'B'),
+        'all_AC': (0x49, '6B')
     })
     I2C_DEV = 0x10 #different from standard 0x02
     
@@ -190,13 +191,23 @@ but not tested. Please report whether this worked for you or not!
         AC_DSP_1200Hz = 0x00
         AC_DSP_600Hz = 0x01
     
-    class DCData:
-        def __init__(self, x, y, z):
+    class _data:
+        def get_dir_brightness(self, direction):
+            "Gets the brightness of a given direction (1-9)."
+            if direction%2 == 1: #if it's an odd number
+                exec("val = self.sensor_%d" % ((direction-1)/2+1))
+            else:
+                exec("val = (self.sensor_%d+self.sensor_%d)/2" % (direction/2, (direction/2)+1))
+            return val
+    
+    class DCData(_data):
+        def __init__(self, direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5, sensor_mean):
             self.direction, self.sensor_1, self.sensor_2, self.sensor_3, self.sensor_4, self.sensor_5, self.sensor_mean = direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5, sensor_mean
     
-    class ACData:
-        def __init__(self, x, y, z):
+    class ACData(_data):
+        def __init__(self, direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5):
             self.direction, self.sensor_1, self.sensor_2, self.sensor_3, self.sensor_4, self.sensor_5 = direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5
+            
     
     def __init__(self, brick, port, check_compatible=True):
         super(IRSeekerv2, self).__init__(brick, port, check_compatible)
@@ -215,10 +226,10 @@ between by using the set_dsp_mode() function.
         return self.ACData(direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5)
     
     def get_dsp_mode(self):
-        return self.read_value('mode')[0]
+        return self.read_value('dspmode')[0]
     
     def set_dsp_mode(self, mode):
-        self.write_value('mode', (mode, ))
+        self.write_value('dspmode', (mode, ))
     
     get_sample = get_ac_values
 

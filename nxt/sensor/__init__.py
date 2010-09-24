@@ -15,7 +15,7 @@
 
 from .common import *
 from .analog import BaseAnalogSensor
-from .digital import BaseDigitalSensor
+from .digital import BaseDigitalSensor, find_class
 from .generic import Touch, Light, Sound, Ultrasonic, Color20
 import mindsensors
 MSSumoEyes = mindsensors.SumoEyes
@@ -41,7 +41,8 @@ HTIRSeekerv2 = hitechnic.IRSeekerv2
 
 def get_sensor(brick, port):
     """Tries to detect the sensor type and return the correct sensor
-    object.
+object. Does not work for sensors with no identification information (such as
+all analog sensors or the MindSensors RTC.
     """
     base_sensor = BaseDigitalSensor(brick, port, False)
     info = base_sensor.get_sensor_info()

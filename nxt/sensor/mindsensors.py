@@ -60,30 +60,33 @@ class SumoEyes(BaseAnalogSensor):
         return self.Reading(self.get_input_values())
 
 
-class Compassv2(BaseDigitalSensor):   
+class Compassv2(BaseDigitalSensor):
+    """Class for the now-discontinued CMPS-Nx sensor. Also works with v1.1 sensors.
+Note that when using a v1.x sensor, some of the commands are not supported!
+To determine your sensor's version, use get_sensor_info().version"""
     I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
     I2C_ADDRESS.update({'command': (0x41, '<B'),
                         'heading': (0x42, '<H'),
-                        'x_offset': (0x44, '<H'),
-                        'y_offset': (0x46, '<H'),
+                        'x_offset': (0x44, '<h'), #unsure about signedness for this one
+                        'y_offset': (0x46, '<h'), #and this one
                         'x_range': (0x48, '<H'),
                         'y_range': (0x4A, '<H'),
-                        'x_raw': (0x4C, '<H'),
-                        'y_raw': (0x4E, '<H'),
+                        'x_raw': (0x4C, '<H'), #and this one
+                        'y_raw': (0x4E, '<H'), #and this one
     })
     
     class Commands:
         AUTO_TRIG_ON = 'A'
         AUTO_TRIG_OFF = 'S'
-        MAP_HEADING_BYTE = 'B'        # map heading to 0-255 range
-        MAP_HEADING_INTEGER = 'I'    # map heading to 0-36000 range
+        MAP_HEADING_BYTE = 'B'      # map heading to 0-255 range
+        MAP_HEADING_INTEGER = 'I'   # map heading to 0-36000 (or 3600) range
         SAMPLING_50_HZ = 'E'        # set sampling frequency to 50 Hz
         SAMPLING_60_HZ = 'U'        # set sampling frequency to 60 Hz
-        SET_ADPA_MODE_ON = 'N'        # set ADPA mode on
-        SET_ADPA_MODE_OFF = 'O'    # set ADPA mode off
-        BEGIN_CALIBRATION = 'C'    # begin calibration
-        DONE_CALIBRATION = 'D'        # done with calibration
-        LOAD_USER_CALIBRATION = 'L'    # load user calibration value
+        SET_ADPA_MODE_ON = 'N'      # set ADPA mode on
+        SET_ADPA_MODE_OFF = 'O'     # set ADPA mode off
+        BEGIN_CALIBRATION = 'C'     # begin calibration
+        DONE_CALIBRATION = 'D'      # done with calibration
+        LOAD_USER_CALIBRATION = 'L' # load user calibration value
     
     def __init__(self, brick, port, check_compatible=True):
         super(Compassv2, self).__init__(brick, port, check_compatible)
@@ -150,7 +153,8 @@ DIST.add_compatible_sensor(None, 'mndsnsrs', 'DIST')
 
 class RTC(BaseDigitalSensor):
     """Class for the RealTime Clock sensor"""
-    #   has no sensor indentification or commands
+    #TODO: Create a function to set the clock
+    #Has no indentification
     I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
     I2C_ADDRESS.update({'seconds': (0x00, '<B'),
                         'minutes': (0x01, '<B'),
@@ -260,15 +264,17 @@ class RTC(BaseDigitalSensor):
 class ACCL(BaseDigitalSensor):
     """Class for Accelerometer sensor"""
     I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
-    I2C_ADDRESS.update({'sensitivity':  (0x19, '<B'),
-                        'command':      (0x41, '<B'),
-                        'x_tilt':       (0x42, '<b'),
-                        'y_tilt':       (0x43, '<b'),
-                        'z_tilt':       (0x44, '<b'),
+    I2C_ADDRESS.update({'sensitivity':  (0x19, 'B'),
+                        'command':      (0x41, 'B'),
+                        'x_tilt':       (0x42, 'b'),
+                        'y_tilt':       (0x43, 'b'),
+                        'z_tilt':       (0x44, 'b'),
+                        'all_tilt':     (0x42, '3b'),
 
-                        'x_accel':   (0x45, '<h'),
-                        'y_accel':  (0x47, '<h'),
-                        'z_accel':  (0x49, '<h'),
+                        'x_accel':      (0x45, '<h'),
+                        'y_accel':      (0x47, '<h'),
+                        'z_accel':      (0x49, '<h'),
+                        'all_accel':    (0x45, '<3h'),
 
                         'x_offset': (0x4B, '<h'),
                         'x_range':  (0x4D, '<h'),
@@ -281,7 +287,7 @@ class ACCL(BaseDigitalSensor):
                       })
     
     class Commands:
-        SENS_15G = '1' #Alt. 2.5G (sensors older than V3.20)
+        SENS_15G = '1' #that's 1.5...Alt. 2.5G (sensors older than V3.20)
         SENS_2G = '2' #Alt .3.3G
         SENS_4G = '3' #Alt. 6.7G
         SENS_6G = '4' #Alt. 10G
@@ -301,32 +307,40 @@ class ACCL(BaseDigitalSensor):
     def command(self, command):
         value = ord(command)
         self.write_value('command', (value, ))
+    
+    def get_sensitivity(self):
+        return chr(self.read_value('sensitivity')[0])
 
-    def get_tilt(self, letter):
-        xyz = str(letter) + '_tilt'
+    def get_tilt(self, axis):
+        xyz = str(axis) + '_tilt'
         return self.read_value(xyz)[0]
     
-    def get_accel(self, letter):
-        xyz = str(letter) + '_accel'
+    def get_all_tilt(self):
+        return self.read_value('all_tilt')
+    
+    def get_accel(self, axis):
+        xyz = str(axis) + '_accel'
         return self.read_value(xyz)[0]
     
-    def get_sample(self):
-        return (self.get_accel('x'), self.get_accel('y'), self.get_accel('z'))
+    def get_all_accel(self):
+        return self.read_value('all_accel')
+    
+    get_sample = get_all_accel
 
-    def get_offset(self, letter):
-        xyz = str(letter) + '_offset'
+    def get_offset(self, axis):
+        xyz = str(axis) + '_offset'
         return self.read_value(xyz)[0]
 
-    def get_range(self, letter):
-        xyz = str(letter) + '_range'
+    def get_range(self, axis):
+        xyz = str(axis) + '_range'
         return self.read_value(xyz)[0]
 
-    def set_offset(self, letter, value):
-        xyz = str(letter) + '_offset'
+    def set_offset(self, axis, value):
+        xyz = str(axis) + '_offset'
         self.write_value(xyz, (value, ))
 
-    def set_range(self, letter, value):
-        xyz = str(letter) + '_range'
+    def set_range(self, axis, value):
+        xyz = str(axis) + '_range'
         self.write_value(xyz, (value, ))
 
 ACCL.add_compatible_sensor(None, 'mndsnsrs', 'ACCL-NX') #Tested with version 'V3.20'
@@ -451,15 +465,15 @@ class LineLeader(BaseDigitalSensor):
         'Bitmap, one bit for each sensor'
         return self.read_value('result')[0]
 
-    def set_point(self, value):
+    def set_set_point(self, value):
         'Average value for steering to gravitate to. 10 (left) to 80 (right).'
         self.write_value('set_point', (value, ))
 
-    def pid(self, pid, value):
+    def set_pid(self, pid, value):
         addressname = 'k' + str(pid)
         self.write_value(addressname, (value, ))
 
-    def pid_divisor(self, pid, value):
+    def set_pid_divisor(self, pid, value):
         addressname = 'k' + str(pid) +  '_divisor'
         self.write_value(addressname, (value, ))
 
@@ -505,14 +519,14 @@ class Servo(BaseDigitalSensor):
                         'servo_7_speed':    (0x58, '<B'),
                         'servo_8_speed':    (0x59, '<B'),
                   
-                        'servo_1_quick':      (0x5A, '<H'),
-                        'servo_2_quick':      (0x5B, '<H'),
-                        'servo_3_quick':      (0x5C, '<H'),
-                        'servo_4_quick':      (0x5D, '<H'),
-                        'servo_5_quick':      (0x5E, '<H'),
-                        'servo_6_quick':      (0x5F, '<H'),
-                        'servo_7_quick':      (0x60, '<H'),
-                        'servo_8_quick':      (0x61, '<H'),
+                        'servo_1_quick':      (0x5A, '<B'),
+                        'servo_2_quick':      (0x5B, '<B'),
+                        'servo_3_quick':      (0x5C, '<B'),
+                        'servo_4_quick':      (0x5D, '<B'),
+                        'servo_5_quick':      (0x5E, '<B'),
+                        'servo_6_quick':      (0x5F, '<B'),
+                        'servo_7_quick':      (0x60, '<B'),
+                        'servo_8_quick':      (0x61, '<B'),
                      })
     I2C_DEV = 0xB0
     
@@ -554,17 +568,26 @@ class Servo(BaseDigitalSensor):
     def command(self, command):
         value = self.COMMANDVALUES[command]
         self.write_value('command', (value, ))
+    
+    def get_bat_level(self):
+        return self.read_value('command')[0]
 
-    def position(self, number, value):
+    def set_position(self, number, value):
        addressname = 'servo_' + str(number) + '_pos'
        self.write_value(addressname, (value, ))
-
-    def speed(self, number, value):
-       addressname = 'servo_' + str(number) + '_pos'
+    
+    def get_position(self, number):
+        return self.read_value('servo_' + str(number) + '_pos')[0]
+    
+    def set_speed(self, number, value):
+       addressname = 'servo_' + str(number) + '_speed'
        self.write_value(addressname, (value, ))
-       
-    def quick(self, number, value):
-           addressname = 'servo_' + str(number) + '_pos'
+    
+    def get_speed(self, number):
+        return self.read_value('servo_' + str(number) + '_speed')[0]
+    
+    def set_quick(self, number, value):
+           addressname = 'servo_' + str(number) + '_quick'
            self.write_value(addressname, (value, ))
             
 Servo.add_compatible_sensor(None, 'mndsnsrs', 'NXTServo') #Tested with version 'V1.20'
@@ -575,13 +598,13 @@ class MMX(BaseDigitalSensor):
     I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
     I2C_ADDRESS.update({'command'  :        (0x41, '<B'),
                         #Motor Writes
-                        'encoder_1_target': (0x42, '<H'),
+                        'encoder_1_target': (0x42, '<l'),
                         'speed_1':          (0x46, '<B'),
                         'seconds_to_run_1': (0x47, '<B'),
                         'command_b_1':      (0x48, '<B'),
                         'command_a_1':      (0x49, '<B'),
 
-                        'encoder_2_target': (0x4A, '<H'),
+                        'encoder_2_target': (0x4A, '<l'),
                         'speed_2':          (0x4E, '<B'),
                         'seconds_to_run_2': (0x4F, '<B'),
                         'command_b_2':      (0x50, '<B'),
@@ -623,16 +646,19 @@ class MMX(BaseDigitalSensor):
     def command(self, command):
         value = ord(command)
         self.write_value('command', (value, ))
+    
+    def get_bat_level(self):
+        return self.read_value('command')[0]
 
-    def encoder_target(self, motor_number, value):
+    def set_encoder_target(self, motor_number, value):
         addressname = 'encoder_' + str(motor_number) + '_target'
         self.write_value(addressname, (value, ))
 
-    def speed(self, motor_number, value):
+    def set_speed(self, motor_number, value):
         addressname = 'speed_' + str(motor_number)
         self.write_value(addressname, (value, ))
 
-    def time_run(self, motor_number, seconds):
+    def set_time_run(self, motor_number, seconds):
         addressname = 'seconds_to_run_' + str(motor_number)
         self.write_value(addressname, (seconds, ))
 
@@ -657,11 +683,11 @@ class MMX(BaseDigitalSensor):
             self.write_value(addressname, (value, ))
             return value
             
-    def encoder_pos(self, motor_number):
+    def get_encoder_pos(self, motor_number):
         addressname = 'encoder_' +str(motor_number) +'_pos'
         return self.read_value(addressname)[0]
         
-    def motor_status(self, motor_number, bit_num):
+    def get_motor_status(self, motor_number, bit_num):
         addressname = 'status_m' + str(motor_number)
         s = self.read_value(addressname)[0]
         x = 1
@@ -670,18 +696,18 @@ class MMX(BaseDigitalSensor):
         value = value >> bit_num
         return value
 
-    def tasks(self, motor_number):
+    def get_tasks(self, motor_number):
         addressname = 'tasks_running_m' + str(motor_number)
         return self.read_value(addressname)[0]
 
-    def pid(self, pid, target, value):
+    def set_pid(self, pid, target, value):
         addressname = str(pid) + '_' + str(target)
         self.write_value(addressname, (value, ))
 
-    def pass_count(self, value):
+    def set_pass_count(self, value):
         self.write_value('pass_count', (value, ))
         
-    def tolerance(self, value):
+    def set_tolerance(self, value):
         self.write_value('tolerance', (value, ))
         
 MMX.add_compatible_sensor(None, 'mndsnsrs', 'NxTMMX') #Tested with version 'V1.01'
@@ -698,20 +724,20 @@ These are connected to a computer and look like a keyboard to it."""
     I2C_DEV = 0x04
     
     class Commands:
-        TRANSMIT_DATA_TO_HOST = 'T'
-        DEVICE_ASCII_DATA_MODE = 'A'
-        DEVICE_DIRECT_DATA_MODE = 'D'
+        TRANSMIT = 'T'
+        ASCII_MODE = 'A'
+        DIRECT_MODE = 'D'
     
     def __init__(self, brick, port, check_compatible=True):
         super(HID, self).__init__(brick, port, check_compatible)
-
+    
     def command(self, command):
         value = ord(command)
         self.write_value('command', (value, ))
-
-    def modifier(self, mod):
+    
+    def set_modifier(self, mod):
         self.write_value('modifier', (mod, ))
-        
+    
     def write_data(self, data):
         data = ord(data)
         self.write_value('keyboard_data', (data, ))
@@ -724,10 +750,10 @@ class PS2(BaseDigitalSensor):
     I2C_ADDRESS.update({'command'  :        (0x41, '<B'),
                         'button_set_1':     (0x42, '<B'),
                         'button_set_2':     (0x43, '<B'),
-                        'x_left_joystick':  (0x44, '<B'),
-                        'y_left_joystick':  (0x45, '<B'),
-                        'x_right_joystick': (0x46, '<B'),
-                        'y_right_joystick': (0x47, '<B'),
+                        'x_left_joystick':  (0x44, '<b'),
+                        'y_left_joystick':  (0x45, '<b'),
+                        'x_right_joystick': (0x46, '<b'),
+                        'y_right_joystick': (0x47, '<b'),
                         })
     
     class ControllerState:
