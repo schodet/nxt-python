@@ -213,6 +213,8 @@ class Brick(object): #TODO: this begs to have explicit methods
         self.play_tone(frequency, duration)
         sleep(duration / 1000.0)
 
+    def __del__(self):
+        self.sock.close()
     
     find_files = FileFinder
     find_modules = ModuleFinder

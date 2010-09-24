@@ -211,4 +211,4 @@ def find_class(info):
             dic = dic[None]
         else:
             raise SearchError(msg + ' not found')
-        return dic
+        return dic[info.sensor_type][None]
