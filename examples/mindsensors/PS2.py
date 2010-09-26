@@ -1,12 +1,11 @@
 ### Examples of PS2 functions ###
-### Users Guide: http://www.mindsensors.com/index.php?module=documents&JAS_Document_op=downloadFile&JAS_File_id=755
-### I2C_DEV = 0x02
+### User guide at http://www.mindsensors.com/index.php?module=documents&JAS_DocumentManager_op=list
 
 import nxt.locator, time
 from nxt.sensor import *
 b = nxt.locator.find_one_brick()#find brick and connect
 s = MSPS2(b, PORT_1)           #which sensor, brick and port
-s.command('E')
+s.command(s.Commands.POWER_ON)
 previous_buttons = 0
 for i in range(15):
     time.sleep(.2)
