@@ -356,3 +356,75 @@ class Gyro(BaseAnalogSensor):
         self.set_zero(self.get_rotation_speed())
     
     get_sample = get_rotation_speed
+
+
+class Prototype(BaseDigitalSensor):
+    """Object for HiTechnic sensor prototype boards. Coded to HiTechnic's specs but not
+tested. Please report whether this worked for you or not!
+    """
+    I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
+    I2C_ADDRESS.update({
+        'A0': (0x42, '<H'),
+        'A0': (0x44, '<H'),
+        'A0': (0x46, '<H'),
+        'A0': (0x48, '<H'),
+        'A0': (0x4A, '<H'),
+        'all_analog': (0x42, '<5H'),
+        'digital_in': (0x4C, 'B'),
+        'digital_out': (0x4D, 'B'),
+        'digital_cont': (0x4E, 'B'),
+        'sample_time': (0x4F, 'B'),
+        })
+    
+    class Digital_Data():
+        """Container for 6 bits of digital data. Takes an integer or a list of six bools
+and can be converted into a list of bools or an integer."""
+        def __init__(self, pins):
+            if isinstance(pins, int):
+                self.dataint = pins
+                self.datalst = self.tolist(pins)
+            else:
+                self.dataint = self.toint(pins)
+                self.datalst = pins
+            self.d0, self.d1, self.d2, self.d3, self.d4, self.d5 = self.datalst
+        
+        def tolist(self, val):
+            lst = []
+            for i in range(6):
+                lst.append(bool(val & 2**i))
+            return lst
+
+        def toint(self, lst):
+            val = 0
+            for i in range(6):
+                val += int(bool(lst[i])) * (2**i)
+            return val
+        
+        def __int__(self):
+            return self.dataint
+        
+        def __iter__(self):
+            return iter(self.datalst)
+        
+        def __getitem__(self, i):
+            return self.datalst[i]
+    
+    class Analog_Data():
+        def __init__(self, a0, a1, a2, a3, a4):
+            self.a0, self.a1, self.a2, self.a3, self.a4 = a0, a1, a2, a3, a4
+    
+    def get_analog(self):
+        return Analog_Data(self.read_value('all_analog'))
+    
+    def get_digital(self):
+        return Digital_Data(self.read_value('digital_in')[0])
+    
+    def set_digital(self, pins):
+        """Can take a Digital_Data() object"""
+        self.write_value('digital_out', (int(pins), ))
+    
+    def set_digital_modes(self, modes):
+        """Sets input/output mode of digital pins. Can take a Digital_Data() object."""
+        self.write_value('digital_cont', (int(modes), ))
+
+Prototype.add_compatible_sensor(None, 'HiTechnc', 'Proto   ')
