@@ -37,10 +37,9 @@ class Compass(BaseDigitalSensor):
     get_sample = get_heading
 
     def get_relative_heading(self,target=0):
-        """This function is untested but should work.
-        If it does work, please post a message to the mailing list
-        or email marcusw@cox.net. If it doesn't work, please file
-        an issue in the bug tracker.
+        """This function is untested but should work. If it does work, please post a
+message to the mailing list or email marcusw@cox.net. If it doesn't work, please
+file an issue in the bug tracker.
         """
         rheading = self.get_sample()-target
         if rheading > 180:
@@ -49,15 +48,15 @@ class Compass(BaseDigitalSensor):
             rheading += 360
         return rheading	
     
-    #this deserves a little explanation:
-    #if max > min, it's straightforward, but
-    #if min > max, it switches the values of max and min
-    #and returns true if heading is NOT between the new max and min
     def is_in_range(self,minval,maxval):
-        """This function is untested but should work.
-        If it does work, please post a message to the mailing list
-        or email marcusw@cox.net. If it doesn't work, please file
-        an issue in the bug tracker.
+        """This deserves a little explanation:
+if max > min, it's straightforward, but
+if min > max, it switches the values of max and min
+and returns true if heading is NOT between the new max and min
+
+This function is untested but should work. If it does work, please post a
+message to the mailing list or email marcusw@cox.net. If it doesn't work, please
+file an issue in the bug tracker.
         """
         if minval > maxval:
             (maxval,minval) = (minval,maxval)
