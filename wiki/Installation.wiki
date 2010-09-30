@@ -19,7 +19,7 @@ BUS=="usb", ATTRS{idVendor}=="0694", GROUP="lego", MODE="0660"
 
 You will need Python 2.x (NOT 3.x), the newer the better. Older versions may have problems.
 
-Download the latest installer for your architecture (32-bit or 64-bit) and run it. Follow the instructions and it will set everything up for you.
+Download the latest installer for your architecture (32-bit or 64-bit) and run it. Follow the instructions and it will set everything up for you. Note that you can also install by downloading the source package and using the instructions in the README; in any case, it would be a good idea to download a source package in order to read the README and have the examples directory as a reference (they are the most useful docs available, and are not included in the binary installer).
 
             For USB communications, you need to install [http://sourceforge.net/projects/pyusb/ PyUSB]. USB has a history of being dodgy on Windows, so if the brick can't be found when it should, try bluetooth.
 
@@ -43,8 +43,11 @@ Follow the instructions above. After doing that, remove your bluetooth.py direct
 
 Note that if you do not delete the bluetooth.py directory or PYTHONPATH enrty, NXT-Python _should_ still work fine, it will just use the external !LightBlue Glue instead of the new internal one.
 
+=Checking out the SVN to get the latest development version=
+You will need to download an SVN client for your OS. For linux, the standard command line one works great. For Windows, I use TortoiseSVN. For Mac, I would suggest Google. After you get SVN working on your system, follow [http://code.google.com/p/nxt-python/source/checkout Google's instructions] as far as the URL goes. Once you have a source tree, follow the installation instructions in the README.
+
 =Then What?=
 
-Now that you have successfully installed NXT_python and one or both of the communication drivers (USB or Bluetooth), you can start using your nxt brick.
+Now that you have successfully installed NXT_python and one or both of the communication packages (PyUSB, PyBluez, or LightBlue), you can start using your nxt brick.
 
 See [http://code.google.com/p/nxt-python/wiki/Tutorial the tutorial page] or the examples in the examples folder for usage instructions.
