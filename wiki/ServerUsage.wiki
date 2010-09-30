@@ -1,4 +1,4 @@
-#summary How to use the nxt.server module
+#summary How to use the nxt.server module (v1.x only)
 #labels Phase-Implementation
 
 To run the server, use
