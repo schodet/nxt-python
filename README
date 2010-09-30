@@ -14,7 +14,7 @@ Requirements:
     * USB communications:
         PyUSB (http://sourceforge.net/projects/pyusb/)
 
-Installation:
+Installation (if using source package):
 
     * Untar/unzip source package
     * In package directory, run "python setup.py install" (as root), or if
@@ -22,9 +22,8 @@ Installation:
     * To use USB on Linux as non-superuser, at a root terminal type:
         groupadd lego
         usermod -a -G lego [username]
-        echo 'BUS=="usb", SYSFS{idVendor}=="0694", GROUP="lego", MODE="0660"' >
-\
-            /etc/udev/rules.d/70-lego.rules
+        echo 'BUS=="usb", SYSFS{idVendor}=="0694", GROUP="lego", MODE="0660"' \
+            > /etc/udev/rules.d/70-lego.rules
 
 Getting Started:
 
@@ -37,7 +36,7 @@ in the source code (especially for digital sensors).
 
 Notes/FAQ:
     (I have tried to put the most important stuff first, but it would be a good
-    idea to read the whole thing. In any case, read it all the way through
+    idea to read the whole section. In any case, read it all the way through
     before asking for help. Thanks!)
 
         -=-=-About v2-=-=-
@@ -53,7 +52,7 @@ welcome to ask for help.
 longer a nxt.server module. I removed it due to it being a prime example of
 feature creep, the code being of low quality, and the connection protocol very
 badly designed. I would recommend that anyone wanting to use a brick over a
-network connection to design and write their own protocol and code to best fit
+network connection design and write their own protocol and code to best fit
 their specific application.
         -=-=-Problems and Their Solutions-=-=-
     For some reason, digital sensor operations have a tendency to throw random
@@ -81,6 +80,30 @@ packages) contains a digital sensor unit test system called nxtduemu. It is
 intended for developers and advanced users who are looking to experiment with
 sensors and the digital sensor framework and classes. See Arduino/README for
 more info and usage instructions.
+
+Specific Stability Status:
+    nxt.brick, nxt.telegram, nxt.direct, and nxt.system:
+        Hardly changed since NXT_Python; very, very stable.
+    USB Communication System (nxt.usbsock)
+        On Linux: Very stable and extensively tested.
+        On Windows: Somewhat tested; seems to work pretty well.
+        On Mac: Should be working, though I have not heard either way.
+    BlueTooth Communication System (nxt.bluesock, nxt.lightblueglue)
+        On Linux: Stable; well tested.
+        On Windows: Stable; working last I checked.
+        On Mac: Reported working.
+    nxt.locator:
+        Stable, well tested.
+    nxt.motor:
+        Stable except for Synchronized Motor support, which is experimental at
+        this stage and has not been extensively tested.
+    nxt.sensor:
+        Code not specific to a particular sensor is well tested and working
+        well. About half of the sensor classes were last reported working; the
+        rest have not to my knowlege been tested and were written blindly from
+        the manuacturers' specifications.
+    nxt.error:
+        If there's a problem with this one, I'm gonna cry.    
 
 Contact:
 
