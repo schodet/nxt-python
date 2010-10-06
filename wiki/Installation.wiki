@@ -4,7 +4,7 @@
 
 ==Linux==
 
-You will need a recent 2.x version of Python, most systems already have this installed. However, as more distributions move to 3.x (which is not compatible with nxt-python), you may need to install a 2.x version in addition using your package manager.
+You will need version 2.6 (or later 2.x) of Python, most modern systems already have this installed. However, as more distributions move to 3.x (which is not compatible with nxt-python), you may need to install version 2.6 in addition (the coexist fine) using your package manager.
 
 Download the latest source package and extract it. Open a terminal and run `cd nxt-python` (or whatever directory you put it in). Then, as root (e.g. sudo) run `python setup.py install`. If the word ‘error’ is not anywhere in the text that is printed, then great. If it is, then follow the error instructions to resolve the issue (or ask about it at the [http://groups.google.com/group/nxt-python mailing list], and we'll try to help you out). 
 
@@ -17,7 +17,7 @@ BUS=="usb", ATTRS{idVendor}=="0694", GROUP="lego", MODE="0660"
 
 ==Windows==
 
-You will need Python 2.x (NOT 3.x), the newer the better. Older versions may have problems.
+You will need Python 2.6 or later (But not 3.x).
 
 Download the latest installer for your architecture (32-bit or 64-bit) and run it. Follow the instructions and it will set everything up for you. Note that you can also install by downloading the source package and using the instructions in the README; in any case, it would be a good idea to download a source package in order to read the README and have the examples directory as a reference (they are the most useful docs available, and are not included in the binary installer).
 
@@ -27,7 +27,7 @@ Download the latest installer for your architecture (32-bit or 64-bit) and run i
 
 ==Mac==
 
-To use NXT-Python on Mac, you will need Python 2.4 or higher (but not 3.x).
+To use NXT-Python on Mac, you will need Python 2.6 or higher (but not 3.x).
 
 Make sure you have [http://pyobjc.sourceforge.net/software/ PyObjC] installed; this comes preinstalled with Mac OS X v10.5 (Leopard) and anything newer, but if you have an earlier version of OS X you will need to install it yourself. Then, install [http://lightblue.sourceforge.net/ LightBlue], a Bluetooth library for Mac (USB is currently not supported and will not work, as far as I know, though you're welcome to experiment).
 
