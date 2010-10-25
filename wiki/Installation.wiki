@@ -27,6 +27,8 @@ Download the latest installer for your architecture (32-bit or 64-bit) and run i
 
 ==Mac==
 
+*NXT-Python is broken on Mac as of v2.0.0. A fix is in testing and may be found on the mailing list.*
+
 To use NXT-Python on Mac, you will need Python 2.6 or higher (but not 3.x).
 
 Make sure you have [http://pyobjc.sourceforge.net/software/ PyObjC] installed; this comes preinstalled with Mac OS X v10.5 (Leopard) and anything newer, but if you have an earlier version of OS X you will need to install it yourself. Then, install [http://lightblue.sourceforge.net/ LightBlue], a Bluetooth library for Mac (USB is currently not supported and will not work, as far as I know, though you're welcome to experiment).
