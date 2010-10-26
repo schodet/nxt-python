@@ -98,4 +98,4 @@ Updated examples to work with new code, removed included html changelog (replace
 Lots of changes to the sensor module, finished digital sensor type checking and enabled it by default, polished everything a bit more, the README was basically entirely rewritten, tried to improve digital sensor performance, fixed the scripts (broken for a while now), lots of new sensors, quite a few !MindSensors examples, wrote a digital sensor unit testing system called [http://code.google.com/p/nxtduemu/ nxtduemu].
 
 ====_Version 2.0.1_ (current stable)====
-Fixed support for Mac and other systems using LightBlue. Mac support is now confirmed working!
+Fixed support for Mac and other systems using !LightBlue. Mac support is now confirmed working!
