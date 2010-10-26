@@ -1,0 +1,4 @@
+include docs/*.html *.url *.css *.txt
+include README LICENSE
+include examples/*.py
+exclude arduino/*
