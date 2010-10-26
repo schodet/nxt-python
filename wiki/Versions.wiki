@@ -49,6 +49,7 @@ Slightly improved accelerometer class.
 A few improvements to nxt.server module.
 
 ==Version 1.x==
+Note: At this point I was still getting the release numbering scheme sorted out. The 1.0 and 1.1 series were originally released as v1.0 and v1.1, and remain that way in setup.py and the package download section (though they are no longer listed, they can still be found at their respective URLs). However, they were retroactively changed to v1.0.0 and v1.1.0 in the SVN repository to promote uniformity in the v1.x series. From v1.2.0 and onward, the initial release in a minor series includes the trailing '.0' in every field.
 
 ===Version 1.0.x===
 
