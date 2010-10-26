@@ -33,13 +33,12 @@ def find_bricks(host=None, name=None):
         print >>sys.stderr, "USB module unavailable, not searching there"
     
     try:
-        from bluetooth import BluetoothError
+        import bluesock
         try:
-            import bluesock
             socks = bluesock.find_bricks(host, name)
             for s in socks:
                 yield s
-        except (BluetoothError, IOError): #for cases such as no adapter, bluetooth throws IOError, not BluetoothError
+        except (bluesock.bluetooth.BluetoothError, IOError): #for cases such as no adapter, bluetooth throws IOError, not BluetoothError
             pass
     except ImportError:
         import sys
