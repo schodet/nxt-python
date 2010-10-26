@@ -2,6 +2,7 @@
 #labels Phase-Design
 
 =NXT_Python=
+The most recent releases are at the bottom.
 
 ==Version 0.x==
 
@@ -75,7 +76,7 @@ Fixed the timing problem when using a low-speed I2C digital sensor (e.g. Ultraso
 
 ===Version 1.2.x===
 
-====Version 1.2.0 (current stable)====
+====_Version 1.2.0_ (current stable)====
 Added native Mac support.
 Added support for the !HiTechnic Compass sensor (thanks to Samuel Leeman-Munk).
 Improved the fix for the USB digital sensor timing bug (see v1.1.2).
@@ -92,5 +93,8 @@ Updated examples to work with new code, removed included html changelog (replace
 
 ===Version 2.0.x===
 
-==Version 2.0.0 (current stable)==
-Lots of changes to the sensor module, finished digital sensor type checking and enabled it by default, polished everything a bit more, the README was basically entirely rewritten, tried to improve digital sensor performance, fixed the scripts (broken for a while now), lots of new sensors, quite a few !MindSensors examples, wrote a digital sensor unit testing system called nxtduemu.
+====Version 2.0.0====
+Lots of changes to the sensor module, finished digital sensor type checking and enabled it by default, polished everything a bit more, the README was basically entirely rewritten, tried to improve digital sensor performance, fixed the scripts (broken for a while now), lots of new sensors, quite a few !MindSensors examples, wrote a digital sensor unit testing system called [http://code.google.com/p/nxtduemu/ nxtduemu].
+
+====_Version 2.0.1_ (current stable)====
+Fixed support for Mac and other systems using LightBlue. Mac support is now confirmed working!
