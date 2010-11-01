@@ -14,15 +14,20 @@
 # GNU General Public License for more details.
 
 from time import sleep
+from threading import Lock
 from .error import FileNotFound, ModuleNotFound
 from .telegram import OPCODES, Telegram
 from .sensor import get_sensor
 
-def _make_poller(opcode, poll_func, parse_func):
+def _make_poller(opcode, poll_func, parse_func, threadsafe = False):
     def poll(self, *args, **kwargs):
         ogram = poll_func(opcode, *args, **kwargs)
+        if self.threadsafe:
+            self.lock.acquire()
         self.sock.send(str(ogram))
         igram = Telegram(opcode=opcode, pkt=self.sock.recv())
+        if self.threadsafe:
+            self.lock.release()
         return parse_func(igram)
     return poll
 
@@ -208,6 +213,8 @@ class Brick(object): #TODO: this begs to have explicit methods
 
     def __init__(self, sock):
         self.sock = sock
+        self.lock = Lock()
+        self.threadsafe = False
 
     def play_tone_and_wait(self, frequency, duration):
         self.play_tone(frequency, duration)
