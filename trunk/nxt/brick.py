@@ -1,7 +1,7 @@
 # nxt.brick module -- Classes to represent LEGO Mindstorms NXT bricks
 # Copyright (C) 2006  Douglas P Lau
 # Copyright (C) 2009  Marcus Wanner, rhn
-# Copyright (C) 2010  rhn
+# Copyright (C) 2010  rhn, Marcus Wanner, zonedabone
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
