@@ -18,8 +18,11 @@ import cStringIO
 import gtk
 import os.path
 import urllib2
+import sys
+
 import nxt.locator
 from nxt.brick import FileFinder, FileReader, FileWriter
+from nxt.utils import parse_command_line_arguments
 
 def read_file(b, fname):
     with FileReader(b, fname) as r:
@@ -131,6 +134,9 @@ class NXT_Filer(gtk.Window):
 
 if __name__ == '__main__':
     # FIXME: add dialog with progress bar when scanning bluetooth devices
-    win = NXT_Filer(nxt.locator.find_one_brick())
+    arguments, keyword_arguments = parse_command_line_arguments(sys.argv)
+
+    brick = nxt.locator.find_one_brick(keyword_arguments['host'])
+    win = NXT_Filer(brick)
     win.show_all()
     gtk.main()

@@ -18,6 +18,7 @@ import sys
 import nxt.locator
 from nxt.brick import FileWriter
 from nxt.error import FileNotFound
+from nxt.utils import parse_command_line_arguments
 
 def _write_file(b, fname, data):
     w = FileWriter(b, fname, len(data))
@@ -39,4 +40,8 @@ def write_file(b, fname):
     _write_file(b, fname, data)
 
 if __name__ == '__main__':
-    write_file(nxt.locator.find_one_brick(), sys.argv[1])
+    arguments, keyword_arguments = parse_command_line_arguments(sys.argv)
+    
+    brick = nxt.locator.find_one_brick(keyword_arguments['host'])
+    for filename in arguments:
+        write_file(brick, filename)
