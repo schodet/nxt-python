@@ -1,5 +1,5 @@
 #summary Frequently Asked Questions
-#labels Featured,Phase-Support
+#labels Phase-Support
 
 =How can I control motors while reading sensor inputs?=
-Using a version newer than 2.0.x or the latest SVN, have your script set the `threadsafe` attribute of the connected brick object to `True`. Then, use the thread module to run multiple threads, one for each thing which you want to do simultaneously (instructions on precisely how to do this are beyond the scope of this document but can be found on the web).
+Using the latest SVN (or v2.1.x or greater when they are released), use the thread module to run multiple threads, one for each thing which you want to do simultaneously (instructions on precisely how to do this are beyond the scope of this document but can be found on the web). NXT-Python is threadsafe by default in the named versions, and a patch can be found on the mailing list [http://groups.google.com/group/nxt-python/browse_thread/thread/db9fa1da34c4d103 here] for older ones.
