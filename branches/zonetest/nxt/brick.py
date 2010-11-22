@@ -16,10 +16,10 @@
 from time import sleep
 from threading import RLock
 from .error import FileNotFound, ModuleNotFound
-from .telegram import OPCODES, Telegram
-from .sensor import get_sensor
+#from .telegram import OPCODES, Telegram
+#from .sensor import get_sensor
 
-def _make_poller(opcode, poll_func, parse_func):
+'''def _make_poller(opcode, poll_func, parse_func):
     def poll(self, *args, **kwargs):
         ogram = poll_func(opcode, *args, **kwargs)
         with self.lock:
@@ -200,26 +200,26 @@ class ModuleFinder(object):
                 yield (mname, mid, msize, miomap_size)
             except ModuleNotFound:
                 self._close()
-                break
+                break'''
 
 
 class Brick(object): #TODO: this begs to have explicit methods
     'Main object for NXT Control'
 
-    __metaclass__ = _Meta
+    #__metaclass__ = _Meta
 
     def __init__(self, sock):
         self.sock = sock
         self.lock = RLock()
 
-    def play_tone_and_wait(self, frequency, duration):
-        self.play_tone(frequency, duration)
-        sleep(duration / 1000.0)
+    #def play_tone_and_wait(self, frequency, duration):
+    #    self.play_tone(frequency, duration)
+    #    sleep(duration / 1000.0)
 
     def __del__(self):
         self.sock.close()
 
-    find_files = FileFinder
-    find_modules = ModuleFinder
-    open_file = File
-    get_sensor = get_sensor
+    #find_files = FileFinder
+    #find_modules = ModuleFinder
+    #open_file = File
+    #get_sensor = get_sensor
