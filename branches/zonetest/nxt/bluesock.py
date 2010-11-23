@@ -56,32 +56,29 @@ class BlueSock(object):
         l0 = len(data) & 0xFF
         l1 = (len(data) >> 8) & 0xFF
         d = chr(l0) + chr(l1) + data
-        if lock:
-            with self.lock:
-                self.sock.send(d)
-        else:
+        if lock:self.lock.acquire()
+        try:
             self.sock.send(d)
+        finally:
+            if lock:self.sock.send(d)
 
     def recv(self, lock=True):
-        if lock:
-            with self.lock:
-                data = self.sock.recv(2)
-                l0 = ord(data[0])
-                l1 = ord(data[1])
-                plen = l0 + (l1 << 8)
-                data = self.sock.recv(plen)
-        else:
+        if lock:self.lock.acquire()
+        try:
             data = self.sock.recv(2)
             l0 = ord(data[0])
             l1 = ord(data[1])
             plen = l0 + (l1 << 8)
             data = self.sock.recv(plen)
+        finally:
+            if lock:self.lock.release()
         if self.debug:
             print 'Recv:',
             print ':'.join('%02x' % ord(c) for c in data)
         return data
 
     def send_and_recv(self, data):
+        'Use to send and recieve data over Bluetooth connection ***ADVANCED USERS ONLY***'
         with self.lock:
             self.send(data, lock=False)
             data = self.recv(lock = False)

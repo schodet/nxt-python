@@ -62,19 +62,19 @@ class USBSock(object):
         if self.debug:
             print 'Send:',
             print ':'.join('%02x' % ord(c) for c in data)
-        if lock:
-            with self.lock:
-                self.handle.bulkWrite(self.blk_out.address, data)
-        else:
+        if lock:self.lock.acquire()
+        try:
             self.handle.bulkWrite(self.blk_out.address, data)
+        finally:
+            self.lock.release()
 
     def recv(self, lock=True):
         'Use to recieve raw data over USB connection ***ADVANCED USERS ONLY***'
-        if lock:
-            with self.lock:
-                data = self.handle.bulkRead(self.blk_in.address, 64)
-        else:
+        if lock:self.lock.acquire()
+        try:
             data = self.handle.bulkRead(self.blk_in.address, 64)
+        finally:
+            if lock:self.lock.release()
         if self.debug:
             print 'Recv:',
             print ':'.join('%02x' % (c & 0xFF) for c in data)
@@ -82,6 +82,7 @@ class USBSock(object):
         return ''.join(chr(d & 0xFF) for d in data)
 
     def send_and_recv(self, data):
+        'Use to send and recieve data over USB connection ***ADVANCED USERS ONLY***'
         with self.lock:
             self.send(data, lock=False)
             data = self.recv(lock = False)
