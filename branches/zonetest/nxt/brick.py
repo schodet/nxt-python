@@ -16,6 +16,7 @@
 from time import sleep
 from threading import RLock
 from .error import check_status
+from .constants import *
 #from .telegram import OPCODES, Telegram
 #from .sensor import get_sensor
 
@@ -209,23 +210,23 @@ class Brick(object): #TODO: this begs to have explicit methods
     #0 = NO DEBUG ; 1 = DEBUG if already getting reply ; 2 = ALL DEBUG
 
     def set_brick_name(self,name):
-        if len(name)>15:
-            name=name[0:14]
-        name = name +'\x00'*(16-len(name))
+        if len(name) > 15:
+            name = name[0:14]
+        name = name + NULL * (16 - len(name))
         if self.debug == 2:
-            message='\x01\x98'+name
+            message = SYSTEM_REPLY + SET_BRICK_NAME + name
             data = self.sock.send_and_recv(message)
             check_status(data[2])
         else:
-            message='\x81\x98'+name
+            message = SYSTEM_NOREPLY + SET_BRICK_NAME + name
             self.sock.send(message)
 
     def get_device_info(self):
-        data = self.sock.send_and_recv('\x01\x9B')
+        data = self.sock.send_and_recv(SYSTEM_REPLY+GET_DEVICE_INFO)
         if self.debug != 0:
             check_status(data[2])
-        info={}
-        info['name'] = ''.join(data[3:17].split('\x00'))
+        info = {}
+        info['name'] = ''.join(data[3:17].split(NULL))
         info['btaddr'] = list(data[18:24])
         info['btsignal'] = ord(data[25]) + (ord(data[28]) << 8)
         info['freeflash'] = ord(data[29]) + (ord(data[32]) << 8)
