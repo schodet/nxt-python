@@ -82,7 +82,7 @@ class BlueSock(object):
         return data
 
     def send_and_recv(self, data):
-        with self.sock:
+        with self.lock:
             self.send(data, lock=False)
             data = self.recv(lock = False)
         return data

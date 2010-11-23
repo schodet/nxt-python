@@ -62,5 +62,5 @@ CODES = {
 }
 
 def check_status(status):
-    if CODES.has_key(status):
-        raise CODES[status]
+    if CODES.has_key(ord(status)):
+        raise CODES[ord(status)]

@@ -25,6 +25,8 @@ SYSTEM_NOREPLY = '\x81'
 
 SET_BRICK_NAME = '\x98'
 GET_DEVICE_INFO = '\x9B'
+GET_FIRMWARE_VERSION = '\x88'
+DEL_USER_FLASH = '\xA0'
 
 # Other Constants
 

@@ -232,6 +232,18 @@ class Brick(object): #TODO: this begs to have explicit methods
         info['freeflash'] = ord(data[29]) + (ord(data[32]) << 8)
         return info
 
+    def get_firmware_version(self):
+        """Returns ((ProtocolMaj,ProtocolMin),(FirmwareMaj,FirmwareMin))"""
+        message = SYSTEM_REPLY+GET_FIRMWARE_VERSION
+        data = self.sock.send_and_recv(message)
+        if self.debug != 0:
+            check_status(data[2])
+        return ((ord(data[4]),ord(data[3])),(ord(data[6]),ord(data[5])))
+
+    def del_user_flash(self):
+        message = SYSTEM_REPLY+DEL_USER_FLASH
+        self.sock.send_and_recv(message)
+
     
     #__metaclass__ = _Meta
 
