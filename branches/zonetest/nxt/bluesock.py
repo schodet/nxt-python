@@ -49,24 +49,42 @@ class BlueSock(object):
         if self.debug:
             print 'Bluetooth connection closed.'
 
-    def send(self, data):
+    def send(self, data, lock=True):
         if self.debug:
             print 'Send:',
             print ':'.join('%02x' % ord(c) for c in data)
         l0 = len(data) & 0xFF
         l1 = (len(data) >> 8) & 0xFF
         d = chr(l0) + chr(l1) + data
-        self.sock.send(d)
+        if lock:
+            with self.lock:
+                self.sock.send(d)
+        else:
+            self.sock.send(d)
 
-    def recv(self):
-        data = self.sock.recv(2)
-        l0 = ord(data[0])
-        l1 = ord(data[1])
-        plen = l0 + (l1 << 8)
-        data = self.sock.recv(plen)
+    def recv(self, lock=True):
+        if lock:
+            with self.lock:
+                data = self.sock.recv(2)
+                l0 = ord(data[0])
+                l1 = ord(data[1])
+                plen = l0 + (l1 << 8)
+                data = self.sock.recv(plen)
+        else:
+            data = self.sock.recv(2)
+            l0 = ord(data[0])
+            l1 = ord(data[1])
+            plen = l0 + (l1 << 8)
+            data = self.sock.recv(plen)
         if self.debug:
             print 'Recv:',
             print ':'.join('%02x' % ord(c) for c in data)
+        return data
+
+    def send_and_recv(self, data):
+        with self.sock:
+            self.send(data, lock=False)
+            data = self.recv(lock = False)
         return data
 
 def _check_brick(arg, value):

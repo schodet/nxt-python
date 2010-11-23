@@ -57,21 +57,36 @@ class USBSock(object):
         if self.debug:
             print 'USB connection closed.'
 
-    def send(self, data):
+    def send(self, data, lock=True):
         'Use to send raw data over USB connection ***ADVANCED USERS ONLY***'
         if self.debug:
             print 'Send:',
             print ':'.join('%02x' % ord(c) for c in data)
-        self.handle.bulkWrite(self.blk_out.address, data)
+        if lock:
+            with self.lock:
+                self.handle.bulkWrite(self.blk_out.address, data)
+        else:
+            self.handle.bulkWrite(self.blk_out.address, data)
 
-    def recv(self):
+    def recv(self, lock=True):
         'Use to recieve raw data over USB connection ***ADVANCED USERS ONLY***'
-        data = self.handle.bulkRead(self.blk_in.address, 64)
+        if lock:
+            with self.lock:
+                data = self.handle.bulkRead(self.blk_in.address, 64)
+        else:
+            data = self.handle.bulkRead(self.blk_in.address, 64)
         if self.debug:
             print 'Recv:',
             print ':'.join('%02x' % (c & 0xFF) for c in data)
         # NOTE: bulkRead returns a tuple of ints ... make it sane
         return ''.join(chr(d & 0xFF) for d in data)
+
+    def send_and_recv(self, data):
+        with self.sock:
+            self.send(data, lock=False)
+            data = self.recv(lock = False)
+        return data
+
 
 def find_bricks(host=None, name=None):
     'Use to look for NXTs connected by USB only. ***ADVANCED USERS ONLY***'

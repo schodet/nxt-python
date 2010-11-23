@@ -205,26 +205,24 @@ class ModuleFinder(object):
 
 class Brick(object): #TODO: this begs to have explicit methods
     'Main object for NXT Control'
-    debug = True
+    debug = 1
+    #0 = NO DEBUG ; 1 = DEBUG if already getting reply ; 2 = ALL DEBUG
 
     def set_brick_name(self,name):
         if len(name)>15:
             name=name[0:14]
         name = name +'\x00'*(16-len(name))
-        if self.debug:
+        if self.debug == 2:
             message='\x01\x98'+name
+            data = self.sock.send_and_recv(message)
+            check_status(data[2])
         else:
             message='\x81\x98'+name
-        with self.lock:
             self.sock.send(message)
-            if self.debug:
-                check_status(self.sock.recv()[2])
 
     def get_device_info(self):
-        with self.lock:
-            self.sock.send('\x01\x9B')
-            data=self.sock.recv()
-        if self.debug:
+        data = self.sock.send_and_recv('\x01\x9B')
+        if self.debug != 0:
             check_status(data[2])
         info={}
         info['name'] = ''.join(data[3:17].split('\x00'))
@@ -232,11 +230,14 @@ class Brick(object): #TODO: this begs to have explicit methods
         info['btsignal'] = ord(data[25]) + (ord(data[28]) << 8)
         info['freeflash'] = ord(data[29]) + (ord(data[32]) << 8)
         return info
+
+    
     #__metaclass__ = _Meta
 
     def __init__(self, sock):
         self.sock = sock
         self.lock = RLock()
+        self.sock.lock = self.lock
 
     #def play_tone_and_wait(self, frequency, duration):
     #    self.play_tone(frequency, duration)
