@@ -17,7 +17,7 @@
 class ProtocolError(Exception):
     pass
 
-class SysProtError(ProtocolError):
+'''class SysProtError(ProtocolError):
     pass
 
 class FileExistsError(SysProtError):
@@ -36,46 +36,29 @@ class I2CError(DirProtError):
     pass
 
 class I2CPendingError(I2CError):
+    pass'''
+
+class NXTResponseError(Exception):
     pass
 
 CODES = {
-    0x00: None,
-    0x20: I2CPendingError('Pending communication transaction in progress'),
-    0x40: DirProtError('Specified mailbox queue is empty'),
-    0x81: SysProtError('No more handles'),
-    0x82: SysProtError('No space'),
-    0x83: SysProtError('No more files'),
-    0x84: SysProtError('End of file expected'),
-    0x85: SysProtError('End of file'),
-    0x86: SysProtError('Not a linear file'),
-    0x87: FileNotFound('File not found'),
-    0x88: SysProtError('Handle already closed'),
-    0x89: SysProtError('No linear space'),
-    0x8A: SysProtError('Undefined error'),
-    0x8B: SysProtError('File is busy'),
-    0x8C: SysProtError('No write buffers'),
-    0x8D: SysProtError('Append not possible'),
-    0x8E: SysProtError('File is full'),
-    0x8F: FileExistsError('File exists'),
-    0x90: ModuleNotFound('Module not found'),
-    0x91: SysProtError('Out of bounds'),
-    0x92: SysProtError('Illegal file name'),
-    0x93: SysProtError('Illegal handle'),
-    0xBD: DirProtError('Request failed (i.e. specified file not found)'),
-    0xBE: DirProtError('Unknown command opcode'),
-    0xBF: DirProtError('Insane packet'),
-    0xC0: DirProtError('Data contains out-of-range values'),
-    0xDD: DirProtError('Communication bus error'),
-    0xDE: DirProtError('No free memory in communication buffer'),
-    0xDF: DirProtError('Specified channel/connection is not valid'),
-    0xE0: I2CError('Specified channel/connection not configured or busy'),
-    0xEC: DirProtError('No active program'),
-    0xED: DirProtError('Illegal size specified'),
-    0xEE: DirProtError('Illegal mailbox queue ID specified'),
-    0xEF: DirProtError('Attempted to access invalid field of a structure'),
-    0xF0: DirProtError('Bad input or output specified'),
-    0xFB: DirProtError('Insufficient memory available'),
-    0xFF: DirProtError('Bad arguments'),
+0x20 : NXTResponseError("Pending communication transaction in progress"),
+0x40 : NXTResponseError("Specified mailbox queue is empty"),
+0xBD : NXTResponseError("Request failed (i.e. specified file not found)"),
+0xBE : NXTResponseError("Unknown command opcode"),
+0xBF : NXTResponseError("Insane packet"),
+0xC0 : NXTResponseError("Data contains out-of-range values"),
+0xDD : NXTResponseError("Communication bus error"),
+0xDE : NXTResponseError("No free memory in communication buffer"),
+0xDF : NXTResponseError("Specified channel/connection is not valid"),
+0xE0 : NXTResponseError("Specified channel/connection not configured or busy"),
+0xEC : NXTResponseError("No active program"),
+0xED : NXTResponseError("Illegal size specified"),
+0xEE : NXTResponseError("Illegal mailbox queue ID specified"),
+0xEF : NXTResponseError("Attempted to access invalid field of a structure"),
+0xF0 : NXTResponseError("Bad input or output specified"),
+0xFB : NXTResponseError("Insufficient memory available"),
+0xFF : NXTResponseError("Bad arguments"),
 }
 
 def check_status(status):
@@ -84,4 +67,4 @@ def check_status(status):
         if ex:
             raise ex
         else:
-            raise ProtocolError, status
+            raise ProtocolError(status)

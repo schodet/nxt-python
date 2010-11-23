@@ -15,7 +15,7 @@
 
 from time import sleep
 from threading import RLock
-from .error import FileNotFound, ModuleNotFound
+from .error import check_status
 #from .telegram import OPCODES, Telegram
 #from .sensor import get_sensor
 
@@ -205,7 +205,19 @@ class ModuleFinder(object):
 
 class Brick(object): #TODO: this begs to have explicit methods
     'Main object for NXT Control'
-
+    debug = True
+    def set_brick_name(self,name):
+        if len(name)>15:
+            name=name[0:14]
+        name = name +'\x00'*(16-len(name))
+        if self.debug:
+            message='\x01\x98'+name
+        else:
+            message='\x81\x98'+name
+        with self.lock:
+            self.sock.send(message)
+            if self.debug:
+                check_status(self.sock.recv()[2])
     #__metaclass__ = _Meta
 
     def __init__(self, sock):
