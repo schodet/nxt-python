@@ -62,9 +62,5 @@ CODES = {
 }
 
 def check_status(status):
-    if status:
-        ex = CODES.get(status)
-        if ex:
-            raise ex
-        else:
-            raise ProtocolError(status)
+    if CODES.has_key(status):
+        raise CODES[status]

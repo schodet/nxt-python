@@ -206,6 +206,7 @@ class ModuleFinder(object):
 class Brick(object): #TODO: this begs to have explicit methods
     'Main object for NXT Control'
     debug = True
+
     def set_brick_name(self,name):
         if len(name)>15:
             name=name[0:14]
@@ -218,6 +219,19 @@ class Brick(object): #TODO: this begs to have explicit methods
             self.sock.send(message)
             if self.debug:
                 check_status(self.sock.recv()[2])
+
+    def get_device_info(self):
+        with self.lock:
+            self.sock.send('\x01\x9B')
+            data=self.sock.recv()
+        if self.debug:
+            check_status(data[2])
+        info={}
+        info['name'] = ''.join(data[3:17].split('\x00'))
+        info['btaddr'] = list(data[18:24])
+        info['btsignal'] = ord(data[25]) + (ord(data[28]) << 8)
+        info['freeflash'] = ord(data[29]) + (ord(data[32]) << 8)
+        return info
     #__metaclass__ = _Meta
 
     def __init__(self, sock):
