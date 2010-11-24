@@ -17,6 +17,7 @@ from time import sleep
 from threading import RLock
 from .error import check_status
 from .constants import *
+from struct import pack,unpack
 #from .telegram import OPCODES, Telegram
 #from .sensor import get_sensor
 
@@ -243,6 +244,24 @@ class Brick(object): #TODO: this begs to have explicit methods
     def del_user_flash(self):
         message = SYSTEM_REPLY+DEL_USER_FLASH
         self.sock.send_and_recv(message)
+
+    def get_output_state(self,port):
+        message = DIRECT_REPLY+GET_OUTPUT_STATE+chr(port)
+        data = self.sock.send_and_recv(message)
+        if self.debug != 0:
+            check_status(data[2])
+        final = [None]*10
+        final[0] = ord(data[3])
+        final[1] = unpack(S_CHAR,data[4])[0]
+        final[2] = ord(data[5])
+        final[3] = ord(data[6])
+        final[4] = unpack(S_CHAR,data[7])[0]
+        final[5] = ord(data[8])
+        final[6] = unpack(U_LONG,data[9:13])[0]
+        final[7] = unpack(S_LONG,data[13:17])[0]
+        final[8] = unpack(S_LONG,data[17:21])[0]
+        final[9] = unpack(S_LONG,data[21:])[0]
+        return tuple(final)
 
     
     #__metaclass__ = _Meta

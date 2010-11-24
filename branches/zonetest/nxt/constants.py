@@ -27,6 +27,17 @@ SET_BRICK_NAME = '\x98'
 GET_DEVICE_INFO = '\x9B'
 GET_FIRMWARE_VERSION = '\x88'
 DEL_USER_FLASH = '\xA0'
+GET_OUTPUT_STATE = '\x06'
+
+# Struct Constants
+
+S_CHAR = '<b'
+U_CHAR = '<B'
+S_INT  = '<i'
+U_INT  = '<I'
+S_LONG = '<l'
+U_LONG = '<L'
+
 
 # Other Constants
 

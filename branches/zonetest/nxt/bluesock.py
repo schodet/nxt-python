@@ -60,7 +60,7 @@ class BlueSock(object):
         try:
             self.sock.send(d)
         finally:
-            if lock:self.sock.send(d)
+            if lock:self.lock.release()
 
     def recv(self, lock=True):
         if lock:self.lock.acquire()

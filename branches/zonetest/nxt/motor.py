@@ -69,8 +69,8 @@ class OutputState(object):
         mode = '&'.join(modes)
         regulation = 'regulation: ' + \
                             ['idle', 'speed', 'sync'][self.regulation]
-        run_state = 'run state: ' + {0: 'idle', 0x10: 'ramp_up',
-                            0x20: 'running', 0x40: 'ramp_down'}[self.run_state]
+        run_state = 'run state: ' + {RUN_STATE_IDLE: 'idle', RUN_STATE_RAMP_UP: 'ramp_up',
+                            RUN_STATE_RUNNING: 'running', RUN_STATE_RAMP_DOWN: 'ramp_down'}[self.run_state]
         return ', '.join([mode, regulation, str(self.turn_ratio), run_state] + [str(self.tacho_limit)])
 
 
