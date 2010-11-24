@@ -263,7 +263,25 @@ class Brick(object): #TODO: this begs to have explicit methods
         final[9] = unpack(S_LONG,data[21:])[0]
         return tuple(final)
 
-    
+    def set_output_state(self, port, power, mode, regulation, turn_ratio, run_state, tacho_limit):
+        if self.debug == 2:
+            data = DIRECT_REPLY
+        else:
+            data = DIRECT_NOREPLY
+        data += SET_OUTPUT_STATE
+        data += chr(port)
+        data += pack(S_CHAR, power)
+        data += chr(mode)
+        data += chr(regulation)
+        data += pack(S_CHAR, turn_ratio)
+        data += chr(run_state)
+        data += pack(U_LONG, tacho_limit)
+        if self.debug == 2:
+            result = self.sock.send_and_recv(data)
+            check_status(data[2])
+        else:
+            self.sock.send(data)
+
     #__metaclass__ = _Meta
 
     def __init__(self, sock):
