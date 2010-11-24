@@ -26,7 +26,7 @@ from classes import * #For compatibility
 class Brick(object): #TODO: this begs to have explicit methods
     'Main object for NXT Control'
     debug = 1
-    #0 = NO DEBUG ; 1 = DEBUG if already getting reply ; 2 = ALL DEBUG
+    #0 = NO DEBUG ; 1 = DEBUG if already getting reply ; 2 = FORCE DEBUG
 
     def set_brick_name(self,name):
         if len(name) > 15:
@@ -96,10 +96,68 @@ class Brick(object): #TODO: this begs to have explicit methods
         data += pack(U_LONG, tacho_limit)
         if self.debug == 2:
             result = self.sock.send_and_recv(data)
-            check_status(data[2])
+            check_status(result[2])
         else:
             self.sock.send(data)
 
+    def set_input_mode(self, port, type, mode):
+        if self.debug == 2:
+            message = DIRECT_REPLY
+        else:
+            message = DIRECT_NOREPLY
+        message += SET_INPUT_MODE
+        message += chr(port)
+        message += chr(type)
+        message += chr(mode)
+        if self.debug == 2:
+            data=self.sock.send_and_recv(message)
+            check_status(data[2])
+        else:
+            self.sock.send(message)
+
+    def get_input_values(self, port):
+        message = DIRECT_REPLY+GET_INPUT_VALUES+chr(port)
+        data = self.sock.send_and_recv(message)
+        if self.debug != 0: check_status(data[2])
+        final = list(9)
+        final[0] = ord(data[3])
+        final[1] = ord(data[4])
+        final[2] = ord(data[5])
+        final[3] = ord(data[6])
+        final[4] = ord(data[7])
+        final[5] = pack(U_INT,data[8:10])
+        final[6] = pack(U_INT,data[10:12])
+        final[7] = pack(S_INT,data[12:14])
+        final[8] = pack(S_INT,data[14:])
+        return tuple(final)
+
+    def ls_get_status(self,port):
+        message = DIRECT_REPLY+LS_GET_STATUS+chr(port)
+        data = self.sock.send_and_recv(message)
+        if self.debug != 0: check_status(data[2])
+        return ord(data[3])
+
+    def ls_write(self, port, tx_data, rx_bytes):
+        if self.debug == 2:
+            message = DIRECT_REPLY
+        else:
+            message = DIRECT_NOREPLY
+        message += chr(port)
+        message += chr(rx_bytes)
+        message += tx_data
+        if self.debug == 2:
+            data = self.sock.send_and_recv(message)
+            check_status(data)
+        else:
+            self.sock.send(message)
+
+    def ls_read(self, port):
+        message = DIRECT_REPLY+LS_READ+chr(port)
+        data = self.sock.send_and_recv(message)
+        if debug != 0:
+            check_status(data[2])
+        length = ord(data[3])
+        return data[4:4+length]
     #__metaclass__ = _Meta
 
     def __init__(self, sock):

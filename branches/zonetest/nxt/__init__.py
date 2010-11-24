@@ -15,4 +15,4 @@
 from locator import find_one_brick
 from motor import *
 from constants import *
-#from .sensor import *
+from sensor import *

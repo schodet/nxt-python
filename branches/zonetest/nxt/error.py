@@ -17,7 +17,7 @@
 class ProtocolError(Exception):
     pass
 
-'''class SysProtError(ProtocolError):
+class SysProtError(ProtocolError):
     pass
 
 class FileExistsError(SysProtError):
@@ -36,7 +36,7 @@ class I2CError(DirProtError):
     pass
 
 class I2CPendingError(I2CError):
-    pass'''
+    pass
 
 class NXTResponseError(Exception):
     pass
