@@ -119,16 +119,16 @@ class Brick(object): #TODO: this begs to have explicit methods
         message = DIRECT_REPLY+GET_INPUT_VALUES+chr(port)
         data = self.sock.send_and_recv(message)
         if self.debug != 0: check_status(data[2])
-        final = list(9)
+        final = [None] * 9
         final[0] = ord(data[3])
         final[1] = ord(data[4])
         final[2] = ord(data[5])
         final[3] = ord(data[6])
         final[4] = ord(data[7])
-        final[5] = pack(U_INT,data[8:10])
-        final[6] = pack(U_INT,data[10:12])
-        final[7] = pack(S_INT,data[12:14])
-        final[8] = pack(S_INT,data[14:])
+        final[5] = unpack(U_SHT,data[8:10])[0]
+        final[6] = unpack(U_SHT,data[10:12])[0]
+        final[7] = unpack(S_SHT,data[12:14])[0]
+        final[8] = unpack(S_SHT,data[14:])[0]
         return tuple(final)
 
     def ls_get_status(self,port):

@@ -39,10 +39,10 @@ LS_READ              = '\x10'
 
 S_CHAR = '<b'
 U_CHAR = '<B'
-S_INT  = '<i'
-U_INT  = '<I'
-S_LONG = '<l'
-U_LONG = '<L'
+S_SHT  = '<h'
+U_SHT  = '<H'
+S_INT = '<i'
+U_INT = '<I'
 
 # Motor COntrol Constants
 
