@@ -15,8 +15,8 @@
 
 from time import sleep
 from threading import RLock
-from error import check_status
-from constants import *
+from nxt.error import check_status
+from nxt.constants import *
 from struct import pack,unpack
 #from .telegram import OPCODES, Telegram
 #from .sensor import get_sensor
@@ -130,6 +130,7 @@ class Brick(object): #TODO: this begs to have explicit methods
         final[7] = unpack(S_SHT,data[12:14])[0]
         final[8] = unpack(S_SHT,data[14:])[0]
         return tuple(final)
+
 
     def ls_get_status(self,port):
         message = DIRECT_REPLY+LS_GET_STATUS+chr(port)
