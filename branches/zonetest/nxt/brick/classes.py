@@ -190,3 +190,19 @@ def parse_in(cmdtype,cmd,*args):
         elif item[0] == RAW:
             output.append(item[1])
     return ''.join(output)
+
+def parse_out(data,*args):
+    packtypes={S_CHAR:1,U_CHAR:1,S_SHT:2,U_SHT:2,S_INT:4,U_INT:4}
+    output=[]
+    index = 3
+    for item in args:
+        if item in packtypes.keys():
+            output.append(unpack(item,data[index:index+packtypes[item]])[0])
+            index += packtypes[item]
+        elif type(item) == type(()) and len(item) == 2:
+            if item[0] == F_BYTE:
+                index += item[1]
+            elif item[0] == RAW:
+                output.append(data[index:index+item[1]])
+                index += item[1]
+    return tuple(output)
