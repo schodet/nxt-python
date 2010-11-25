@@ -37,12 +37,14 @@ LS_READ              = '\x10'
 
 # Struct Constants
 
+F_BYTE = '\x00'
+RAW    = '\x01'
 S_CHAR = '<b'
 U_CHAR = '<B'
 S_SHT  = '<h'
 U_SHT  = '<H'
-S_INT = '<i'
-U_INT = '<I'
+S_INT  = '<i'
+U_INT  = '<I'
 
 # Motor COntrol Constants
 

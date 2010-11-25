@@ -17,7 +17,7 @@ setup(
     description='LEGO Mindstorms NXT Control Package',
     url='http://home.comcast.net/~dplau/nxt_python/, http://code.google.com/p/nxt-python/',
     license='Gnu GPL v2',
-    packages=['nxt', 'nxt.sensor'],
+    packages=['nxt', 'nxt.sensor', 'nxt.brick'],
     scripts=['scripts/nxt_push', 'scripts/nxt_test', 'scripts/nxt_filer'],
     long_description=ldesc
 )

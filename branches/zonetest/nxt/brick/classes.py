@@ -13,6 +13,9 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+from nxt.constants import *
+from struct import pack,unpack
+
 class FileFinder(object):
     'A generator to find files on a NXT brick.'
 
@@ -175,3 +178,15 @@ class ModuleFinder(object):
             except ModuleNotFound:
                 self._close()
                 break
+
+def parse_in(cmdtype,cmd,arglist=[]):
+    output=[cmdtype,cmd]
+    packtypes = (S_CHAR,U_CHAR,S_SHT,U_SHT,S_INT,U_INT)
+    for item in arglist:
+        if item[0] in packtypes:
+            output.append(pack(item[0],item[1]))
+        elif item[0] == F_BYTE:
+            output.append(NULL*item[1])
+        elif item[0] == RAW:
+            output.append(item[1])
+    return ''.join(output)
