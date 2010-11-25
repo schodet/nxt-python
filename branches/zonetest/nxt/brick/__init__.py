@@ -33,7 +33,7 @@ class Brick(object): #TODO: this begs to have explicit methods
             name = name[0:14]
         name = name + NULL * (16 - len(name))
         if self.debug == 2:
-            message = parse_in(SYSTEM_REPLY, SET_BRICK_NAME, [(RAW,name)])
+            message = parse_in(SYSTEM_REPLY, SET_BRICK_NAME, (RAW,name))
             data = self.sock.send_and_recv(message)
             check_status(data[2])
         else:
@@ -64,7 +64,7 @@ class Brick(object): #TODO: this begs to have explicit methods
         self.sock.send_and_recv(message)
 
     def get_output_state(self,port):
-        message = pase_in(DIRECT_REPLY,GET_OUTPUT_STATE,[U_CHR,port])
+        message = pase_in(DIRECT_REPLY,GET_OUTPUT_STATE,(U_CHR,port))
         data = self.sock.send_and_recv(message)
         if self.debug != 0:
             check_status(data[2])
@@ -86,9 +86,9 @@ class Brick(object): #TODO: this begs to have explicit methods
             type = DIRECT_REPLY
         else:
             type = DIRECT_NOREPLY
-        data = parse_in(type,SET_OUTPUT_STATE,[(U_CHAR,port),(S_CHAR,power),
+        data = parse_in(type,SET_OUTPUT_STATE,(U_CHAR,port),(S_CHAR,power),
             (U_CHAR,mode),(U_CHAR,regulation),(S_CHAR,turn_ratio),
-            (U_CHAR,run_state),(U_LONG,tacho_limit)])
+            (U_CHAR,run_state),(U_LONG,tacho_limit))
         if self.debug == 2:
             result = self.sock.send_and_recv(data)
             check_status(result[2])
@@ -100,8 +100,8 @@ class Brick(object): #TODO: this begs to have explicit methods
             type = DIRECT_REPLY
         else:
             type = DIRECT_NOREPLY
-        message = parse_in(type,SET_INPUT_MODE,[(U_CHAR,port),(U_CHAR,tpye),
-            (U_CHAR,mode)])
+        message = parse_in(type,SET_INPUT_MODE,(U_CHAR,port),(U_CHAR,tpye),
+            (U_CHAR,mode))
         if self.debug == 2:
             data=self.sock.send_and_recv(message)
             check_status(data[2])
@@ -109,7 +109,7 @@ class Brick(object): #TODO: this begs to have explicit methods
             self.sock.send(message)
 
     def get_input_values(self, port):
-        message = parse_in(DIRECT_REPLY,GET_INPUT_VALUES,[(U_CHAR,port)])
+        message = parse_in(DIRECT_REPLY,GET_INPUT_VALUES,(U_CHAR,port))
         data = self.sock.send_and_recv(message)
         if self.debug != 0: check_status(data[2])
         final = [None] * 9
@@ -126,7 +126,7 @@ class Brick(object): #TODO: this begs to have explicit methods
 
 
     def ls_get_status(self,port):
-        message = parse_in(DIRECT_REPLY,LS_GET_STATUS,[(U_CHAR,port)])
+        message = parse_in(DIRECT_REPLY,LS_GET_STATUS,(U_CHAR,port))
         data = self.sock.send_and_recv(message)
         if self.debug != 0: check_status(data[2])
         return ord(data[3])
@@ -136,8 +136,8 @@ class Brick(object): #TODO: this begs to have explicit methods
             type = DIRECT_REPLY
         else:
             type = DIRECT_NOREPLY
-        message = parse_in(type,LS_WRITE,[(U_CHAR,port),(U_CHAR,rx_bytes),
-            (RAW,tx_data)])
+        message = parse_in(type,LS_WRITE,(U_CHAR,port),(U_CHAR,rx_bytes),
+            (RAW,tx_data))
         if self.debug == 2:
             data = self.sock.send_and_recv(message)
             check_status(data)
@@ -145,7 +145,7 @@ class Brick(object): #TODO: this begs to have explicit methods
             self.sock.send(message)
 
     def ls_read(self, port):
-        message = parse_in(DIRECT_REPLY,LS_READ+[(U_CHAR,port)])
+        message = parse_in(DIRECT_REPLY,LS_READ,(U_CHAR,port))
         data = self.sock.send_and_recv(message)
         if debug != 0: check_status(data[2])
         length = ord(data[3])

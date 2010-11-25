@@ -179,10 +179,10 @@ class ModuleFinder(object):
                 self._close()
                 break
 
-def parse_in(cmdtype,cmd,arglist=[]):
+def parse_in(cmdtype,cmd,*args):
     output=[cmdtype,cmd]
     packtypes = (S_CHAR,U_CHAR,S_SHT,U_SHT,S_INT,U_INT)
-    for item in arglist:
+    for item in args:
         if item[0] in packtypes:
             output.append(pack(item[0],item[1]))
         elif item[0] == F_BYTE:
