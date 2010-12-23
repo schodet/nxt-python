@@ -1,11 +1,15 @@
 #summary Short Instructions for new users.
 #labels Featured,Phase-Deploy
 
+This page is meant to be concise and readable from the top down, without skimming.
+
 If you don't have any experience with python, please follow one of the many tutorials available on the internet. To follow this guide, you will need to have a basic understanding of the syntax of python, know how to run a python file, and a have working python installation.
 
 If you have not yet [Installation installed] nxt-python, please do so before trying to use it.
 
 First, look at the .py files in the examples directory of the package or svn trunk you downloaded. Try running one or more of them, if you have a NXT brick handy. If you don't get any errors and the brick does something, your installation is working. If you do run into problems which you can't fix on your own, try asking for help at the [http://groups.google.com/group/nxt-python mailing list].
+
+The first thing you should after running the example is change the line with `b = nxt.locator.find_one_brick()` (or something similar) to pass name = 'brickname' to the function, e.g. `b = nxt.locator.find_one_brick(name = 'MyRobot')`. This will stop nxt-python from accidentally connecting to stuff like mice, phones, and random laptops.
 
 Once you have run an example, try changing it to get different results. For example, try making the spin.py file run the motors for longer or use different ports. Or, combine elements of the mary.py and sensors.py scripts so that the robot plays different tones based on the distance an object is from the ultrasonic sensor. The more experimentation you do, the better.
 
