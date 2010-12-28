@@ -19,11 +19,15 @@ BUS=="usb", ATTRS{idVendor}=="0694", GROUP="lego", MODE="0660"
 
 You will need Python 2.6 or later (But not 3.x).
 
-Download the latest installer for your architecture (32-bit or 64-bit) and run it. Follow the instructions and it will set everything up for you. Note that you can also install by downloading the source package and using the instructions in the README; in any case, it would be a good idea to download a source package in order to read the README and have the examples directory as a reference (they are the most useful docs available, and are not included in the binary installer).
+Download the latest NXT-Python installer for your architecture (32-bit or 64-bit) and run it. Follow the instructions and it will set everything up for you. Note that you can also install by downloading the source package and using the instructions in the README; in any case, it would be a good idea to download a source package in order to read the README and have the examples directory as a reference (they are the most useful docs available, and are not included in the binary installer).
 
-            For USB communications, you need to install [http://sourceforge.net/projects/pyusb/ PyUSB]. USB has a history of being dodgy on Windows, so if the brick can't be found when it should, try bluetooth.
+Communicating with your NXT Brick
 
-            For Bluetooth communications, download and install [http://code.google.com/p/pybluez/downloads/list PyBluez]. You will also need a compatible Bluetooth dongle, if your computer doesn’t already support Bluetooth.
+For USB Communication
+            Download and install [http://sourceforge.net/projects/pyusb/ PyUSB]. USB has a history of being dodgy on Windows, so if the brick can't be found when it should, try bluetooth.
+
+For Bluetooth Communication
+            Download and install [http://code.google.com/p/pybluez/downloads/list PyBluez]. You will also need a compatible Bluetooth dongle, if your computer doesn’t already support Bluetooth.
 
 ==Mac==
 
