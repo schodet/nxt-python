@@ -17,7 +17,7 @@ Once you understand how the examples are controlling the brick, you can start ma
 
 If you have any trouble with this document, please refer to Issue 4 in the bug tracker or ask around in the mailing list.
 
-Quick Start Guide for Beginners
+Quick Start Guide for Beginners&nbsp;
 If you're using USB to communicate with your NXT
 1.  Plug in the NXT to your computer using the USB cable
 2.  Turn on the NXT
