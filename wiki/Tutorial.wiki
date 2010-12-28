@@ -19,20 +19,22 @@ If you have any trouble with this document, please refer to Issue 4 in the bug t
 
 Quick Start Guide for Beginners
 If you're using USB to communicate with your NXT
- 1.  Plug in the NXT to your computer using the USB cable
- 2.  Turn on the NXT
+1.  Plug in the NXT to your computer using the USB cable
+2.  Turn on the NXT
 
 If you're using Bluetooth
- 1.  Turn on the NXT
- 2.  Confirm the Brick is connected via bluetooth to your computer.
+1.  Turn on the NXT
+2.  Confirm the Brick is connected via bluetooth to your computer.
 
 
- 3.  Open the Python GUI "Idle" 
- 4.  From the Idle window, open one of the programs located in the nxt_python folder  (If you don't have any motors or sensors hooked up to your NXT, you may
+3.  Open the Python GUI "Idle" 
+
+4.  From the Idle window, open one of the programs located in the nxt_python folder  (If you don't have any motors or sensors hooked up to your NXT, you may
  consider running the mary.py python script which will play 'Mary Had a
  Little Lamb'. Like Thomas Edisons first phonograph recording)
- 5.  From the drop down menu, select Run, then select Run Module (you can hit F5 which will run the module)
+
+5.  From the drop down menu, select Run, then select Run Module (you can hit F5 which will run the module)
  By running the python script, the included code communicates with the brick via Bluetooth and downloads and runs itself on the brick.
  If you're not sure how to run a python script, check out [http://code.google.com/edu/languages/google-python-class/set-up.html google python sources] or python.org
 
- 6.  You should hear 'Mary Had a Little Lamb' or if you selected spin.py, and your motors are hooked up, your motors should start spinning.
+6.  You should hear 'Mary Had a Little Lamb' or if you selected spin.py, and your motors are hooked up, your motors should start spinning.
