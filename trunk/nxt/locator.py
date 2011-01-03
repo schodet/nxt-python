@@ -18,7 +18,7 @@ class BrickNotFoundError(Exception):
 class NoBackendError(Exception):
     pass
 
-def find_bricks(host=None, name=None):
+def find_bricks(host=None, name=None, silent=False):
     """Used by find_one_brick to look for bricks ***ADVANCED USERS ONLY***"""
 
     try:
@@ -30,7 +30,7 @@ def find_bricks(host=None, name=None):
     except ImportError:
         usb_available = False
         import sys
-        print >>sys.stderr, "USB module unavailable, not searching there"
+        if not silent: print >>sys.stderr, "USB module unavailable, not searching there"
     
     try:
         import bluesock
@@ -42,14 +42,16 @@ def find_bricks(host=None, name=None):
             pass
     except ImportError:
         import sys
-        print >>sys.stderr, "Bluetooth module unavailable, not searching there"
+        if not silent: print >>sys.stderr, "Bluetooth module unavailable, not searching there"
         if not usb_available:
             raise NoBackendError("Neither USB nor Bluetooth could be used! Did you install PyUSB or PyBluez?")
     
 
-def find_one_brick(host=None, name=None):
+def find_one_brick(host=None, name=None, silent=False):
     """Use to find one brick. After it returns a usbsock object or a bluesock
-    object, it automatically connects to it."""
-    for s in find_bricks(host, name):
+object, it automatically connects to it. The host and name args limit
+the search to a given MAC or brick name. Set silent to True to stop
+nxt-python from printing anything during the search."""
+    for s in find_bricks(host, name, silent):
         return s.connect()
     raise BrickNotFoundError
