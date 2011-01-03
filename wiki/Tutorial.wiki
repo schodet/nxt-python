@@ -5,9 +5,9 @@ This page is meant to be concise and readable from the top down, without skimmin
 
 If you don't have any experience with python, please follow one of the many tutorials available on the internet. To follow this guide, you will need to have a basic understanding of the syntax of python, know how to run a python file, and a have working python installation.
 
-If you have not yet [Installation installed] nxt-python, please do so before trying to use it.
+If you have not yet [Installation installed] nxt-python, please do so before trying to use it. Once it's installed, make sure your NXT is turned on and that you can connect to the brick with either bluetooth or USB. If you've got NXT-G set up, you should arrange things the way you do when using it.
 
-First, look at the .py files in the examples directory of the package or svn trunk you downloaded. Try running one or more of them, if you have a NXT brick handy. If you don't get any errors and the brick does something, your installation is working. If you do run into problems which you can't fix on your own, try asking for help at the [http://groups.google.com/group/nxt-python mailing list].
+First, look at the .py files in the examples directory of the package or svn trunk you downloaded. Try running one or more of them (In Windows, open with IDLE and then press F5). If you don't get any errors and the brick does something, your installation is working. If you do run into problems which you can't fix on your own, try asking for help at the [http://groups.google.com/group/nxt-python mailing list].
 
 The first thing you should after running the example is change the line with `b = nxt.locator.find_one_brick()` (or something similar) to pass name = 'brickname' to the function, e.g. `b = nxt.locator.find_one_brick(name = 'MyRobot')`. This will stop nxt-python from accidentally connecting to stuff like mice, phones, and random laptops.
 
@@ -16,25 +16,3 @@ Once you have run an example, try changing it to get different results. For exam
 Once you understand how the examples are controlling the brick, you can start making your own scripts from scratch. The code in the examples is mostly boilerplate stuff and therefore in public domain, so feel free to copy it into your projects, regardless of their licensing.
 
 If you have any trouble with this document, please refer to Issue 4 in the bug tracker or ask around in the mailing list.
-
-Quick Start Guide for Beginners
-
-If you're using USB to communicate with your NXT
-
-1.  Plug in the NXT to your computer using the USB cable
-2.  Turn on the NXT
-
-If you're using Bluetooth
-
-1.  Turn on the NXT
-2.  Confirm the Brick is connected via bluetooth to your computer.
-
-
-3.  Open the Python GUI "Idle" 
-
-4.  From the Idle window, open one of the programs located in the nxt_python folder  (If you don't have any motors or sensors hooked up to your NXT, you may consider running the mary.py python script which will play 'Mary Had a Little Lamb'. Like Thomas Edisons first phonograph recording)
-
-5.  From the drop down menu, select Run, then select Run Module (you can hit F5 which will run the module) By running the python script, the included code communicates with the brick via Bluetooth and downloads and runs itself on the brick.
-If you're not sure how to run a python script, check out [http://code.google.com/edu/languages/google-python-class/set-up.html google python sources] or python.org
-
-6.  You should hear 'Mary Had a Little Lamb' or if you selected spin.py, and your motors are hooked up, your motors should start spinning.
