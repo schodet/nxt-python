@@ -58,14 +58,15 @@ class Brick(object): #TODO: this begs to have explicit methods
         data = self.sock.send_and_recv(message)
         if self.debug != 0:
             check_status(data[2])
-        return ((ord(data[4]),ord(data[3])),(ord(data[6]),ord(data[5])))
+        info = parse_in(U_CHAR,U_CHAR,U_CHAR,U_CHAR)
+        return (info[1],info[0],info[3],info[2])
 
     def del_user_flash(self):
         message = parse_in(SYSTEM_REPLY, DEL_USER_FLASH)
         self.sock.send_and_recv(message)
 
     def get_output_state(self,port):
-        message = pase_in(DIRECT_REPLY,GET_OUTPUT_STATE,(U_CHR,port))
+        message = parse_in(DIRECT_REPLY,GET_OUTPUT_STATE,(U_CHAR,port))
         data = self.sock.send_and_recv(message)
         if self.debug != 0:
             check_status(data[2])
@@ -80,7 +81,7 @@ class Brick(object): #TODO: this begs to have explicit methods
             type = DIRECT_NOREPLY
         data = parse_in(type,SET_OUTPUT_STATE,(U_CHAR,port),(S_CHAR,power),
             (U_CHAR,mode),(U_CHAR,regulation),(S_CHAR,turn_ratio),
-            (U_CHAR,run_state),(U_LONG,tacho_limit))
+            (U_CHAR,run_state),(U_INT,tacho_limit))
         if self.debug == 2:
             result = self.sock.send_and_recv(data)
             check_status(result[2])
