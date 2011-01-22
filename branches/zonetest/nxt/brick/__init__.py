@@ -50,10 +50,15 @@ class Brick(object): #TODO: this begs to have explicit methods
         address = '%02X:%02X:%02X:%02X:%02X:%02X' % (info[1], info[2], info[3], info[4], info[5], info[6])
         btsignal = info[7]
         freeflash = info[8]
-        return (info[0],address,btsignal,freeflash)
+        return {
+        'name':info[0].split('\x00')[0],
+        'addr':address,
+        'btsignal':btsignal,
+        'freeflash':freeflash
+        }
 
     def get_firmware_version(self):
-        """Returns ((ProtocolMaj,ProtocolMin),(FirmwareMaj,FirmwareMin))"""
+        """Returns (ProtocolMaj,ProtocolMin,FirmwareMaj,FirmwareMin)"""
         message = parse_in(SYSTEM_REPLY, GET_FIRMWARE_VERSION)
         data = self.sock.send_and_recv(message)
         if self.debug != 0:
@@ -64,6 +69,8 @@ class Brick(object): #TODO: this begs to have explicit methods
     def del_user_flash(self):
         message = parse_in(SYSTEM_REPLY, DEL_USER_FLASH)
         self.sock.send_and_recv(message)
+        if self.debug != 0:
+            check_status(data[2])
 
     def get_output_state(self,port):
         message = parse_in(DIRECT_REPLY,GET_OUTPUT_STATE,(U_CHAR,port))
