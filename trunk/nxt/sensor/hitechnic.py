@@ -22,8 +22,9 @@ from .analog import BaseAnalogSensor
 class Compass(BaseDigitalSensor):
     """Hitechnic compass sensor."""
     I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
-    I2C_ADDRESS.update({'heading': (0x44, '<H'),
-                        'mode': (0x41, 'B'),
+    I2C_ADDRESS.update({'mode': (0x41, 'B'),
+                        'heading': (0x42, 'B'),
+                        'adder' : (0x43, 'B'),
     })
     
     class Modes:
@@ -33,15 +34,16 @@ class Compass(BaseDigitalSensor):
     
     def get_heading(self):
         """Returns heading from North in degrees."""
-        return self.read_value('heading')[0]
+
+        two_degree_heading = self.read_value('heading')[0]
+        adder = self.read_value('adder')[0]
+        heading = two_degree_heading * 2 + adder
+
+        return heading
     
     get_sample = get_heading
 
     def get_relative_heading(self,target=0):
-        """This function is untested but should work. If it does work, please post a
-message to the mailing list or email marcusw@cox.net. If it doesn't work, please
-file an issue in the bug tracker.
-        """
         rheading = self.get_sample()-target
         if rheading > 180:
             rheading -= 360
@@ -54,10 +56,6 @@ file an issue in the bug tracker.
 if max > min, it's straightforward, but
 if min > max, it switches the values of max and min
 and returns true if heading is NOT between the new max and min
-
-This function is untested but should work. If it does work, please post a
-message to the mailing list or email marcusw@cox.net. If it doesn't work, please
-file an issue in the bug tracker.
         """
         if minval > maxval:
             (maxval,minval) = (minval,maxval)
@@ -76,14 +74,13 @@ file an issue in the bug tracker.
         return self.read_value('mode')[0]
     
     def set_mode(self, mode):
-         if mode != CompassMode.MEASUREMENT and \
-                 mode != CompassMode.CALIBRATION:
+         if mode != self.Modes.MEASUREMENT and \
+                 mode != self.Modes.CALIBRATION:
              raise ValueError('Invalid mode specified: ' + str(mode))
          self.write_value('mode', (mode, ))
          
 Compass.add_compatible_sensor(None, 'HiTechnc', 'Compass ') #Tested with version '\xfdV1.23  '
 Compass.add_compatible_sensor(None, 'HITECHNC', 'Compass ') #Tested with version '\xfdV2.1   '
-
 
 class Accelerometer(BaseDigitalSensor):
     'Object for Accelerometer sensors. Thanks to Paulo Vieira.'
