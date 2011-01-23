@@ -2,6 +2,7 @@
 # Copyright (C) 2006,2007  Douglas P Lau
 # Copyright (C) 2009  Marcus Wanner, Paulo Vieira, rhn
 # Copyright (C) 2010  rhn, Marcus Wanner, melducky, Samuel Leeman-Munk
+# Copyright (C) 2011  jerradgenson, Marcus Wanner
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -239,22 +240,47 @@ IRSeekerv2.add_compatible_sensor(None, 'HITECHNC', 'NewIRDir')
 class EOPD(BaseAnalogSensor):
     """Object for HiTechnic Electro-Optical Proximity Detection sensors.
     """
+    
+    # To be divided by processed value.
+    _SCALE_CONSTANT = 250
+
     def __init__(self, brick, port):
         super(EOPD, self).__init__(brick, port)
-        from math import sqrt
+	from math import sqrt
         self.sqrt = sqrt
 
     def set_range_long(self):
+        ''' Choose this mode to increase the sensitivity
+            of the EOPD sensor by approximately 4x. May
+            cause sensor overload.
+            '''
+
         self.set_input_mode(Type.LIGHT_ACTIVE, Mode.RAW)
 
     def set_range_short(self):
+        ''' Choose this mode to prevent the EOPD sensor from
+            being overloaded by white objects.
+           '''
+
         self.set_input_mode(Type.LIGHT_INACTIVE, Mode.RAW)
     
     def get_raw_value(self):
-        return 1023 - self.get_input_values().scaled_value
+        '''Unscaled value read from sensor.'''
+
+        return 1023 - self.get_input_values().raw_ad_value
     
     def get_processed_value(self):
-        return self.sqrt(self.get_raw_value() * 10)
+        '''Derived from the square root of the raw value.'''
+
+        return self.sqrt(self.get_raw_value())
+
+    def get_scaled_value(self):
+        ''' Returns a value that will scale linearly as distance
+            from target changes. This is the method that should
+            generally be called to get EOPD sensor data.
+            '''
+
+        return self._SCALE_CONSTANT / self.get_processed_value()
     
     get_sample = get_processed_value
 
