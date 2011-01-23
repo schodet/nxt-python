@@ -237,12 +237,12 @@ IRSeekerv2.add_compatible_sensor(None, 'HITECHNC', 'NewIRDir')
 
 
 class EOPD(BaseAnalogSensor):
-    """Object for HiTechnic Electro-Optical Proximity Detection sensors. Coded to
-HiTechnic's specs for the sensor but not tested. Please report whether this
-worked for you or not!
+    """Object for HiTechnic Electro-Optical Proximity Detection sensors.
     """
-    def __init__(self, brick, port, illuminated=True):
-        super(Light, self).__init__(brick, port)
+    def __init__(self, brick, port):
+        super(EOPD, self).__init__(brick, port)
+		from math import sqrt
+		self.sqrt = sqrt
 
     def set_range_long(self):
         self.set_input_mode(Type.LIGHT_ACTIVE, Mode.RAW)
@@ -254,7 +254,7 @@ worked for you or not!
         return 1023 - self.get_input_values().scaled_value
     
     def get_processed_value(self):
-        return sqrt(self.get_raw_value() * 10)
+        return self.sqrt(self.get_raw_value() * 10)
     
     get_sample = get_processed_value
 
