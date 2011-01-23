@@ -287,7 +287,7 @@ class EOPD(BaseAnalogSensor):
         except ZeroDivisionError:
             return self._SCALE_CONSTANT
     
-    get_sample = get_processed_value
+    get_sample = get_scaled_value
 
 
 class Colorv2(BaseDigitalSensor):
