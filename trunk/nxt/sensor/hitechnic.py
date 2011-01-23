@@ -244,6 +244,9 @@ class EOPD(BaseAnalogSensor):
     # To be divided by processed value.
     _SCALE_CONSTANT = 250
 
+    # Maximum distance the sensor can detect.
+    _MAX_DISTANCE = 1023
+
     def __init__(self, brick, port):
         super(EOPD, self).__init__(brick, port)
 	from math import sqrt
@@ -267,7 +270,7 @@ class EOPD(BaseAnalogSensor):
     def get_raw_value(self):
         '''Unscaled value read from sensor.'''
 
-        return 1023 - self.get_input_values().raw_ad_value
+        return self._MAX_DISTANCE - self.get_input_values().raw_ad_value
     
     def get_processed_value(self):
         '''Derived from the square root of the raw value.'''
@@ -280,7 +283,12 @@ class EOPD(BaseAnalogSensor):
             generally be called to get EOPD sensor data.
             '''
 
-        return self._SCALE_CONSTANT / self.get_processed_value()
+        try:
+            result = self._SCALE_CONSTANT / self.get_processed_value()
+            return result
+
+        except ZeroDivisionError:
+            return self._SCALE_CONSTANT
     
     get_sample = get_processed_value
 
