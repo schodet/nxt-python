@@ -14,7 +14,7 @@ Requirements:
     * USB communications:
         PyUSB (http://sourceforge.net/projects/pyusb/)
 
-Installation (if using source package):
+Installation:
 
     * Untar/unzip source package
     * In package directory, run "python setup.py install" (as root), or if
@@ -27,12 +27,15 @@ Installation (if using source package):
 
 Getting Started:
 
-    Take a look at the examples directory (this is, unfortunately, not included
-in the windows installer packages...you will find it in a corresponding source
-package or SVN checkout). Feel free to copy that code into your scripts and
-don't be afraid to experiment! If you are having trouble with something, you may
-find the solution in the docstrings (ex. help('nxt.sensor.Ultrasonic')) or even
-in the source code (especially for digital sensors).
+    Take a look at the examples directory. This shows by example how to do most
+things in nxt-python. Feel free to copy that code into your scripts and don't be
+afraid to experiment! If you are having trouble with something, you may find the
+solution in the docstrings (ex. help('nxt.sensor.Ultrasonic')) or even in the
+source code (especially for digital sensors). Note that in PyPI packages, this
+directory is omitted; if you are developing for NXT-Python, you should get one
+of the packages from the googlecode site at nxt-python.googlecode.com. You can
+also find documentation, tutorials, FAQs, a link to the mailing list, and a neat
+web interface to the SVN there.
 
 Notes/FAQ:
     (I have tried to put the most important stuff first, but it would be a good
@@ -59,14 +62,12 @@ their specific application.
 I2C communication errors. I have been unable to find the source of this problem
 (it seems to be inside the nxt firmware itself) or a good workaround. If some
 python master out there comes up with a fix, I would be very, very happy to get
-it. Thanks!
+it. Thanks! This problem seems to have gone away recently, but I am unsure why.
     The Synchronized Motor support has not been extensively tested for accuracy.
 It seems to mostly work well but the accuracy of the braking function and the
 closeness of the two motors to each other have not been assesed.
     Support for a number of sensors has not been tested at all, due to lack of
-hardware. I have started a project to test this code, but the going is slow
-and I have decided to go ahead and release rather than waiting several more
-months. If you have a problem with a digital sensor, see the troubleshooting
+hardware. If you have a problem with a digital sensor, see the troubleshooting
 guide below and don't forget to report your trouble!
     NXT-Python has not been tested and may not work with custom nxt firmware
 versions (if you don't know what that means, you don't need to worry about it).
