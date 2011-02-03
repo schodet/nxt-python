@@ -2,6 +2,7 @@
 # Copyright (C) 2006,2007  Douglas P Lau
 # Copyright (C) 2009  Marcus Wanner, Paulo Vieira, rhn
 # Copyright (C) 2010  rhn, Marcus Wanner, melducky, Samuel Leeman-Munk
+# Copyright (C) 2011  jerradgenson, Marcus Wanner
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,8 +22,9 @@ from .analog import BaseAnalogSensor
 class Compass(BaseDigitalSensor):
     """Hitechnic compass sensor."""
     I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
-    I2C_ADDRESS.update({'heading': (0x44, '<H'),
-                        'mode': (0x41, 'B'),
+    I2C_ADDRESS.update({'mode': (0x41, 'B'),
+                        'heading': (0x42, 'B'),
+                        'adder' : (0x43, 'B'),
     })
     
     class Modes:
@@ -32,15 +34,16 @@ class Compass(BaseDigitalSensor):
     
     def get_heading(self):
         """Returns heading from North in degrees."""
-        return self.read_value('heading')[0]
+
+        two_degree_heading = self.read_value('heading')[0]
+        adder = self.read_value('adder')[0]
+        heading = two_degree_heading * 2 + adder
+
+        return heading
     
     get_sample = get_heading
 
     def get_relative_heading(self,target=0):
-        """This function is untested but should work. If it does work, please post a
-message to the mailing list or email marcusw@cox.net. If it doesn't work, please
-file an issue in the bug tracker.
-        """
         rheading = self.get_sample()-target
         if rheading > 180:
             rheading -= 360
@@ -53,10 +56,6 @@ file an issue in the bug tracker.
 if max > min, it's straightforward, but
 if min > max, it switches the values of max and min
 and returns true if heading is NOT between the new max and min
-
-This function is untested but should work. If it does work, please post a
-message to the mailing list or email marcusw@cox.net. If it doesn't work, please
-file an issue in the bug tracker.
         """
         if minval > maxval:
             (maxval,minval) = (minval,maxval)
@@ -75,14 +74,13 @@ file an issue in the bug tracker.
         return self.read_value('mode')[0]
     
     def set_mode(self, mode):
-         if mode != CompassMode.MEASUREMENT and \
-                 mode != CompassMode.CALIBRATION:
+         if mode != self.Modes.MEASUREMENT and \
+                 mode != self.Modes.CALIBRATION:
              raise ValueError('Invalid mode specified: ' + str(mode))
          self.write_value('mode', (mode, ))
          
 Compass.add_compatible_sensor(None, 'HiTechnc', 'Compass ') #Tested with version '\xfdV1.23  '
 Compass.add_compatible_sensor(None, 'HITECHNC', 'Compass ') #Tested with version '\xfdV2.1   '
-
 
 class Accelerometer(BaseDigitalSensor):
     'Object for Accelerometer sensors. Thanks to Paulo Vieira.'
@@ -237,26 +235,59 @@ IRSeekerv2.add_compatible_sensor(None, 'HITECHNC', 'NewIRDir')
 
 
 class EOPD(BaseAnalogSensor):
-    """Object for HiTechnic Electro-Optical Proximity Detection sensors. Coded to
-HiTechnic's specs for the sensor but not tested. Please report whether this
-worked for you or not!
+    """Object for HiTechnic Electro-Optical Proximity Detection sensors.
     """
-    def __init__(self, brick, port, illuminated=True):
-        super(Light, self).__init__(brick, port)
+    
+    # To be divided by processed value.
+    _SCALE_CONSTANT = 250
+
+    # Maximum distance the sensor can detect.
+    _MAX_DISTANCE = 1023
+
+    def __init__(self, brick, port):
+        super(EOPD, self).__init__(brick, port)
+	from math import sqrt
+        self.sqrt = sqrt
 
     def set_range_long(self):
+        ''' Choose this mode to increase the sensitivity
+            of the EOPD sensor by approximately 4x. May
+            cause sensor overload.
+            '''
+
         self.set_input_mode(Type.LIGHT_ACTIVE, Mode.RAW)
 
     def set_range_short(self):
+        ''' Choose this mode to prevent the EOPD sensor from
+            being overloaded by white objects.
+           '''
+
         self.set_input_mode(Type.LIGHT_INACTIVE, Mode.RAW)
     
     def get_raw_value(self):
-        return 1023 - self.get_input_values().scaled_value
+        '''Unscaled value read from sensor.'''
+
+        return self._MAX_DISTANCE - self.get_input_values().raw_ad_value
     
     def get_processed_value(self):
-        return sqrt(self.get_raw_value() * 10)
+        '''Derived from the square root of the raw value.'''
+
+        return self.sqrt(self.get_raw_value())
+
+    def get_scaled_value(self):
+        ''' Returns a value that will scale linearly as distance
+            from target changes. This is the method that should
+            generally be called to get EOPD sensor data.
+            '''
+
+        try:
+            result = self._SCALE_CONSTANT / self.get_processed_value()
+            return result
+
+        except ZeroDivisionError:
+            return self._SCALE_CONSTANT
     
-    get_sample = get_processed_value
+    get_sample = get_scaled_value
 
 
 class Colorv2(BaseDigitalSensor):
