@@ -1,7 +1,7 @@
 # nxt.brick module -- Classes to represent LEGO Mindstorms NXT bricks
 # Copyright (C) 2006  Douglas P Lau
 # Copyright (C) 2009  Marcus Wanner, rhn
-# Copyright (C) 2010  rhn, Marcus Wanner, zonedabone
+# Copyright (C) 2010  rhn
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,7 +14,6 @@
 # GNU General Public License for more details.
 
 from time import sleep
-from threading import RLock
 from .error import FileNotFound, ModuleNotFound
 from .telegram import OPCODES, Telegram
 from .sensor import get_sensor
@@ -22,9 +21,8 @@ from .sensor import get_sensor
 def _make_poller(opcode, poll_func, parse_func):
     def poll(self, *args, **kwargs):
         ogram = poll_func(opcode, *args, **kwargs)
-        with self.lock:
-            self.sock.send(str(ogram))
-            igram = Telegram(opcode=opcode, pkt=self.sock.recv())
+        self.sock.send(str(ogram))
+        igram = Telegram(opcode=opcode, pkt=self.sock.recv())
         return parse_func(igram)
     return poll
 
@@ -46,12 +44,12 @@ class FileFinder(object):
         self.brick = brick
         self.pattern = pattern
         self.handle = None
-
+    
     def _close(self):
         if self.handle is not None:
-            self.brick.close(self.handle)
+            self.brick.close(self.handle)        
             self.handle = None
-
+    
     def __del__(self):
         self._close()
 
@@ -94,7 +92,7 @@ class FileReader(object):
     def __init__(self, brick, fname):
         self.brick = brick
         self.handle, self.size = brick.open_read(fname)
-
+        
     def read(self, bytes=None):
         if bytes is not None:
             remaining = bytes
@@ -108,12 +106,12 @@ class FileReader(object):
             remaining -= len(buffer_)
             data.append(buffer_)
         return ''.join(data)
-
+    
     def close(self):
         if self.handle is not None:
             self.brick.close(self.handle)
             self.handle = None
-
+           
     def __del__(self):
         self.close()
 
@@ -122,7 +120,7 @@ class FileReader(object):
 
     def __exit__(self, etp, value, tb):
         self.close()
-
+        
     def __iter__(self):
         rem = self.size
         bsize = self.brick.sock.bsize
@@ -144,12 +142,12 @@ class FileWriter(object):
 
     def __del__(self):
         self.close()
-
+        
     def close(self):
         if self.handle is not None:
             self.brick.close(self.handle)
             self.handle = None
-
+    
     def tell(self):
         return self._position
 
@@ -159,14 +157,14 @@ class FileWriter(object):
             raise ValueError('Data will not fit into remaining space')
         bsize = self.brick.sock.bsize
         data_position = 0
-
+        
         while remaining > 0:
             batch_size = min(bsize, remaining)
             next_data_position = data_position + batch_size
             buffer_ = data[data_position:next_data_position]
-
+            
             handle, size = self.brick.write(self.handle, buffer_)
-
+            
             self._position += batch_size
             data_position = next_data_position
             remaining -= batch_size
@@ -184,7 +182,7 @@ class ModuleFinder(object):
         if self.handle:
             self.brick.close(self.handle)
             self.handle = None
-
+    
     def __del__(self):
         self._close()
 
@@ -202,7 +200,7 @@ class ModuleFinder(object):
                 self._close()
                 break
 
-
+                
 class Brick(object): #TODO: this begs to have explicit methods
     'Main object for NXT Control'
 
@@ -210,7 +208,6 @@ class Brick(object): #TODO: this begs to have explicit methods
 
     def __init__(self, sock):
         self.sock = sock
-        self.lock = RLock()
 
     def play_tone_and_wait(self, frequency, duration):
         self.play_tone(frequency, duration)
@@ -218,7 +215,7 @@ class Brick(object): #TODO: this begs to have explicit methods
 
     def __del__(self):
         self.sock.close()
-
+    
     find_files = FileFinder
     find_modules = ModuleFinder
     open_file = File
