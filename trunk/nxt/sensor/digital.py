@@ -13,7 +13,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from nxt.error import I2CError, I2CPendingError
+from nxt.error import I2CError, I2CPendingError, DirProtError
 
 from common import *
 from time import sleep, time
@@ -114,11 +114,14 @@ suppressed by passing "check_compatible=False" when creating the sensor object."
             sleep(self.poll_delay - diff)
         self.brick.ls_write(self.port, msg, n_bytes)
         self.last_poll = time()
-        self._ls_get_status(n_bytes)
-        data = self.brick.ls_read(self.port)
+        try:
+            self._ls_get_status(n_bytes)
+        finally:
+            #we should clear the buffer no matter what happens
+            data = self.brick.ls_read(self.port)
         if len(data) < n_bytes:
-            raise I2CError, 'Read failure'
-        return struct.unpack(format, data[-n_bytes:]) # TODO: why could there be more than n_bytes? 
+            raise I2CError, 'Read failure: Not enough bytes'
+        return struct.unpack(format, data[-n_bytes:])
         
     def read_value(self, name):
         """Reads a value from the sensor. Name must be a string found in
@@ -128,7 +131,12 @@ suppressed by passing "check_compatible=False" when creating the sensor object."
         tuples containing only one element.
         """
         address, fmt = self.I2C_ADDRESS[name]
-        return self._i2c_query(address, fmt)
+        for n in range(3):
+            try:
+                return self._i2c_query(address, fmt)
+            except DirProtError:
+                pass
+        raise I2CError, "read_value timeout"
 
     def write_value(self, name, value):
         """Writes value to the sensor. Name must be a string found in
