@@ -1,7 +1,7 @@
 # nxt.sensor module -- Classes to read LEGO Mindstorms NXT sensors
 # Copyright (C) 2006,2007  Douglas P Lau
 # Copyright (C) 2009  Marcus Wanner, Paulo Vieira, rhn
-# Copyright (C) 2010,2011  Marcus Wanner
+# Copyright (C) 2010  Marcus Wanner
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from nxt.error import I2CError, I2CPendingError, DirProtError
+from nxt.error import I2CError, I2CPendingError
 
 from common import *
 from time import sleep, time
@@ -128,13 +128,7 @@ suppressed by passing "check_compatible=False" when creating the sensor object."
         tuples containing only one element.
         """
         address, fmt = self.I2C_ADDRESS[name]
-        for n in range(3):
-            try:
-                return self._i2c_query(address, fmt)
-            except DirProtError:
-                print "DEBUG: DirProtError averted!"
-                pass
-        raise I2CError, "read_value timeout"
+        return self._i2c_query(address, fmt)
 
     def write_value(self, name, value):
         """Writes value to the sensor. Name must be a string found in
