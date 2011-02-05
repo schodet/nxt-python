@@ -63,7 +63,8 @@ class BaseDigitalSensor(Sensor):
         """
         super(BaseDigitalSensor, self).__init__(brick, port)
         self.set_input_mode(Type.LOW_SPEED_9V, Mode.RAW)
-        self.lastpoll = None
+        self.last_poll = time()
+        self.poll_delay = 0.01
         sleep(0.1)  # Give I2C time to initialize
         #Don't do type checking if this class has no compatible sensors listed.
         try: self.compatible_sensors
@@ -95,7 +96,11 @@ suppressed by passing "check_compatible=False" when creating the sensor object."
         """
         value = struct.pack(format, *value)
         msg = chr(self.I2C_DEV) + chr(address) + value
+        if self.last_poll+self.poll_delay > time():
+            diff = time() - self.last_poll
+            sleep(self.poll_delay - diff)
         self.brick.ls_write(self.port, msg, 0)
+        self.last_poll = time()
 
     def _i2c_query(self, address, format):
         """Reads an i2c value from given address, and returns a value unpacked
@@ -104,14 +109,13 @@ suppressed by passing "check_compatible=False" when creating the sensor object."
         """
         n_bytes = struct.calcsize(format)
         msg = chr(self.I2C_DEV) + chr(address)
-        if not self.lastpoll: self.lastpoll = time()
-        if self.lastpoll+0.02 > time():
-            diff = time() - self.lastpoll
-            sleep(0.02 - diff)
+        if self.last_poll+self.poll_delay > time():
+            diff = time() - self.last_poll
+            sleep(self.poll_delay - diff)
         self.brick.ls_write(self.port, msg, n_bytes)
+        self.last_poll = time()
         self._ls_get_status(n_bytes)
         data = self.brick.ls_read(self.port)
-        self.lastpoll = time()
         if len(data) < n_bytes:
             raise I2CError, 'Read failure'
         return struct.unpack(format, data[-n_bytes:]) # TODO: why could there be more than n_bytes? 
