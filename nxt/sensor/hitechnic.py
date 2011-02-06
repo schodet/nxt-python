@@ -82,6 +82,7 @@ and returns true if heading is NOT between the new max and min
 Compass.add_compatible_sensor(None, 'HiTechnc', 'Compass ') #Tested with version '\xfdV1.23  '
 Compass.add_compatible_sensor(None, 'HITECHNC', 'Compass ') #Tested with version '\xfdV2.1   '
 
+
 class Accelerometer(BaseDigitalSensor):
     'Object for Accelerometer sensors. Thanks to Paulo Vieira.'
     I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
@@ -458,3 +459,153 @@ and can be converted into a list of bools or an integer."""
         self.write_value('digital_cont', (int(modes), ))
 
 Prototype.add_compatible_sensor(None, 'HiTechnc', 'Proto   ')
+
+
+class ServoCon(BaseDigitalSensor):
+    """Object for HiTechnic FIRST Servo Controllers. Coded to HiTechnic's specs for
+the sensor but not tested. Please report whether this worked for you or not!"""
+    I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
+    I2C_ADDRESS.update({
+        'status': (0x40, 'B'),
+        'steptime': (0x41, 'B'),
+        's1pos': (0x42, 'B'),
+        's2pos': (0x43, 'B'),
+        's3pos': (0x44, 'B'),
+        'p4pos': (0x45, 'B'),
+        'p5pos': (0x46, 'B'),
+        'p6pos': (0x47, 'B'),
+        'pwm': (0x46, 'B'),
+    })
+    
+    class Status:
+        RUNNING = 0x00 #all motors stopped
+        STOPPED = 0x01 #motor(s) moving
+
+    def __init__(self, brick, port, check_compatible=True):
+        super(ServoCon, self).__init__(brick, port, check_compatible)
+
+    def get_status(self):
+        """Returns the status of the motors. 0 for all stopped, 1 for
+some running.
+        """
+        return self.read_value('status')[0]
+    
+    def set_step_time(self, time):
+        """Sets the step time (0-15).
+        """
+        self.write_value('steptime', (time, ))
+    
+    def set_pos(self, num, pos):
+        """Sets the position of a server. num is the servo number (1-6),
+pos is the position (0-255).
+        """
+        self.write_value('s%dpos' % num, (pos, ))
+    
+    def get_pwm(self):
+        """Gets the "PWM enable" value. The function of this value is
+nontrivial and can be found in the documentation for the sensor.
+        """
+        return self.read_value('pwm')[0]
+    
+    def set_pwm(self, pwm):
+        """Sets the "PWM enable" value. The function of this value is
+nontrivial and can be found in the documentation for the sensor.
+        """
+        self.write_value('pwm', (pwm, ))
+
+ServoCon.add_compatible_sensor(None, 'HiTechnc', 'ServoCon')
+
+
+class MotorCon(BaseDigitalSensor):
+    """Object for HiTechnic FIRST Motor Controllers. Coded to HiTechnic's specs for
+the sensor but not tested. Please report whether this worked for you or not!"""
+    I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
+    I2C_ADDRESS.update({
+        'm1enctarget': (0x40, '>l'),
+        'm1mode': (0x44, 'B'),
+        'm1power': (0x45, 'b'),
+        'm2power': (0x46, 'b'),
+        'm2mode': (0x47, 'B'),
+        'm2enctarget': (0x48, '>l'),
+        'm1enccurrent': (0x4c, '>l'),
+        'm2enccurrent': (0x50, '>l'),
+        'batteryvoltage': (0x54, '2B'),
+        'm1gearratio': (0x56, 'b'),
+        'm1pid': (0x57, '3B'),
+        'm2gearratio': (0x5a, 'b'),
+        'm2pid': (0x5b, '3B'),
+    })
+    
+    class PID_Data():
+        def __init__(self, p, i, d):
+            self.p, self.i, self.d = p, i, d
+    
+    def __init__(self, brick, port, check_compatible=True):
+        super(MotorCon, self).__init__(brick, port, check_compatible)
+    
+    def set_enc_target(self, mot, val):
+        """Set the encoder target (-2147483648-2147483647) for a motor
+        """
+        self.write_value('m%denctarget'%mot, (val, ))
+    
+    def get_enc_target(self, mot):
+        """Get the encoder target for a motor
+        """
+        return self.read_value('m%denctarget'%mot)[0]
+    
+    def get_enc_current(self, mot):
+        """Get the current encoder value for a motor
+        """
+        return self.read_value('m%denccurrent'%mot)[0]
+    
+    def set_mode(self, mot, mode):
+        """Set the mode for a motor. This value is a bit mask and you can
+find details about it in the sensor's documentation.
+        """
+        self.write_value('m%dmode'%mot, (mode, ))
+    
+    def get_mode(self, mot):
+        """Get the mode for a motor. This value is a bit mask and you can
+find details about it in the sensor's documentation.
+        """
+        return self.read_value('m%dmode'%mot)[0]
+    
+    def set_power(self, mot, power):
+        """Set the power (-100-100) for a motor
+        """
+        self.write_value('m%dpower'%mot, (power, ))
+    
+    def get_power(self, mot):
+        """Get the power for a motor
+        """
+        return self.read_value('m%dpower'%mot)[0]
+    
+    def set_gear_ratio(self, mot, ratio):
+        """Set the gear ratio for a motor
+        """
+        self.write_value('m%dgearratio'%mot, (ratio, ))
+    
+    def get_gear_ratio(self, mot):
+        """Get the gear ratio for a motor
+        """
+        return self.read_value('m%dgearratio'%mot)[0]
+    
+    def set_pid(self, mot, piddata):
+        """Set the PID coefficients for a motor. Takes data in
+MotorCon.PID_Data(p, i, d) format.
+        """
+        self.write_value('m%dpid'%mot, (piddata.p, piddata.i, piddata.d))
+    
+    def get_pid(self, mot):
+        """Get the PID coefficients for a motor. Returns a PID_Data() object.
+        """
+        p, i, d = self.read_value('m%dpid'%mot)
+        return self.PID_Data(p, i, d)
+    
+    def get_battery_voltage(self):
+        """Gets the battery voltage (in millivolts/20)
+        """
+        high, low = self.read_value('bateryvoltage')[0]
+        return high << 2 + low
+
+MotorCon.add_compatible_sensor(None, 'HiTechnc', 'MotorCon')
