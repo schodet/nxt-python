@@ -100,5 +100,8 @@ Lots of changes to the sensor module, finished digital sensor type checking and 
 ====Version 2.0.1====
 Fixed support for Mac and other systems using !LightBlue. Mac support is now confirmed working!
 
-====Version 2.0.2 _(current stable)_====
+====Version 2.0.2====
 Fixed the license declaration in setup.py for the fedora downstream guys. Fixed the !HiTechnic Compass and EOPD sensors. Fixed the mindsensors !LineLeader example.
+
+====Version 2.0.3 _(current stable)_====
+Fixed the random !DirProtErrors when polling digital sensors. Fixed the error which occurred when one sent commands to a sensor in quick succession.
