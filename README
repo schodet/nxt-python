@@ -14,7 +14,7 @@ Requirements:
     * USB communications:
         PyUSB (http://sourceforge.net/projects/pyusb/)
 
-Installation (if using source package):
+Installation:
 
     * Untar/unzip source package
     * In package directory, run "python setup.py install" (as root), or if
@@ -27,12 +27,15 @@ Installation (if using source package):
 
 Getting Started:
 
-    Take a look at the examples directory (this is, unfortunately, not included
-in the windows installer packages...you will find it in a corresponding source
-package or SVN checkout). Feel free to copy that code into your scripts and
-don't be afraid to experiment! If you are having trouble with something, you may
-find the solution in the docstrings (ex. help('nxt.sensor.Ultrasonic')) or even
-in the source code (especially for digital sensors).
+    Take a look at the examples directory. This shows by example how to do most
+things in nxt-python. Feel free to copy that code into your scripts and don't be
+afraid to experiment! If you are having trouble with something, you may find the
+solution in the docstrings (ex. help('nxt.sensor.Ultrasonic')) or even in the
+source code (especially for digital sensors). Note that in PyPI packages, this
+directory is omitted; if you are developing for NXT-Python, you should get one
+of the packages from the googlecode site at nxt-python.googlecode.com. You can
+also find documentation, tutorials, FAQs, a link to the mailing list, and a neat
+web interface to the SVN there.
 
 Notes/FAQ:
     (I have tried to put the most important stuff first, but it would be a good
@@ -53,21 +56,15 @@ longer a nxt.server module. I removed it due to it being a prime example of
 feature creep, the code being of low quality, and the connection protocol very
 badly designed. I would recommend that anyone wanting to use a brick over a
 network connection design and write their own protocol and code to best fit
-their specific application.
+their specific application. Some good example network code may be found at
+http://wiki.python.org/moin/TcpCommunication
         -=-=-Problems and Their Solutions-=-=-
-    For some reason, digital sensor operations have a tendency to throw random
-I2C communication errors. I have been unable to find the source of this problem
-(it seems to be inside the nxt firmware itself) or a good workaround. If some
-python master out there comes up with a fix, I would be very, very happy to get
-it. Thanks!
+    Support for a number of sensors has not been tested at all, due to lack of
+hardware. If you have a problem with a digital sensor, see the troubleshooting
+guide below and don't forget to report your trouble!
     The Synchronized Motor support has not been extensively tested for accuracy.
 It seems to mostly work well but the accuracy of the braking function and the
 closeness of the two motors to each other have not been assesed.
-    Support for a number of sensors has not been tested at all, due to lack of
-hardware. I have started a project to test this code, but the going is slow
-and I have decided to go ahead and release rather than waiting several more
-months. If you have a problem with a digital sensor, see the troubleshooting
-guide below and don't forget to report your trouble!
     NXT-Python has not been tested and may not work with custom nxt firmware
 versions (if you don't know what that means, you don't need to worry about it).
 However, if the firmware uses the standard USB/BT communications protocol,
@@ -99,9 +96,9 @@ Specific Stability Status:
         this stage and has not been extensively tested.
     nxt.sensor:
         Code not specific to a particular sensor is well tested and working
-        well. About half of the sensor classes were last reported working; the
-        rest have not to my knowlege been tested and were written blindly from
-        the manuacturers' specifications.
+        well. More than half of the sensor classes were last reported working;
+        the rest have not to my knowlege been tested and were written blindly
+        from the manuacturers' specifications.
     nxt.error:
         If there's a problem with this one, I'm gonna cry.    
 
