@@ -1,7 +1,7 @@
 # nxt.sensor module -- Classes to read LEGO Mindstorms NXT sensors
 # Copyright (C) 2006,2007  Douglas P Lau
 # Copyright (C) 2009  Marcus Wanner, Paulo Vieira, rhn
-# Copyright (C) 2010  Marcus Wanner
+# Copyright (C) 2010,2011  Marcus Wanner
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from nxt.error import I2CError, I2CPendingError
+from nxt.error import I2CError, I2CPendingError, DirProtError
 
 from common import *
 from time import sleep, time
@@ -63,7 +63,8 @@ class BaseDigitalSensor(Sensor):
         """
         super(BaseDigitalSensor, self).__init__(brick, port)
         self.set_input_mode(Type.LOW_SPEED_9V, Mode.RAW)
-        self.lastpoll = None
+        self.last_poll = time()
+        self.poll_delay = 0.01
         sleep(0.1)  # Give I2C time to initialize
         #Don't do type checking if this class has no compatible sensors listed.
         try: self.compatible_sensors
@@ -95,7 +96,11 @@ suppressed by passing "check_compatible=False" when creating the sensor object."
         """
         value = struct.pack(format, *value)
         msg = chr(self.I2C_DEV) + chr(address) + value
+        if self.last_poll+self.poll_delay > time():
+            diff = time() - self.last_poll
+            sleep(self.poll_delay - diff)
         self.brick.ls_write(self.port, msg, 0)
+        self.last_poll = time()
 
     def _i2c_query(self, address, format):
         """Reads an i2c value from given address, and returns a value unpacked
@@ -104,17 +109,19 @@ suppressed by passing "check_compatible=False" when creating the sensor object."
         """
         n_bytes = struct.calcsize(format)
         msg = chr(self.I2C_DEV) + chr(address)
-        if not self.lastpoll: self.lastpoll = time()
-        if self.lastpoll+0.02 > time():
-            diff = time() - self.lastpoll
-            sleep(0.02 - diff)
+        if self.last_poll+self.poll_delay > time():
+            diff = time() - self.last_poll
+            sleep(self.poll_delay - diff)
         self.brick.ls_write(self.port, msg, n_bytes)
-        self._ls_get_status(n_bytes)
-        data = self.brick.ls_read(self.port)
-        self.lastpoll = time()
+        self.last_poll = time()
+        try:
+            self._ls_get_status(n_bytes)
+        finally:
+            #we should clear the buffer no matter what happens
+            data = self.brick.ls_read(self.port)
         if len(data) < n_bytes:
-            raise I2CError, 'Read failure'
-        return struct.unpack(format, data[-n_bytes:]) # TODO: why could there be more than n_bytes? 
+            raise I2CError, 'Read failure: Not enough bytes'
+        return struct.unpack(format, data[-n_bytes:])
         
     def read_value(self, name):
         """Reads a value from the sensor. Name must be a string found in
@@ -124,7 +131,12 @@ suppressed by passing "check_compatible=False" when creating the sensor object."
         tuples containing only one element.
         """
         address, fmt = self.I2C_ADDRESS[name]
-        return self._i2c_query(address, fmt)
+        for n in range(3):
+            try:
+                return self._i2c_query(address, fmt)
+            except DirProtError:
+                pass
+        raise I2CError, "read_value timeout"
 
     def write_value(self, name, value):
         """Writes value to the sensor. Name must be a string found in
