@@ -11,7 +11,7 @@ except:
 
 setup(
     name='nxt-python',
-    version='2.0.2',
+    version='2.0.3',
     author='Marcus Wanner',
     author_email='marcusw@cox.net',
     description='LEGO Mindstorms NXT Control Package',
