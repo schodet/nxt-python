@@ -19,9 +19,7 @@ BUS=="usb", ATTRS{idVendor}=="0694", GROUP="lego", MODE="0660"
 
 You will need Python 2.6 or later (But not 3.x).
 
-Download the latest NXT-Python installer for your architecture (32-bit or 64-bit) and run it. Follow the instructions and it will set everything up for you. Note that you can also install by downloading the source package and using the instructions in the README; in any case, it would be a good idea to download a source package in order to read the README and have the examples directory as a reference (they are the most useful docs available, and are not included in the binary installer).
-
-Communicating with your NXT Brick
+Download the latest NXT-Python zipfile from the downloads page and extract it. Go to the new folder and double-click on install.bat. If a black window appears, scrolls some text, and then goes away, the installation succeeded. If it shows an error message and does not go away, there was a problem. If you're not sure if the installation worked, open a python shell and type "import nxt". If it doesn't print any output, things are working fine. Before you get started though, you'll need one of these libraries:
 
 For USB Communication
             Download and install [http://sourceforge.net/projects/pyusb/ PyUSB]. USB has a history of being dodgy on Windows, so if the brick can't be found when it should, try bluetooth.
@@ -33,7 +31,7 @@ For Bluetooth Communication
 
 To use NXT-Python on Mac, you will need Python 2.6 or higher (but not 3.x).
 
-Make sure you have [http://pyobjc.sourceforge.net/software/ PyObjC] installed; this comes preinstalled with Mac OS X v10.5 (Leopard) and anything newer, but if you have an earlier version of OS X you will need to install it yourself. Then, install [http://lightblue.sourceforge.net/ LightBlue], a Bluetooth library for Mac (USB is currently not supported and will not work, as far as I know, though you're welcome to experiment).
+Make sure you have [http://pyobjc.sourceforge.net/software/ PyObjC] installed; this comes preinstalled with Mac OS X v10.5 (Leopard) and anything newer, but if you have an earlier version of OS X you will need to install it yourself. Then, install [http://lightblue.sourceforge.net/ LightBlue], a python Bluetooth library for Mac. USB is currently not tested. If you can get PyUSB to work on mac, things will probably 
 
 Download the latest source package from the downloads page and extract it. Open a terminal, move to the nxt-python directory using `cd nxt-python` (or whatever directory you put it in), and run `python setup.py install`. To test the installation, run one of the programs in the examples directory
 
@@ -46,10 +44,10 @@ Follow the instructions above. After doing that, remove your bluetooth.py direct
 Note that if you do not delete the bluetooth.py directory or PYTHONPATH enrty, NXT-Python _should_ still work fine, it will just use the external !LightBlue Glue instead of the new internal one.
 
 =Checking out the SVN to get the latest development version=
-You will need to download an SVN client for your OS. For linux, the standard command line one works great. For Windows, I use TortoiseSVN. For Mac, I would suggest Google. After you get SVN working on your system, follow [http://code.google.com/p/nxt-python/source/checkout Google's instructions] as far as the URL goes. Once you have a source tree, follow the installation instructions in the README.
+You will need to download an SVN client for your OS. For linux, the standard command line one works great. For Windows, I use TortoiseSVN. For Mac, I would suggest Google. After you get SVN working on your system, follow [http://code.google.com/p/nxt-python/source/checkout Google's instructions] as far as the URL goes. Once you have a source tree, follow the installation instructions in the README (which basically amount to running `python setup.py install`).
 
 =Then What?=
 
-Now that you have successfully installed NXT_python and one or both of the communication packages (PyUSB, PyBluez, or LightBlue), you can start using your nxt brick.
+Now that you have successfully installed NXT_python and one or more of the communication packages (PyUSB, PyBluez, or LightBlue), you can start using your nxt brick.
 
 See [http://code.google.com/p/nxt-python/wiki/Tutorial the tutorial page] or the examples in the examples folder for usage instructions.
