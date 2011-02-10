@@ -210,7 +210,7 @@ class Brick(object): #TODO: this begs to have explicit methods
 
     def __init__(self, sock):
         self.sock = sock
-        self.lock = RLock()
+        self.lock = Lock()
 
     def play_tone_and_wait(self, frequency, duration):
         self.play_tone(frequency, duration)
