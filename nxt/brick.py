@@ -14,7 +14,7 @@
 # GNU General Public License for more details.
 
 from time import sleep
-from threading import RLock
+from threading import Lock
 from .error import FileNotFound, ModuleNotFound
 from .telegram import OPCODES, Telegram
 from .sensor import get_sensor
