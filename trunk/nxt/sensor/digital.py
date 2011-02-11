@@ -81,13 +81,13 @@ bug report, including the output of get_sensor_info(). This message can be
 suppressed by passing "check_compatible=False" when creating the sensor object.""")
 
     def _ls_get_status(self, n_bytes):
-        for n in range(3):
+        for n in range(10):
             try:
                 b = self.brick.ls_get_status(self.port)
                 if b >= n_bytes:
                     return b
             except I2CPendingError:
-                sleep(0.01)
+                pass
         raise I2CError, 'ls_get_status timeout'
 
     def _i2c_command(self, address, value, format):
@@ -99,8 +99,8 @@ suppressed by passing "check_compatible=False" when creating the sensor object."
         if self.last_poll+self.poll_delay > time():
             diff = time() - self.last_poll
             sleep(self.poll_delay - diff)
-        self.brick.ls_write(self.port, msg, 0)
         self.last_poll = time()
+        self.brick.ls_write(self.port, msg, 0)
 
     def _i2c_query(self, address, format):
         """Reads an i2c value from given address, and returns a value unpacked
@@ -112,8 +112,8 @@ suppressed by passing "check_compatible=False" when creating the sensor object."
         if self.last_poll+self.poll_delay > time():
             diff = time() - self.last_poll
             sleep(self.poll_delay - diff)
-        self.brick.ls_write(self.port, msg, n_bytes)
         self.last_poll = time()
+        self.brick.ls_write(self.port, msg, n_bytes)
         try:
             self._ls_get_status(n_bytes)
         finally:
@@ -121,7 +121,8 @@ suppressed by passing "check_compatible=False" when creating the sensor object."
             data = self.brick.ls_read(self.port)
         if len(data) < n_bytes:
             raise I2CError, 'Read failure: Not enough bytes'
-        return struct.unpack(format, data[-n_bytes:])
+        data = struct.unpack(format, data[-n_bytes:])
+        return data
         
     def read_value(self, name):
         """Reads a value from the sensor. Name must be a string found in
