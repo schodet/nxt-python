@@ -23,10 +23,10 @@ def turnmotor(m, power, degrees):
 #it's probably not a good idea to run simultaneous turn
 #functions on a single motor, so be careful with this
 instructions = (
-	[0, 0, 80, 360],
+	[0, 0, 80, 180],
 	[0, 1, -40, 1080],
-	[1, 0, -80, 360],
-	[2, 0, 80, 360],
+	[1, 0, -80, 180],
+	[2, 0, 80, 180],
 	[3, 1, 100, 360],
 	[3, 0, -100, 360],
 )
