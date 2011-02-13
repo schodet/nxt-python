@@ -15,7 +15,7 @@ setup(
     author='Marcus Wanner',
     author_email='marcusw@cox.net',
     description='LEGO Mindstorms NXT Control Package',
-    url='http://home.comcast.net/~dplau/nxt_python/, http://code.google.com/p/nxt-python/',
+    url='http://code.google.com/p/nxt-python/',
     license='Gnu GPL v3',
     packages=['nxt', 'nxt.sensor'],
     scripts=['scripts/nxt_push', 'scripts/nxt_test', 'scripts/nxt_filer'],
