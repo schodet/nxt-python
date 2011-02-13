@@ -103,5 +103,10 @@ Fixed support for Mac and other systems using !LightBlue. Mac support is now con
 ====Version 2.0.2====
 Fixed the license declaration in setup.py for the fedora downstream guys. Fixed the !HiTechnic Compass and EOPD sensors. Fixed the mindsensors !LineLeader example.
 
-====Version 2.0.3 _(current stable)_====
+====Version 2.0.3====
 Fixed the random !DirProtErrors when polling digital sensors. Fixed the error which occurred when one sent commands to a sensor in quick succession.
+
+===Version 2.1.x===
+
+====Version 2.1.0 _(current stable)_====
+Added multithreading capability, support for 2 new !HiTechnic sensors, hostname parameter in in scripts, silent mode in nxt.locator module, alpharex example, and cnc example. Tweaked the digital sensor code for 2x faster sampling on USB (Bluetooth is still slow).
