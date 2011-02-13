@@ -2,4 +2,4 @@
 #labels Phase-Support
 
 =How can I control motors while reading sensor inputs?=
-Using the latest SVN (or v2.1.x or greater when they are released), use the thread module to run multiple threads, one for each thing which you want to do simultaneously (instructions on precisely how to do this are beyond the scope of this document but can be found on the web). NXT-Python is threadsafe by default in the named versions, and a patch can be found on the mailing list [http://groups.google.com/group/nxt-python/browse_thread/thread/db9fa1da34c4d103 here] for older ones.
+Using v2.1.x+ (or the latest SVN), use the thread module to run multiple threads, one for each thing which you want to do simultaneously. This is complex, but a good example of one way of doing this can be found in the examples directory and is called cnc.py. If you must use an older version of NXT-Python, a patch to allow multiple threads can be found at [http://groups.google.com/group/nxt-python/browse_thread/thread/db9fa1da34c4d103 this thread] on the mailing list.
