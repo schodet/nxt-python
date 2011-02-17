@@ -18,6 +18,7 @@ from threading import Lock
 from .error import FileNotFound, ModuleNotFound
 from .telegram import OPCODES, Telegram
 from .sensor import get_sensor
+from .motcont import MotCont
 
 def _make_poller(opcode, poll_func, parse_func):
     def poll(self, *args, **kwargs):
@@ -211,6 +212,7 @@ class Brick(object): #TODO: this begs to have explicit methods
     def __init__(self, sock):
         self.sock = sock
         self.lock = Lock()
+        self.mc = MotCont(self)
 
     def play_tone_and_wait(self, frequency, duration):
         self.play_tone(frequency, duration)
