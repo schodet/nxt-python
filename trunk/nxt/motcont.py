@@ -56,8 +56,6 @@ b.stop_program().
         self.is_ready_lock = Lock()
         self.last_is_ready = time.time()-1
         self.last_cmd = {}
-        #TODO: Timing code (15ms between cmds for different motors; 10ms for anything after is_ready)
-        #TODO: Check timing code
     
     def cmd(self, port, power, tacholimit, speedreg=1, smoothstart=0, brake=0):
         '''
@@ -77,6 +75,18 @@ place (DIFFERENT from the nxt.motor.turn() function's brake arg).'''
         command = '1'+str(port)+_power(power)+_tacho(tacholimit)+mode
         self.brick.message_write(1, command)
         self.last_cmd[port] = time.time()
+    
+    def move_to(self, port, power, tachocount, speedreg=1, smoothstart=0, brake=0):
+        '''
+Same as cmd(), except that the tachocount is subtracted from the motor's
+current position and that value is used to turn the motor. Power is
+-100-100, but the sign is rewritten as needed.'''
+        tacho = nxt.Motor(self.brick, port).get_tacho().block_tacho_count
+        tacho = tachocount-tacho
+        tsign = int(tacho >= 0) * 2 - 1
+        tacho = abs(tacho)
+        power = abs(power)*tsign
+        self.cmd(port, power, tacho, speedreg, smoothstart, brake)
     
     def reset_tacho(self, port):
         '''
