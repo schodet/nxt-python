@@ -96,8 +96,9 @@ suppressed by passing "check_compatible=False" when creating the sensor object."
         """
         value = struct.pack(format, *value)
         msg = chr(self.I2C_DEV) + chr(address) + value
-        if self.last_poll+self.poll_delay > time():
-            diff = time() - self.last_poll
+        now = time()
+        if self.last_poll+self.poll_delay > now:
+            diff = now - self.last_poll
             sleep(self.poll_delay - diff)
         self.last_poll = time()
         self.brick.ls_write(self.port, msg, 0)
@@ -109,8 +110,9 @@ suppressed by passing "check_compatible=False" when creating the sensor object."
         """
         n_bytes = struct.calcsize(format)
         msg = chr(self.I2C_DEV) + chr(address)
-        if self.last_poll+self.poll_delay > time():
-            diff = time() - self.last_poll
+        now = time()
+        if self.last_poll+self.poll_delay > now:
+            diff = now - self.last_poll
             sleep(self.poll_delay - diff)
         self.last_poll = time()
         self.brick.ls_write(self.port, msg, n_bytes)
