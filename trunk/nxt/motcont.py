@@ -32,8 +32,9 @@ def _tacho(tacholimit):
     return tacho
 
 def interval(delay, lastrun):
-    if lastrun+delay > time.time():
-        diff = time.time() - lastrun
+    now = time.time()
+    if lastrun+delay > now:
+        diff = now - lastrun
         time.sleep(0.010 - diff)
 
 class MotCont():
