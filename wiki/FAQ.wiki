@@ -6,6 +6,12 @@ Using v2.1.x+ (or the latest SVN), use the thread module to run multiple threads
 
 
 =How can I make find_one_brick() on bluetooth faster?=
-You will need the MAC address of your brick. If you don't have this, connect to it and run `print b.get_device_info()[1]`. Then, replace your get_one_brick() call with this:
-b = BlueSock('00:16:53:02:34:68').connect()
+You will need the MAC address of your brick. If you don't have this, connect to it and run
+{{{
+print b.get_device_info()[1]
+}}}
+Then, replace your get_one_brick() call with this (don't forget to import nxt.bluesock):
+{{{
+b = nxt.bluesock.BlueSock('00:16:53:02:34:68').connect() #replace the string with the one you got earlier
+}}}
 Experiments have shown this to reduce the bluetooth brick connection time from about 20 to less than 5 seconds. This is because the bluetooth device search is skipped. This method should work with lightblue as well as pybluez but as only been tested on the latter. Your results may vary.
