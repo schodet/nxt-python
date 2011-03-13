@@ -3,3 +3,9 @@
 
 =How can I control motors while reading sensor inputs?=
 Using v2.1.x+ (or the latest SVN), use the thread module to run multiple threads, one for each thing which you want to do simultaneously. This is complex, but a good example of one way of doing this can be found in the examples directory and is called cnc.py. If you must use an older version of NXT-Python, a patch to allow multiple threads can be found at [http://groups.google.com/group/nxt-python/browse_thread/thread/db9fa1da34c4d103 this thread] on the mailing list.
+
+
+=How can I make find_one_brick() on bluetooth faster?=
+You will need the MAC address of your brick. If you don't have this, connect to it and run `print b.get_device_info()[1]`. Then, replace your get_one_brick() call with this:
+b = BlueSock('00:16:53:02:34:68').connect()
+Experiments have shown this to reduce the bluetooth brick connection time from about 20 to less than 5 seconds. This is because the bluetooth device search is skipped. This method should work with lightblue as well as pybluez but as only been tested on the latter. Your results may vary.
