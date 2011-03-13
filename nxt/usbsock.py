@@ -75,7 +75,8 @@ class USBSock(object):
 
 def find_bricks(host=None, name=None):
     'Use to look for NXTs connected by USB only. ***ADVANCED USERS ONLY***'
-    # FIXME: probably should check host and name
+    # FIXME: probably should check host (MAC)
+    # if anyone knows how to do this, please file a bug report
     for bus in usb.busses():
         for device in bus.devices:
             if device.idVendor == ID_VENDOR_LEGO and device.idProduct == ID_PRODUCT_NXT:

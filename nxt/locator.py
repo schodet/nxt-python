@@ -12,6 +12,8 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+import sys, traceback
+
 class BrickNotFoundError(Exception):
     pass
 
@@ -47,11 +49,46 @@ def find_bricks(host=None, name=None, silent=False):
             raise NoBackendError("Neither USB nor Bluetooth could be used! Did you install PyUSB or PyBluez?")
     
 
-def find_one_brick(host=None, name=None, silent=False):
+def find_one_brick(host=None, name=None, silent=False, strict=True, debug=False):
     """Use to find one brick. After it returns a usbsock object or a bluesock
 object, it automatically connects to it. The host and name args limit
 the search to a given MAC or brick name. Set silent to True to stop
-nxt-python from printing anything during the search."""
+nxt-python from printing anything during the search. This function by default 
+automatically checks to see if the brick found has the correct host/name 
+(if either are provided) and will not return a brick which doesn't
+match. This can be disabled (so the function returns any brick which
+can be connected to and provides a valid reply to get_device_info()) by
+passing strict=False. This will, however, still tell the USB/BT backends to 
+only look for devices which match the args provided."""
+    if debug and silent:
+        silent=False
+        print "silent and debug can't both be set; giving debug priority"
+
     for s in find_bricks(host, name, silent):
-        return s.connect()
+        try:
+            if host and 'host' in dir(s) and s.host != host:
+                if debug:
+                    print "Warning: the brick found does not match the host provided (s.host)."
+                if strict: continue
+            b = s.connect()
+            info = b.get_device_info()
+            if host and info[1] != host:
+                if debug:
+                    print "Warning: the brick found does not match the host provided (get_device_info)."
+                if strict:
+                    s.close()
+                    continue
+            if name and info[0].strip('\0') != name:
+                if debug:
+                    print "Warning; the brick found does not match the name provided."
+                if strict:
+                    s.close()
+                    continue
+            return b
+        except:
+            if debug:
+                traceback.print_exc()
+                print "Failed to connect to possible brick"
     raise BrickNotFoundError
+
+
