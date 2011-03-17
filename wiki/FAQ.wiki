@@ -14,4 +14,7 @@ Then, replace your get_one_brick() call with this (don't forget to import nxt.bl
 {{{
 b = nxt.bluesock.BlueSock('00:16:53:02:34:68').connect() #replace the string with the one you got earlier
 }}}
+You can also find the MAC address of your brick by using the on-screen menu. From the main screen, go to _Settings_, _NXT Version_. The number behind _ID_ is the MAC (just add the colons). It should look similar to this:
+ http://www.mindstorms.rwth-aachen.de/trac/export/head/branches/atorf/nxt_menu_mac.png
+
 Experiments have shown this to reduce the bluetooth brick connection time from about 20 to less than 5 seconds. This is because the bluetooth device search is skipped. This method should work with lightblue as well as pybluez but as only been tested on the latter. Your results may vary.
