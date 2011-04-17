@@ -3,6 +3,12 @@
 #Lists various information from all bricks it can connect to.
 
 import sys, traceback
+
+if '--help' in sys.argv:
+    print '''nxt_test -- Tests the nxt-python setup and brick firmware interaction
+Usage:  nxt_test (takes no arguments except --help)'''
+    exit(0)
+
 import nxt.locator
 import nxt.brick
 
