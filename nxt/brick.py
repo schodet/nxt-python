@@ -25,8 +25,12 @@ def _make_poller(opcode, poll_func, parse_func):
         ogram = poll_func(opcode, *args, **kwargs)
         with self.lock:
             self.sock.send(str(ogram))
-            igram = Telegram(opcode=opcode, pkt=self.sock.recv())
-        return parse_func(igram)
+            if ogram.reply:
+                igram = Telegram(opcode=opcode, pkt=self.sock.recv())
+        if ogram.reply:
+            return parse_func(igram)
+        else:
+            return None
     return poll
 
 class _Meta(type):

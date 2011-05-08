@@ -16,22 +16,27 @@
 # GNU General Public License for more details.
 
 import nxt
+import socket
 
 def serve(channel, details):
     'handles serving the client'
+    print "Connection started (" + details[0] + ')'
     run = True
-    while run:
-        data = channel.recv(1024)
-        code =  data[0]
-        if code == '\x00' or code == '\x01' or code == '\x02':
-            brick.sock.send(data)
-            reply = brick.sock.recv()
-            channel.send(reply)
-        elif code == '\x80' or code == '\x81':
-            brick.sock.send(data)
-        elif code == '\x99':
-            run = False
-            channel.slose()
+    try:
+        while run:
+            data = channel.recv(1024)
+            code =  data[0]
+            if code == '\x00' or code == '\x01' or code == '\x02':
+                brick.sock.send(data)
+                reply = brick.sock.recv()
+                channel.send(reply)
+            elif code == '\x80' or code == '\x81':
+                brick.sock.send(data)
+            elif code == '\x99':
+                run = False
+                channel.close()
+    except:
+        channel.close()
 
 if __name__ == "__main__":
     print "Connecting to NXT..."

@@ -35,6 +35,7 @@ class Telegram(object):
     TYPE_REPLY_NOT_REQUIRED = 0x80  # reply not required flag
 
     def __init__(self, direct=False, opcode=0, reply_req=True, pkt=None):
+        self.reply = True
         if pkt:
             self.pkt = StringIO(pkt)
             self.typ = self.parse_u8()
@@ -50,6 +51,7 @@ class Telegram(object):
                 typ |= Telegram.TYPE_NOT_DIRECT
             if not reply_req:
                 typ |= Telegram.TYPE_REPLY_NOT_REQUIRED
+                self.reply = False
             self.add_u8(typ)
             self.add_u8(opcode)
 
