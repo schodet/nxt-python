@@ -92,3 +92,7 @@ only look for devices which match the args provided."""
     raise BrickNotFoundError
 
 
+def server_brick(host, port = 2727):
+    import serversock
+    sock = serversock.ServerSock(host, port)
+    return sock.connect()
