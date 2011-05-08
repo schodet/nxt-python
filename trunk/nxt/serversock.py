@@ -33,7 +33,7 @@ class ServerSock(object):
         if self.debug:
             print 'Connecting via Server...'
         sock = socket.socket ( socket.AF_INET, socket.SOCK_STREAM )
-        sock.connect(self.host, self.port)
+        sock.connect((self.host, self.port))
         self.sock = sock
         if self.debug:
             print 'Connected.'
@@ -42,7 +42,7 @@ class ServerSock(object):
     def close(self):
         if self.debug:
             print 'Closing Server connection...'
-        sock.send('\x99')
+        self.sock.send('\x99')
         self.sock.close()
         if self.debug:
             print 'Server connection closed.'
