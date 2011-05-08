@@ -4,7 +4,7 @@
 
 ==Linux==
 
-You will need version 2.6 (or later 2.x) of Python, most modern systems already have this installed. However, as more distributions move to 3.x (which is not compatible with nxt-python), you may need to install version 2.6 in addition (the coexist fine) using your package manager.
+You will need version 2.6 (or later 2.x) of Python, most modern systems already have this installed. However, as more distributions move to 3.x (which is not compatible with nxt-python), you may need to install version 2.6 in addition (they coexist fine) using your package manager.
 
 Download the latest source package and extract it. Open a terminal and run `cd nxt-python` (or whatever directory you put it in). Then, as root (e.g. sudo) run `python setup.py install`. If the word ‘error’ is not anywhere in the text that is printed, then great. If it is, then follow the error instructions to resolve the issue (or ask about it at the [http://groups.google.com/group/nxt-python mailing list], and we'll try to help you out). 
 
