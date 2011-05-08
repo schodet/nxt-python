@@ -14,10 +14,10 @@
 
 'Use for direct communication with the NXT ***EXTREMELY ADVANCED USERS ONLY***'
 
-def _create(opcode):
+def _create(opcode, need_reply = True):
     'Create a simple direct telegram'
     from telegram import Telegram
-    return Telegram(True, opcode)
+    return Telegram(True, opcode, need_reply)
 
 def start_program(opcode, fname):
     tgram = _create(opcode)
@@ -31,21 +31,21 @@ def stop_program(opcode):
     return _create(opcode)
 
 def play_sound_file(opcode, loop, fname):
-    tgram = _create(opcode)
+    tgram = _create(opcode, False)
     tgram.add_u8(loop)
     tgram.add_filename(fname)
     return tgram
 
 def play_tone(opcode, frequency, duration):
     'Play a tone at frequency (Hz) for duration (ms)'
-    tgram = _create(opcode)
+    tgram = _create(opcode, False)
     tgram.add_u16(frequency)
     tgram.add_u16(duration)
     return tgram
 
 def set_output_state(opcode, port, power, mode, regulation, turn_ratio,
     run_state, tacho_limit):
-    tgram = _create(opcode)
+    tgram = _create(opcode, False)
     tgram.add_u8(port)
     tgram.add_s8(power)
     tgram.add_u8(mode)
@@ -56,7 +56,7 @@ def set_output_state(opcode, port, power, mode, regulation, turn_ratio,
     return tgram
 
 def set_input_mode(opcode, port, sensor_type, sensor_mode):
-    tgram = _create(opcode)
+    tgram = _create(opcode, False)
     tgram.add_u8(port)
     tgram.add_u8(sensor_type)
     tgram.add_u8(sensor_mode)
