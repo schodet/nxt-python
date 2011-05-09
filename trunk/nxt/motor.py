@@ -16,7 +16,6 @@
 """Use for motor control"""
 
 import time
-import warnings
 
 PORT_A = 0x00
 PORT_B = 0x01

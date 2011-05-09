@@ -15,10 +15,9 @@
 
 from time import sleep
 from threading import Lock
-from .error import FileNotFound, ModuleNotFound
-from .telegram import OPCODES, Telegram
-from .sensor import get_sensor
-from .motcont import MotCont
+from nxt.error import FileNotFound, ModuleNotFound
+from nxt.telegram import OPCODES, Telegram
+from nxt.motcont import MotCont
 
 def _make_poller(opcode, poll_func, parse_func):
     def poll(self, *args, **kwargs):

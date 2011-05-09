@@ -11,7 +11,9 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-import nxt, nxt.error, time
+import nxt
+import nxt.error
+import time
 from threading import Lock
 
 class MotorConError(nxt.error.ProtocolError):

@@ -16,8 +16,7 @@ try:
     import bluetooth
 except ImportError:
     import lightblueglue as bluetooth
-import os
-from .brick import Brick
+from nxt.brick import Brick
 
 class BlueSock(object):
 
