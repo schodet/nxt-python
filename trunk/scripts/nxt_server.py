@@ -16,9 +16,8 @@
 # GNU General Public License for more details.
 
 import nxt
-import socket
+import socket, sys, traceback
 from nxt.utils import parse_command_line_arguments
-import sys
 
 def serve(brick, channel, details):
     'handles serving the client'
@@ -27,6 +26,8 @@ def serve(brick, channel, details):
     try:
         while run:
             data = channel.recv(1024)
+            if not data:
+                break
             code =  data[0]
             if code == '\x00' or code == '\x01' or code == '\x02':
                 brick.sock.send(data)
@@ -38,24 +39,30 @@ def serve(brick, channel, details):
                 channel.send(brick.sock.type)
             elif code == '\x99':
                 run = False
-                channel.close()
     except:
+        traceback.print_exc()
+    finally:
         channel.close()
+        print "Connection Finished"
 
 if __name__ == "__main__":
     arguments, keyword_arguments = parse_command_line_arguments(sys.argv)
     if '--help' in arguments:
-        print """nxt_server -- command server for NXT brick
+        print(
+"""nxt_server -- command server for NXT brick
 Usage: nxt_server.py [--host <macaddress>][--name <name>]
-[--iphost <server ip>][--ipport <server port>]"""
+[--iphost <server ip>][--ipport <server port>]""")
+        exit(0)
     print "Connecting to NXT..."
     brick = nxt.find_one_brick(keyword_arguments.get('host',None),keyword_arguments.get('name',None))
     print "Brick found."
+
     print "Starting server..."
-    server = socket.socket (socket.AF_INET, socket.SOCK_STREAM)
-    server.bind ((keyword_arguments.get('iphost',''), int(keyword_arguments.get('ipport','2727'))))
-    server.listen (1)
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.bind((keyword_arguments.get('iphost',''), int(keyword_arguments.get('ipport','2727'))))
+    server.listen(1)
     # Have the server serve "forever":
     while True:
         channel, details = server.accept()
+        #TODO: sasl authentication here?
         serve(brick, channel, details)

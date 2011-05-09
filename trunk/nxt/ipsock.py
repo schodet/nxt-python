@@ -17,7 +17,6 @@ import socket
 from nxt.brick import Brick
 
 class IpSock(object):
-
     def __init__(self, host, port):
         self.host = host
         self.port = port
@@ -27,11 +26,16 @@ class IpSock(object):
     def __str__(self):
         return 'Server (%s)' % self.host
 
+    def __del__(self):
+        if self.sock:
+            self.close()
+
     def connect(self):
         if self.debug:
             print 'Connecting via Server...'
         sock = socket.socket (socket.AF_INET, socket.SOCK_STREAM)
         sock.connect((self.host, self.port))
+        #TODO: sasl authentication here?
         self.sock = sock
         if self.debug:
             print 'Connected.'
