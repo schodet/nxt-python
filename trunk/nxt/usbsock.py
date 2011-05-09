@@ -23,6 +23,8 @@ class USBSock(object):
 
     bsize = 60	# USB socket block size
 
+    type = 'usb'
+
     def __init__(self, device):
         self.device = device
         self.handle = None

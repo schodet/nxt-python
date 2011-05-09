@@ -23,6 +23,8 @@ class BlueSock(object):
     bsize = 118  # Bluetooth socket block size
     PORT = 1     # Standard NXT rfcomm port
 
+    type = 'bt'
+
     def __init__(self, host):
         self.host = host
         self.sock = None
