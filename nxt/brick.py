@@ -39,8 +39,12 @@ class _Meta(type):
     def __init__(cls, name, bases, dict):
         super(_Meta, cls).__init__(name, bases, dict)
         for opcode in OPCODES:
-            poll_func, parse_func = OPCODES[opcode]
+            poll_func, parse_func = OPCODES[opcode][0:2]
             m = _make_poller(opcode, poll_func, parse_func)
+            try:
+                m.__doc__ = OPCODES[opcode][2]
+            except:
+                pass
             setattr(cls, poll_func.__name__, m)
 
 

@@ -268,6 +268,8 @@ def bluetooth_factory_reset(opcode):
 def _parse_bluetooth_factory_reset(tgram):
     tgram.check_status()
 
+#TODO Add docstrings to all methods
+
 OPCODES = {
     0x80: (open_read, _parse_open_read),
     0x81: (open_write, _parse_open_write),

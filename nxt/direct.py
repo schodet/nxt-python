@@ -193,8 +193,10 @@ def _parse_message_read(tgram):
     message = tgram.parse_string()
     return (local_inbox, message[:n_bytes])
 
+#TODO Add docstrings to all methods
+
 OPCODES = {
-    0x00: (start_program, _parse_simple),
+    0x00: (start_program, _parse_simple,'Starts program execution on the NXT brick'),
     0x01: (stop_program, _parse_simple),
     0x02: (play_sound_file, _parse_simple),
     0x03: (play_tone, _parse_simple),
