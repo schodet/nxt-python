@@ -93,6 +93,6 @@ only look for devices which match the args provided."""
 
 
 def server_brick(host, port = 2727):
-    import serversock
-    sock = serversock.ServerSock(host, port)
+    import ipsock
+    sock = ipsock.IpSock(host, port)
     return sock.connect()

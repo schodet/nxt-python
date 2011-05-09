@@ -16,8 +16,7 @@
 import socket
 from nxt.brick import Brick
 
-class ServerSock(object):
-
+class IpSock(object):
 
     def __init__(self, host, port):
         self.host = host
@@ -31,11 +30,13 @@ class ServerSock(object):
     def connect(self):
         if self.debug:
             print 'Connecting via Server...'
-        sock = socket.socket ( socket.AF_INET, socket.SOCK_STREAM )
+        sock = socket.socket (socket.AF_INET, socket.SOCK_STREAM)
         sock.connect((self.host, self.port))
         self.sock = sock
         if self.debug:
             print 'Connected.'
+        self.send('\x98')
+        self.type = 'ip'+self.recv()
         return Brick(self)
 
     def close(self):
