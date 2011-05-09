@@ -14,8 +14,7 @@
 # GNU General Public License for more details.
 
 import socket
-import os
-from .brick import Brick
+from nxt.brick import Brick
 
 class ServerSock(object):
 
