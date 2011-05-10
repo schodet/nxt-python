@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 #
-# nxt_push program -- Serve an interface to the NXT brick
-# Copyright (C) 2006  Douglas P Lau
-# Copyright (C) 2010  rhn
-# Copyright (C) 2011  zonedabone
+# nxt_server program -- Serve an interface to the NXT brick
+# Copyright (C) 2011  zonedabone, Marcus Wanner
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

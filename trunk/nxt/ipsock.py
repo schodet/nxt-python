@@ -1,7 +1,5 @@
-# nxt.bluesock module -- Server socket communication with LEGO Minstorms NXT
-# Copyright (C) 2006  2007  Douglas P Lau
-# Copyright (C) 2009  Marcus Wanner
-# Copyright (C) 2011  zonedaobne
+# nxt.ipsock module -- Server socket communication with LEGO Minstorms NXT
+# Copyright (C) 2011  zonedaobne, Marcus Wanner
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
