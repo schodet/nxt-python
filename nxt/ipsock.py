@@ -63,3 +63,5 @@ class IpSock(object):
             print 'Recv:',
             print ':'.join('%02x' % ord(c) for c in data)
         return data
+
+#TODO: add a find_bricks method and a corresponding broadcast system to nxt_server?
