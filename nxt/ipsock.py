@@ -24,10 +24,6 @@ class IpSock(object):
     def __str__(self):
         return 'Server (%s)' % self.host
 
-    def __del__(self):
-        if self.sock:
-            self.close()
-
     def connect(self):
         if self.debug:
             print 'Connecting via Server...'
