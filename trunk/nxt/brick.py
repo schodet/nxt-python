@@ -33,20 +33,6 @@ def _make_poller(opcode, poll_func, parse_func):
             return None
     return poll
 
-class _Meta(type):
-    'Metaclass which adds one method for each telegram opcode'
-
-    def __init__(cls, name, bases, dict):
-        super(_Meta, cls).__init__(name, bases, dict)
-        for opcode in OPCODES:
-            poll_func, parse_func = OPCODES[opcode][0:2]
-            m = _make_poller(opcode, poll_func, parse_func)
-            try:
-                m.__doc__ = OPCODES[opcode][2]
-            except:
-                pass
-            setattr(cls, poll_func.__name__, m)
-
 
 class FileFinder(object):
     'A generator to find files on a NXT brick.'
@@ -215,13 +201,22 @@ class ModuleFinder(object):
 class Brick(object): #TODO: this begs to have explicit methods
     'Main object for NXT Control'
 
-    __metaclass__ = _Meta
+
+    def _methods(self):
+        for opcode in OPCODES:
+            poll_func, parse_func = OPCODES[opcode][0:2]
+            m = _make_poller(opcode, poll_func, parse_func)
+            try:
+                m.__doc__ = OPCODES[opcode][2]
+            except:
+                pass
+            setattr(self, poll_func.__name__, m)
 
     def __init__(self, sock):
         self.sock = sock
         self.lock = Lock()
         self.mc = MotCont(self)
-
+        self._methods()
     def play_tone_and_wait(self, frequency, duration):
         self.play_tone(frequency, duration)
         sleep(duration / 1000.0)
