@@ -34,7 +34,7 @@ def _make_poller(opcode, poll_func, parse_func):
     return poll
 
 
-class FileFinder(object):
+class _FileFinder(object):
     'A generator to find files on a NXT brick.'
 
     def __init__(self, brick, pattern):
@@ -65,22 +65,22 @@ class FileFinder(object):
             yield result
 
 
-def File(brick, name, mode='r', size=None):
+def _file(brick, name, mode='r', size=None):
     """Opens a file for reading/writing. Mode is 'r' or 'w'. If mode is 'w',
     size must be provided.
     """
     if mode == 'w':
         if size is not None:
-            return FileWriter(brick, name, size)
+            return _FileWriter(brick, name, size)
         else:
             return ValueError('Size not specified')
     elif mode == 'r':
-        return FileReader(brick, name)
+        return _FileReader(brick, name)
     else:
         return ValueError('Mode ' + str(mode) + ' not supported')
 
 
-class FileReader(object):
+class _FileReader(object):
     """Context manager to read a file on a NXT brick. Do use the iterator or
     the read() method, but not both at the same time!
     The iterator returns strings of an arbitrary (short) length.
@@ -128,7 +128,7 @@ class FileReader(object):
             rem -= len(data)
 
 
-class FileWriter(object):
+class _FileWriter(object):
     "Object to write to a file on a NXT brick"
 
     def __init__(self, brick, fname, size):
@@ -167,7 +167,7 @@ class FileWriter(object):
             remaining -= batch_size
 
 
-class ModuleFinder(object):
+class _ModuleFinder(object):
     'Iterator to lookup modules on a NXT brick'
 
     def __init__(self, brick, pattern):
@@ -224,7 +224,7 @@ class Brick(object): #TODO: this begs to have explicit methods
     def __del__(self):
         self.sock.close()
 
-    find_files = FileFinder
-    find_modules = ModuleFinder
-    open_file = File
+    find_files = _FileFinder
+    find_modules = _ModuleFinder
+    open_file = _file
     get_sensor = get_sensor
