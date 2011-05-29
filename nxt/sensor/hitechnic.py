@@ -247,7 +247,7 @@ class EOPD(BaseAnalogSensor):
 
     def __init__(self, brick, port):
         super(EOPD, self).__init__(brick, port)
-	from math import sqrt
+        from math import sqrt
         self.sqrt = sqrt
 
     def set_range_long(self):
