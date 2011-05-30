@@ -1,4 +1,4 @@
-#summary Installation Insructions
+#summary Installation Instructions
 #labels Featured,Phase-Deploy
 =Installation Instructions=
 
