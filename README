@@ -83,6 +83,10 @@ Specific Stability Status:
         On Linux: Stable; well tested.
         On Windows: Stable; working last I checked.
         On Mac: Reported working.
+    Fantom Communications System (nxt.fantomsock)
+        On Linux: N/A (Fantom driver not supported)
+        On Windows: not tested
+        On Mac: tested, USB interface working, Bluetooth not working
     nxt.locator:
         Stable, somewhat tested. One developer reported problems.
     nxt.motor:
