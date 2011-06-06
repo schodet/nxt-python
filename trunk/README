@@ -13,6 +13,8 @@ Requirements:
         Mac: LightBlue (http://lightblue.sourceforge.net/)
     * USB communications:
         PyUSB (http://sourceforge.net/projects/pyusb/)
+    * Fantom communications (tested on Mac OSX):
+        Pyfantom (http://git.ni.fr.eu.org/?p=pyfantom.git;a=summary)
 
 Installation (if using source package):
 

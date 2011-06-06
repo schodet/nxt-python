@@ -20,36 +20,68 @@ class BrickNotFoundError(Exception):
 class NoBackendError(Exception):
     pass
 
-def find_bricks(host=None, name=None, silent=False):
-    """Used by find_one_brick to look for bricks ***ADVANCED USERS ONLY***"""
+class Method():
+    """Used to indicate which comm backends should be tried by find_bricks/
+find_one_brick. Any or all can be selected."""
+    def __init__(self, usb=True, bluetooth=True, fantomusb=False, fantombt=False):
+        #new method options MUST default to False!
+        self.usb = usb
+        self.bluetooth = bluetooth
+        if fantomusb or fantombt:
+            self.fantom = True
+        self.fantomusb = fantomusb
+        self.fantombt = fantombt
 
-    try:
-        import usbsock
-        usb_available = True
-        socks = usbsock.find_bricks(host, name)
-        for s in socks:
-            yield s
-    except ImportError:
-        usb_available = False
-        import sys
-        if not silent: print >>sys.stderr, "USB module unavailable, not searching there"
-    
-    try:
-        import bluesock
+def find_bricks(host=None, name=None, silent=False, method=Method()):
+    """Used by find_one_brick to look for bricks ***ADVANCED USERS ONLY***"""
+    methods_available = 0
+
+    if method.usb:
         try:
-            socks = bluesock.find_bricks(host, name)
+            import usbsock
+            methods_available += 1
+            socks = usbsock.find_bricks(host, name)
             for s in socks:
                 yield s
-        except (bluesock.bluetooth.BluetoothError, IOError): #for cases such as no adapter, bluetooth throws IOError, not BluetoothError
-            pass
-    except ImportError:
-        import sys
-        if not silent: print >>sys.stderr, "Bluetooth module unavailable, not searching there"
-        if not usb_available:
-            raise NoBackendError("Neither USB nor Bluetooth could be used! Did you install PyUSB or PyBluez?")
+        except ImportError:
+            import sys
+            if not silent: print >>sys.stderr, "USB module unavailable, not searching there"
     
+    if method.bluetooth:
+        try:
+            import bluesock
+            methods_available += 1
+            try:
+                socks = bluesock.find_bricks(host, name)
+                for s in socks:
+                    yield s
+            except (bluesock.bluetooth.BluetoothError, IOError): #for cases such as no adapter, bluetooth throws IOError, not BluetoothError
+                pass
+        except ImportError:
+            import sys
+            if not silent: print >>sys.stderr, "Bluetooth module unavailable, not searching there"
+    
+    if method.fantom:
+        try:
+            import fantomsock
+            methods_available += 1
+            if method.fantomusb:
+                usbsocks = fantomsock.find_bricks(host, name, False)
+                for s in usbsocks:
+                    yield s
+            if method.fantombt:
+                btsocks = fantomsock.find_bricks(host, name, True)
+                for s in btsocks:
+                    yield s
+        except ImportError:
+            import sys
+            if not silent: print >>sys.stderr, "Fantom module unavailable, not searching there"
+    
+    if methods_available == 0:
+        raise NoBackendError("No selected backends are available! Did you install the comm modules?")
 
-def find_one_brick(host=None, name=None, silent=False, strict=True, debug=False):
+
+def find_one_brick(host=None, name=None, silent=False, strict=True, debug=False, method=Method()):
     """Use to find one brick. After it returns a usbsock object or a bluesock
 object, it automatically connects to it. The host and name args limit
 the search to a given MAC or brick name. Set silent to True to stop
@@ -64,7 +96,7 @@ only look for devices which match the args provided."""
         silent=False
         print "silent and debug can't both be set; giving debug priority"
 
-    for s in find_bricks(host, name, silent):
+    for s in find_bricks(host, name, silent, method):
         try:
             if host and 'host' in dir(s) and s.host != host:
                 if debug:
