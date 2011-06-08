@@ -14,7 +14,7 @@ Requirements:
     * USB communications:
         PyUSB (http://sourceforge.net/projects/pyusb/)
     * Fantom communications (tested on Mac OSX):
-        Pyfantom (http://git.ni.fr.eu.org/?p=pyfantom.git;a=summary)
+        Pyfantom (http://pyfantom.ni.fr.eu.org/)
 
 Installation (if using source package):
 
