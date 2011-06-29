@@ -101,11 +101,13 @@ name, strict, or method) are provided."""
     if not (host or name or strict or method):
         host	= conf.get('Brick', 'host')
         name	= conf.get('Brick', 'name')
-        strict	= conf.get('Brick', 'strict')
+        strict	= bool(int(conf.get('Brick', 'strict')))
         method	= eval('Method(%s)' % conf.get('Brick', 'method'))
     if not strict: strict = True
     if not method: method = Method()
-    print host, name, strict, method
+    if debug:
+        print "Host: %s Name: %s Strict: %s" % (host, name, str(strict))
+        print "USB: %s BT: %s Fantom: %s FUSB: %s FBT: %s" % (method.usb, method.bluetooth, method.fantom, method.fantombt, method.fantomusb)
     
     for s in find_bricks(host, name, silent, method):
         try:
@@ -145,7 +147,25 @@ def read_config(confpath=None, debug=False):
     conf = ConfigParser.RawConfigParser({'host': None, 'name': None, 'strict': True, 'method': ''})
     if not confpath: confpath = os.path.expanduser('~/.nxt-python')
     if conf.read([confpath]) == [] and debug:
-        print "Warning: Config file (should be at %s) was not read" % confpath
+        print "Warning: Config file (should be at %s) was not read. Use nxt.locator.make_config() to create a config file." % confpath
     if conf.has_section('Brick') == False:
         conf.add_section('Brick')
     return conf
+
+def make_config(confpath=None):
+    conf = ConfigParser.RawConfigParser()
+    if not confpath: confpath = os.path.expanduser('~/.nxt-python')
+    print "Welcome to the nxt-python config file generator!"
+    print "This function creates an example file which find_one_brick uses to find a brick."
+    conf.add_section('Brick')
+    conf.set('Brick', 'name', 'MyNXT')
+    conf.set('Brick', 'host', '54:32:59:92:f9:39')
+    conf.set('Brick', 'strict', 0)
+    conf.set('Brick', 'method', 'usb=True, bluetooth=False, fantomusb=True')
+    conf.write(open(confpath, 'w'))
+    print "The file has been written at %s" % confpath
+    print "The file contains less-than-sane default values to get you started."
+    print "You must now edit the file with a text editor and change the values to match what you would pass to find_one_brick"
+    print "The fields for name, host, and strict correspond to the similar args accepted by find_one_brick"
+    print "The method field contains the string which would be passed to Method()"
+    print "If you have questions, please ask on the mailing list after searching the archives."
