@@ -168,4 +168,5 @@ def make_config(confpath=None):
     print "You must now edit the file with a text editor and change the values to match what you would pass to find_one_brick"
     print "The fields for name, host, and strict correspond to the similar args accepted by find_one_brick"
     print "The method field contains the string which would be passed to Method()"
+    print "Any field whose corresponding option does not need to be passed to find_one_brick may be commented out (using a # at the start of the line) or simply removed."
     print "If you have questions, please ask on the mailing list after searching the archives."
