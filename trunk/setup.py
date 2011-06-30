@@ -4,16 +4,16 @@ from distutils.core import setup
 
 try:
     readme = open('README', 'r')
-    ldesc = readme.read(8192)
+    ldesc = readme.read(20000)
     readme.close()
 except:
     ldesc = ""
 
 setup(
     name='nxt-python',
-    version='2.1',
+    version='2.2',
     author='Marcus Wanner',
-    author_email='marcusw@cox.net',
+    author_email='marcus@wanners.net',
     description='LEGO Mindstorms NXT Control Package',
     url='http://code.google.com/p/nxt-python/',
     license='Gnu GPL v3',
