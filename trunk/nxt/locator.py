@@ -164,7 +164,7 @@ def make_config(confpath=None):
         return
     conf.add_section('Brick')
     conf.set('Brick', 'name', 'MyNXT')
-    conf.set('Brick', 'host', '54:32:59:92:f9:39')
+    conf.set('Brick', 'host', '54:32:59:92:F9:39')
     conf.set('Brick', 'strict', 0)
     conf.set('Brick', 'method', 'usb=True, bluetooth=False, fantomusb=True')
     conf.write(open(confpath, 'w'))
