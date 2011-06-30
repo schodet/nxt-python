@@ -157,6 +157,11 @@ def make_config(confpath=None):
     if not confpath: confpath = os.path.expanduser('~/.nxt-python')
     print "Welcome to the nxt-python config file generator!"
     print "This function creates an example file which find_one_brick uses to find a brick."
+    try:
+        if os.path.exists(confpath): raw_input("File already exists at %s. Press Enter to overwrite or Ctrl+C to abort." % confpath)
+    except KeyboardInterrupt:
+        print "Not writing file."
+        return
     conf.add_section('Brick')
     conf.set('Brick', 'name', 'MyNXT')
     conf.set('Brick', 'host', '54:32:59:92:f9:39')
@@ -168,5 +173,5 @@ def make_config(confpath=None):
     print "You must now edit the file with a text editor and change the values to match what you would pass to find_one_brick"
     print "The fields for name, host, and strict correspond to the similar args accepted by find_one_brick"
     print "The method field contains the string which would be passed to Method()"
-    print "Any field whose corresponding option does not need to be passed to find_one_brick may be commented out (using a # at the start of the line) or simply removed."
-    print "If you have questions, please ask on the mailing list after searching the archives."
+    print "Any field whose corresponding option does not need to be passed to find_one_brick should be commented out (using a # at the start of the line) or simply removed."
+    print "If you have questions, check the wiki and then ask on the mailing list."
