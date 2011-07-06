@@ -1,0 +1,21 @@
+.\"    Author: Marcus Wanner <marcus@wanners.net>
+.\"  Language: English
+.TH NXT_FILER "1" "April 2011" "nxt-python" "nxt-python"
+.SH "NAME"
+nxt_filer \- a simple tkinter GUI to manage files on an nxt brick
+.SH "SYNOPSIS"
+.P
+.B nxt_filer
+[
+.B --host
+.I macaddress
+] 
+.SH "DESCRIPTION"
+.P
+The
+.B nxt_filer
+program runs a minimal GUI for managing files on a nxt brick. It uses the tkinter component of the python standard library, so should work on most systems. It operates almost entirely based on drag and drop and may have limited functionality on some systems which do not support this or have nothing to interface with it.
+.SH "OPTIONS"
+.SS "--host macaddress"
+.P
+Specify the mac address of the brick to manage files on. Useful if multiple bricks are connected or within bluetooth range.
