@@ -47,6 +47,6 @@ if __name__ == '__main__':
 Usage:  nxt_push [--host <macaddress>] <file>'''
         exit(0)
     
-    brick = nxt.locator.find_one_brick(keyword_arguments['host'])
+    brick = nxt.locator.find_one_brick(keyword_arguments.get('host',None))
     for filename in arguments:
         write_file(brick, filename)

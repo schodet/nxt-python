@@ -7,7 +7,7 @@
 #http://groups.google.com/group/nxt-python/browse_thread/thread/f6ef0865ae768ef
 
 import nxt, thread, time
-b = nxt.find_one_brick(name = 'MyNXT')
+b = nxt.find_one_brick()
 mx = nxt.Motor(b, nxt.PORT_A)
 my = nxt.Motor(b, nxt.PORT_B)
 motors = [mx, my]
