@@ -141,7 +141,7 @@ if __name__ == '__main__':
 Usage:	nxt_filer [--host <macaddress>]'''
         exit(0)
 
-    brick = nxt.locator.find_one_brick(keyword_arguments['host'])
+    brick = nxt.locator.find_one_brick(keyword_arguments.get('host',None))
     win = NXT_Filer(brick)
     win.show_all()
     gtk.main()
