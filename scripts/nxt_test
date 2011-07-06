@@ -13,7 +13,7 @@ import nxt.locator
 import nxt.brick
 
 b = None
-socks = nxt.locator.find_one_brick()
+socks = nxt.locator.find_bricks()
 for sock in socks:
     try:
         b = sock.connect()
