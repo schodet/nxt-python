@@ -108,5 +108,10 @@ Fixed the random !DirProtErrors when polling digital sensors. Fixed the error wh
 
 ===Version 2.1.x===
 
-====Version 2.1.0 _(current stable)_====
+====Version 2.1.0====
 Added multithreading capability, support for 2 new !HiTechnic sensors, hostname parameter in in scripts, silent mode in nxt.locator module, alpharex example, and cnc example. Tweaked the digital sensor code for 2x faster sampling on USB (Bluetooth is still slow).
+
+===Version 2.2.x===
+
+====Version 2.2.0 _(current stable)_====
+Largest change since 1.x-2.x. Revamped nxt.locator module find_bricks and find_one_brick logic to allow easy addition of more communication backends and external configuration file support. Added support for [http://www.mindstorms.rwth-aachen.de/trac/wiki/MotorControl Linus Atorf's RWTH - Mindstorms NXT Toolbox Motor Control] program through the nxt.motcont module. Added support for the LEGO Fantom driver via TC Wan's pyfantom module and nxt.fantomsock. Added a new byte-level server interface which is free from all the problems which plagued the 1.x server module. Added docstrings to brick methods. Added manpages and --help messages for the nxt scripts. Chagned nxt_test to only look for one brick. Optimized opcodes which are not reply-required to not wait for a reply.
