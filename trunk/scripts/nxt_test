@@ -24,6 +24,7 @@ try:
     print 'Firmware version %s.%s' % fw_version
     millivolts = b.get_battery_level()
     print 'Battery level %s mV' % millivolts
+    b.sock.close()
 except:
     print "Error while running test:"
     traceback.print_tb(sys.exc_info()[2])
