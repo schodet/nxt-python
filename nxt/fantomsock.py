@@ -21,6 +21,8 @@ FANTOMSOCK_DEBUG = False
 
 
 class BluetoothSocket:
+    bsize = BT_BUFSIZE - 4        # Bluetooth socket block size
+
     '''recv() method is currently reported broken'''
     def __init__(self, _sock=None):
         # We instantiate a NXT object only when we connect if none supplied
@@ -64,6 +66,8 @@ class BluetoothSocket:
 
 
 class USBSocket:
+    bsize = USB_BUFSIZE - 4        # USB socket block size
+
     def __init__(self, device=None):
         self._sock = device
         self.debug = FANTOMSOCK_DEBUG
