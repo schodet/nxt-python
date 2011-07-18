@@ -27,13 +27,16 @@ For USB Communication
 For Bluetooth Communication
             Download and install [http://code.google.com/p/pybluez/downloads/list PyBluez]. You will also need a compatible Bluetooth dongle, if your computer doesn’t already support Bluetooth.
 
+For LEGO Fantom Driver Communication
+            Download and install [http://pyfantom.ni.fr.eu.org/ Pyfantom]. You will also need to have the fantom driver set up and working.
+
 ==Mac==
 
 To use NXT-Python on Mac, you will need Python 2.6 or higher (but not 3.x).
 
-Make sure you have [http://pyobjc.sourceforge.net/software/ PyObjC] installed; this comes preinstalled with Mac OS X v10.5 (Leopard) and anything newer, but if you have an earlier version of OS X you will need to install it yourself. Then, install [http://lightblue.sourceforge.net/ LightBlue], a python Bluetooth library for Mac. USB is currently not tested. If you can get PyUSB to work on mac, things will probably 
+Make sure you have [http://pyobjc.sourceforge.net/software/ PyObjC] installed; this comes preinstalled with Mac OS X v10.5 (Leopard) and anything newer, but if you have an earlier version of OS X you will need to install it yourself. Then, install [http://lightblue.sourceforge.net/ LightBlue], a python Bluetooth library for Mac. For USB connections, you will need [http://sourceforge.net/projects/pyusb/ PyUSB]. You can also use the LEGO Fantom Driver, but you'll need to install [http://pyfantom.ni.fr.eu.org/ Pyfantom] as well. Note that you only need one of these communications backends, but can install as many as you want.
 
-Download the latest source package from the downloads page and extract it. Open a terminal, move to the nxt-python directory using `cd nxt-python` (or whatever directory you put it in), and run `python setup.py install`. To test the installation, run one of the programs in the examples directory
+Download the latest source package from the downloads page and extract it. Open a terminal, move to the nxt-python directory using `cd nxt-python` (or whatever directory you put it in), and run `python setup.py install`. To test the installation, run one of the programs in the examples directory.
 
 ===What if I already have !LightBlue Glue installed with an older version of nxt-python or NXT_Python?===
 
@@ -48,6 +51,6 @@ You will need to download an SVN client for your OS. For linux, the standard com
 
 =Then What?=
 
-Now that you have successfully installed NXT_python and one or more of the communication packages (PyUSB, PyBluez, or LightBlue), you can start using your nxt brick.
+Now that you have successfully installed NXT_python and one or more of the communication packages (PyUSB, !PyBluez, or !LightBlue), you can start using your nxt brick.
 
 See [http://code.google.com/p/nxt-python/wiki/Tutorial the tutorial page] or the examples in the examples folder for usage instructions.
