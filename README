@@ -24,7 +24,7 @@ Installation (see http://code.google.com/p/nxt-python/wiki/Installation):
     * To use USB on Linux as non-superuser, at a root terminal type:
         groupadd lego
         usermod -a -G lego [username]
-        echo 'BUS=="usb", SYSFS{idVendor}=="0694", GROUP="lego", MODE="0660"' \
+        echo 'BUS=="usb", ATTRS{idVendor}=="0694", GROUP="lego", MODE="0660"' \
             > /etc/udev/rules.d/70-lego.rules
 
 Getting Started:
