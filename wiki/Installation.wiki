@@ -10,7 +10,7 @@ Download the latest source package and extract it. Open a terminal and run `cd n
 
             For USB communications, download and install [http://sourceforge.net/projects/pyusb/ PyUSB] according to the instructions included in it. If you're on debian/ubuntu, just run `apt-get install python-usb` as root. The following step may not be necessary on some newer systems which give any user control over USB devices by default, but it can't hurt and is therefore recommended. As root, run the command `groupadd lego`, then `usermod –a –G lego <username>` (where `<username>` is the name of the user account that you will be using to program your NXT). Then make a file at /etc/udev/rules.d/70-lego.rules containing exactly (note that after this you will need to log out and then back in and then restart udev or your whole system): 
 {{{
-BUS=="usb", ATTRS{idVendor}=="0694", GROUP="lego", MODE="0660"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0694", GROUP="lego", MODE="0660"
 }}}
 
             For Bluetooth communications, install [http://code.google.com/p/pybluez/downloads/list PyBluez], or on debian-based systems, you can just run (as root) `apt-get install python-bluez`. You will also need a compatible Bluetooth dongle, if your computer doesn’t already support Bluetooth.
