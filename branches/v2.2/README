@@ -24,8 +24,7 @@ Installation (see http://code.google.com/p/nxt-python/wiki/Installation):
     * To use USB on Linux as non-superuser, at a root terminal type:
         groupadd lego
         usermod -a -G lego [username]
-        echo 'BUS=="usb", SYSFS{idVendor}=="0694", GROUP="lego", MODE="0660"' \
-            > /etc/udev/rules.d/70-lego.rules
+        echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="0694", GROUP="lego", MODE="0660"' > /etc/udev/rules.d/70-lego.rules
 
 Getting Started:
 
@@ -124,8 +123,9 @@ Thanks to:
     HiTechnic for providing identification information for their sensors. I note
         that they have now included this information in their website. ;)
     Linus Atorf, Samuel Leeman-Munk, melducky, Simon Levy, Steve Castellotti,
-        Paulo Vieira, zonedabone, migpics, TC Wan, jerradgenson, henryacev, and 
-        anyone else I forgot for various fixes and additions.
+        Paulo Vieira, zonedabone, migpics, TC Wan, jerradgenson, henryacev,
+        Paul Hollensen, and anyone else I forgot for various fixes and
+        additions.
     All our users for their interest and support!
 
 

@@ -50,3 +50,4 @@ Usage:  nxt_push [--host <macaddress>] <file>'''
     brick = nxt.locator.find_one_brick(keyword_arguments.get('host',None))
     for filename in arguments:
         write_file(brick, filename)
+    brick.sock.close()

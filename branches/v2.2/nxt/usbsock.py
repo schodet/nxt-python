@@ -1,6 +1,7 @@
 # nxt.usbsock module -- USB socket communication with LEGO Minstorms NXT
 # Copyright (C) 2006, 2007  Douglas P Lau
 # Copyright (C) 2009  Marcus Wanner
+# Copyright (C) 2011  Paul Hollensen, Marcus Wanner
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -12,7 +13,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-import usb
+import usb, os
 from nxt.brick import Brick
 
 ID_VENDOR_LEGO = 0x0694
@@ -43,7 +44,8 @@ class USBSock(object):
         self.handle = self.device.open()
         self.handle.setConfiguration(1)
         self.handle.claimInterface(0)
-        self.handle.reset()
+        if os.name != 'nt': # http://code.google.com/p/nxt-python/issues/detail?id=33
+            self.handle.reset()
         if self.debug:
             print 'Connected.'
         return Brick(self)
