@@ -1,0 +1,147 @@
+#!/usr/bin/env python
+#
+# nxt_filer program -- Simple GUI to manage files on a LEGO Mindstorms NXT
+# Copyright (C) 2006  Douglas P Lau
+# Copyright (C) 2010  rhn
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+import cStringIO
+import gtk
+import os.path
+import urllib2
+import sys
+
+import nxt.locator
+from nxt.brick import FileFinder, FileReader, FileWriter
+from nxt.utils import parse_command_line_arguments
+
+def read_file(b, fname):
+    with FileReader(b, fname) as r:
+        with open(fname, 'wb') as f:
+            for data in r:
+                f.write(data)
+
+class NXTListing(gtk.ListStore):
+
+    def __init__(self, brick):
+        gtk.ListStore.__init__(self, str, str)
+        self.set_sort_column_id(0, gtk.SORT_ASCENDING)
+        self.populate(brick, '*.*')
+
+    def populate(self, brick, pattern):
+        f = FileFinder(brick, pattern)
+        for (fname, size) in f:
+            self.append((fname, str(size)))
+
+def write_file(b, fname, data):
+    w = FileWriter(b, fname, len(data))
+    print 'Pushing %s (%d bytes) ...' % (fname, w.size),
+    sys.stdout.flush()
+    w.write(data)
+    print 'wrote %d bytes' % len(data)
+    w.close()
+        
+def write_files(b, names):
+    for fname in names.split('\r\n'):
+        if fname:
+            print 'File:', fname
+            bname = os.path.basename(fname)
+            url = urllib2.urlopen(fname)
+            try:
+                data = url.read()
+            finally:
+                url.close()
+            print 'name %s, size: %d ' % (bname, len(data))
+            write_file(b, bname, data)
+
+class NXT_Filer(gtk.Window):
+    TARGETS = gtk.target_list_add_uri_targets()
+
+    def __init__(self, brick):
+        gtk.Window.__init__(self)
+        self.brick = brick
+        self.set_border_width(6)
+        self.nxt_model = NXTListing(brick)
+        h = gtk.HBox()
+        h.pack_start(self.make_file_panel(str(brick.sock),
+            self.nxt_model), True)
+        self.add(h)
+        self.connect('destroy', self.quit)
+
+    def make_file_list(self):
+        tv = gtk.TreeView()
+        tv.set_headers_visible(True)
+        tv.set_property('fixed_height_mode', True)
+        r = gtk.CellRendererText()
+        c = gtk.TreeViewColumn('File name', r, text=0)
+        c.set_fixed_width(200)
+        c.set_sizing(gtk.TREE_VIEW_COLUMN_FIXED)
+        tv.append_column(c)
+        r = gtk.CellRendererText()
+        c = gtk.TreeViewColumn('Bytes', r, text=1)
+        c.set_sizing(gtk.TREE_VIEW_COLUMN_FIXED)
+        c.set_fixed_width(80)
+        tv.append_column(c)
+
+#            tv.enable_model_drag_source(gtk.gdk.BUTTON1_MASK, self.TARGETS,
+#            gtk.gdk.ACTION_DEFAULT | gtk.gdk.ACTION_MOVE)
+        tv.enable_model_drag_dest(self.TARGETS, gtk.gdk.ACTION_COPY)
+#        tv.connect("drag_data_get", self.drag_data_get_data)
+        tv.connect("drag_data_received", self.drag_data_received_data)
+
+        return tv
+
+    def make_file_panel(self, name, model):
+        v = gtk.VBox()
+        v.pack_start(gtk.Label(name), False)
+        tv = self.make_file_list()
+        tv.set_model(model)
+        s = gtk.ScrolledWindow()
+        s.set_policy(gtk.POLICY_NEVER, gtk.POLICY_ALWAYS)
+        s.add(tv)
+        s.set_border_width(2)
+        v.pack_start(s, True)
+        return v
+
+    def drag_data_get_data(self, treeview, context, selection, target_id,
+        etime):
+        treeselection = treeview.get_selection()
+        model, iter = treeselection.get_selected()
+        data = model.get_value(iter, 0)
+        print data
+        selection.set(selection.target, 8, data)
+
+    def drag_data_received_data(self, treeview, context, x, y, selection,
+        info, etime):
+        if context.action == gtk.gdk.ACTION_COPY:
+            write_files(self.brick, selection.data)
+        # FIXME: update file listing after writing files
+        # FIXME: finish context
+
+    def quit(self, w):
+        'Quit the program'
+        self.brick.sock.close()
+        gtk.main_quit()
+
+if __name__ == '__main__':
+    # FIXME: add dialog with progress bar when scanning bluetooth devices
+    arguments, keyword_arguments = parse_command_line_arguments(sys.argv)
+
+    if '--help' in arguments:
+        print '''nxt_filer -- Simple GUI to manage files on a LEGO Mindstorms NXT
+Usage:	nxt_filer [--host <macaddress>]'''
+        exit(0)
+
+    brick = nxt.locator.find_one_brick(keyword_arguments.get('host',None))
+    win = NXT_Filer(brick)
+    win.show_all()
+    gtk.main()
