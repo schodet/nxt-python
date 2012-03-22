@@ -517,8 +517,7 @@ ServoCon.add_compatible_sensor(None, 'HiTechnc', 'ServoCon')
 
 
 class MotorCon(BaseDigitalSensor):
-    """Object for HiTechnic FIRST Motor Controllers. Coded to HiTechnic's specs for
-the sensor but not tested. Please report whether this worked for you or not!"""
+    """Object for HiTechnic FIRST Motor Controllers."""
     I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
     I2C_ADDRESS.update({
         'm1enctarget': (0x40, '>l'),
