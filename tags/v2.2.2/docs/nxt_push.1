@@ -1,0 +1,22 @@
+.\"    Author: Marcus Wanner <marcus@wanners.net>
+.\"  Language: English
+.TH NXT_PUSH "1" "April 2011" "nxt-python" "nxt-python"
+.SH "NAME"
+nxt_push \- write a file onto the nxt's user flash
+.SH "SYNOPSIS"
+.P
+.B nxt_push
+[
+.B --host
+.I macaddress
+] 
+.I file
+.SH "DESCRIPTION"
+.P
+The
+.B nxt_push
+command reads a file from the disk and writes it to the nxt's user flash filesystem. This is useful when adding sound files, text files, compiled .rxe files, or any other file which might need to be on the brick.
+.SH "OPTIONS"
+.SS "--host macaddress"
+.P
+Specify the mac address of the brick to have the file loaded onto. Useful if multiple bricks are connected or within bluetooth range.
