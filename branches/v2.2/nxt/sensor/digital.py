@@ -1,7 +1,7 @@
 # nxt.sensor module -- Classes to read LEGO Mindstorms NXT sensors
 # Copyright (C) 2006,2007  Douglas P Lau
 # Copyright (C) 2009  Marcus Wanner, Paulo Vieira, rhn
-# Copyright (C) 2010,2011  Marcus Wanner
+# Copyright (C) 2010,2011,2012  Marcus Wanner
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -81,7 +81,7 @@ bug report, including the output of get_sensor_info(). This message can be
 suppressed by passing "check_compatible=False" when creating the sensor object.""")
 
     def _ls_get_status(self, n_bytes):
-        for n in range(10):
+        for n in range(30): #https://code.google.com/p/nxt-python/issues/detail?id=35
             try:
                 b = self.brick.ls_get_status(self.port)
                 if b >= n_bytes:

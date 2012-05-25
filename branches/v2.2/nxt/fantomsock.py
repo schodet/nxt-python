@@ -43,7 +43,7 @@ class BluetoothSocket:
             assert addrport is not None
             # Port is ignored
             addr, port = addrport
-            paired_addr = pair_bluetooth(addr)
+            paired_addr = pyfantom.pair_bluetooth(addr)
             if self.debug:
                 print "BT Paired Addr: ", paired_addr
             self._sock = pyfantom.NXT(paired_addr)
