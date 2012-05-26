@@ -113,5 +113,11 @@ Added multithreading capability, support for 2 new !HiTechnic sensors, hostname 
 
 ===Version 2.2.x===
 
-====Version 2.2.0 _(current stable)_====
+====Version 2.2.0====
 Largest change since 1.x-2.x. Revamped nxt.locator module find_bricks and find_one_brick logic to allow easy addition of more communication backends and external configuration file support. Added support for [http://www.mindstorms.rwth-aachen.de/trac/wiki/MotorControl Linus Atorf's RWTH - Mindstorms NXT Toolbox Motor Control] program through the nxt.motcont module. Added support for the LEGO Fantom driver via TC Wan's pyfantom module and nxt.fantomsock. Added a new byte-level server interface which is free from all the problems which plagued the 1.x server module. Added docstrings to brick methods. Added manpages and --help messages for the nxt scripts. Chagned nxt_test to only look for one brick. Optimized opcodes which are not reply-required to not wait for a reply.
+
+====Version 2.2.1====
+Fixes a major issue with USB on windows and two minor issues in the fantom backend and the push script.
+
+====Version 2.2.2 _(current stable)_====
+Raises a timeout value in the digital sensor control code and fixes a function name in the fantomsock module.
