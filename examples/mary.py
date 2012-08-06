@@ -3,43 +3,26 @@
 # Converted from mary.rb found in ruby_nxt package
 # Plays "Mary Had A Little Lamb"
 # Author: Christopher Continanza <christopher.continanza@villanova.edu>
+# Refactored: christophegranic@gmail.com
 
 from time import sleep
 import nxt.locator
 
-FREQ_C = 523
-FREQ_D = 587
-FREQ_E = 659
-FREQ_G = 784
+C = 523
+D = 587
+E = 659
+G = 784
+R = None
+
+def play(note):
+    if note:
+        b.play_tone_and_wait(note, 500)
+    else:
+        sleep(0.5)
 
 b = nxt.locator.find_one_brick()
 
-b.play_tone_and_wait(FREQ_E, 500)
-b.play_tone_and_wait(FREQ_D, 500)
-b.play_tone_and_wait(FREQ_C, 500)
-b.play_tone_and_wait(FREQ_D, 500)
-b.play_tone_and_wait(FREQ_E, 500)
-b.play_tone_and_wait(FREQ_E, 500)
-b.play_tone_and_wait(FREQ_E, 500)
-sleep(0.5)
-b.play_tone_and_wait(FREQ_D, 500)
-b.play_tone_and_wait(FREQ_D, 500)
-b.play_tone_and_wait(FREQ_D, 500)
-sleep(0.5)
-b.play_tone_and_wait(FREQ_E, 500)
-b.play_tone_and_wait(FREQ_G, 500)
-b.play_tone_and_wait(FREQ_G, 500)
-sleep(0.5)
-b.play_tone_and_wait(FREQ_E, 500)
-b.play_tone_and_wait(FREQ_D, 500)
-b.play_tone_and_wait(FREQ_C, 500)
-b.play_tone_and_wait(FREQ_D, 500)
-b.play_tone_and_wait(FREQ_E, 500)
-b.play_tone_and_wait(FREQ_E, 500)
-b.play_tone_and_wait(FREQ_E, 500)
-b.play_tone_and_wait(FREQ_E, 500)
-b.play_tone_and_wait(FREQ_D, 500)
-b.play_tone_and_wait(FREQ_D, 500)
-b.play_tone_and_wait(FREQ_E, 500)
-b.play_tone_and_wait(FREQ_D, 500)
-b.play_tone_and_wait(FREQ_C, 750)
+for note in [E, D, C, D, E, E, E, R,
+             D, D, D, R,
+             E, G, G, R, E, D, C, D, E, E, E, E, D, D, E, D, C]:
+    play(note)
