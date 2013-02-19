@@ -15,6 +15,9 @@ from nxt.brick import Brick
 from glob import glob
 
 class DeviceSocket:
+    
+    type = 'bluetooth'
+
     def __init__(self, filename=None):
         self._filename = filename
 
