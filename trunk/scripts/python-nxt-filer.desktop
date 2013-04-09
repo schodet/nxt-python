@@ -1,0 +1,8 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=NXT filer
+Comment=Lego Mindstorms NXT file viewer
+Exec=/usr/bin/nxt_filer
+Terminal=false
+Type=Application
+Categories=Application;FileTools;Electronics;
