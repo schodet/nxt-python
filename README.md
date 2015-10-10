@@ -1,32 +1,35 @@
+# NXT-Python
+
 NXT-Python is a package for controlling a LEGO NXT robot using the 
 Python programming language. It can communicate using either USB or 
 Bluetooth. It is available under the Gnu GPL v3 license. It is based on 
 NXT_Python, where releases halted in May 2007.
 
-Requirements:
+## Requirements:
 
     * Python 2.6 or greater, but not 3.x (http://www.python.org)
     And at least one comm library:
     * Bluetooth communications:
-        Linux/Windows: PyBluez  (http://code.google.com/p/pybluez/)
-            (package python-bluez in deb-based linuxes)
-        Mac: LightBlue (http://lightblue.sourceforge.net/)
+        Linux/Windows: [PyBluez](https://github.com/karulis/pybluez)
+        Mac: [LightBlue](http://lightblue.sourceforge.net/)
     * USB communications:
         PyUSB (http://sourceforge.net/projects/pyusb/)
     * Fantom communications (tested on Mac OSX):
         Pyfantom (http://pyfantom.ni.fr.eu.org/)
 
-Installation (see http://code.google.com/p/nxt-python/wiki/Installation):
+## Installation (see the [wiki](https://github.com/Eelviny/nxt-python/wiki/Installation) page):
 
     * Untar/unzip source package.
     * In package directory, run "python setup.py install" (as root), or if
         under windows, double-click install.bat.
     * To use USB on Linux as non-superuser, at a root terminal type:
+```
         groupadd lego
         usermod -a -G lego [username]
         echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="0694", GROUP="lego", MODE="0660"' > /etc/udev/rules.d/70-lego.rules
+```
 
-Getting Started:
+# Getting Started:
 
     Take a look at the examples directory. Feel free to copy that code 
 into your scripts and don't be afraid to experiment! If you are having 
@@ -34,21 +37,22 @@ trouble with something, you may find the solution in the docstrings (for
 example, help('nxt.sensor.Ultrasonic')) or even in the source code 
 (especially for digital sensors).
 
-Notes/FAQ:
+## Notes/FAQ:
     (I have tried to put the most important stuff first, but it would be a good
     idea to read the whole section. In any case, read it all the way through
     before asking for help. Thanks!)
 
-        -=-=-About v2-=-=-
+# About v2
     This version is part of the 2.x series of releases. Programs 
 designed for NXT_Python or for the 1.x series of nxt-python will not 
 work with this version. If you are trying to get an old program to work, 
 it most likely needs a 1.x series release, which can be downloaded from 
-the nxt-python downloads page at googlecode. New projects should use a 
+the nxt-python [releases](https://github.com/Eelviny/nxt-python/releases) page. New projects should use a 
 2.x series release (hint: this is one!) due to the new features and API 
 improvements. Converting old projects is somewhat difficult and not 
 officially supported, though as always you're welcome to ask for help.
-        -=-=-Problems and Their Solutions-=-=-
+
+# Problems and Their Solutions
     Support for a number of sensors has not been tested at all, due to 
 lack of hardware. I have started a project to test this code, but the 
 going is slow and I still can't test everything. If you have a problem 
@@ -66,12 +70,6 @@ NXT-Python has been tested with bricks using LEGO firmware version up to
 1.29 and is compatible with protocol version 1.124 (used by most if not 
 all of the official firmwares). It has also been reported working with 
 LeJOS.
-        -=-=-If you co'd the SVN...-=-=-
-    The arduino directory of an svn checkout (not included with release 
-packages) contains a digital sensor unit test system called nxtduemu. It 
-is intended for developers and advanced users who are looking to 
-experiment with sensors and the digital sensor framework and classes. 
-See Arduino/README for more info and usage instructions.
 
 Specific Stability Status:
     nxt.brick, nxt.telegram, nxt.direct, and nxt.system:
@@ -103,16 +101,16 @@ Specific Stability Status:
     nxt.error:
         If there's a problem with this one, I'm gonna cry.    
 
-Contact:
+## Contact:
 
     NXT-Python's Head Developer:
         Marcus Wanner (marcus@wanners.net)
     The support and development mailing list:
         http://groups.google.com/group/nxt-python
     Report bugs and suggest new features at:
-        http://code.google.com/p/nxt-python/issues/list
+        https://github.com/Eelviny/nxt-python/issues
 
-Thanks to:
+## Thanks to:
 
     Doug Lau for writing NXT_Python, our starting point.
     rhn for creating what would become v2, making lots of smaller changes, and
@@ -130,7 +128,7 @@ Thanks to:
 
 
 
-Troubleshooting Digital Sensors (don't read unless you have problems):
+## Troubleshooting Digital Sensors (don't read unless you have problems):
 If you are getting errors, strange behavor, or incorrect values from a digital
 sensor, chances are that there is a bug in our code. Follow these instructions
 to try and find out what's wrong:
