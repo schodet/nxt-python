@@ -73,24 +73,24 @@ all of the official firmwares). It has also been reported working with
 LeJOS.
 
 Specific Stability Status:
-*nxt.brick, nxt.telegram, nxt.direct, and nxt.system have been redone somewhat as of v2.2.0 but appear to work well.
-*USB Communication System (nxt.usbsock)
-  *On Linux: Very stable and extensively tested.
-  *On Windows: Somewhat tested; seems to work pretty well.
-  *On Mac: Some users having problems.
-*BlueTooth Communication System (nxt.bluesock, nxt.lightblueglue)
-  *On Linux: Stable; well tested with both pybluez and lightblue.
-  *On Windows: Stable; working last I checked.
-  *On Mac: Some users having problems.
-*Internet Communications System (nxt.ipsock) seems to work for the most part. Occasionally has hiccups.
-*Fantom Communications System (nxt.fantomsock)
-  *On Linux: N/A (Fantom driver not supported)
-  *On Windows: Not tested.
-  *On Mac: Tested, USB interface working, Bluetooth not working.
-*nxt.locator: Tested working with revamped logic and new code in v2.2.0.
-*nxt.motor: Stable except for Synchronized Motor support, which is experimental at this stage and has not been extensively tested.
-*nxt.sensor: Code not specific to a particular sensor is well-tested and working great. More than half of the sensor classes were last reported working; the rest have not to my knowlege been tested and were written blindly from the manuacturers' specifications.
-*nxt.error: If there's a problem with this one, I'm gonna cry.
+* nxt.brick, nxt.telegram, nxt.direct, and nxt.system have been redone somewhat as of v2.2.0 but appear to work well.
+* USB Communication System (nxt.usbsock)
+  * On Linux: Very stable and extensively tested.
+  * On Windows: Somewhat tested; seems to work pretty well.
+  * On Mac: Some users having problems.
+* BlueTooth Communication System (nxt.bluesock, nxt.lightblueglue)
+  * On Linux: Stable; well tested with both pybluez and lightblue.
+  * On Windows: Stable; working last I checked.
+  * On Mac: Some users having problems.
+* Internet Communications System (nxt.ipsock) seems to work for the most part. Occasionally has hiccups.
+* Fantom Communications System (nxt.fantomsock)
+  * On Linux: N/A (Fantom driver not supported)
+  * On Windows: Not tested.
+  * On Mac: Tested, USB interface working, Bluetooth not working.
+* nxt.locator: Tested working with revamped logic and new code in v2.2.0.
+* nxt.motor: Stable except for Synchronized Motor support, which is experimental at this stage and has not been extensively tested.
+* nxt.sensor: Code not specific to a particular sensor is well-tested and working great. More than half of the sensor classes were last reported working; the rest have not to my knowlege been tested and were written blindly from the manuacturers' specifications.
+* nxt.error: If there's a problem with this one, I'm gonna cry.
 
 ## Contact:
 NXT-Python's Head Developer:
