@@ -54,8 +54,8 @@ class BlueSock(object):
         if self.debug:
             print('Send:', end=' ')
             print(':'.join('%02x' % ord(c) for c in data))
-        l0 = len(data) & 0xFF
-        l1 = (len(data) >> 8) & 0xFF
+        l0 = len(data.encode('utf-8')) & 0xFF
+        l1 = (len(data.encode('utf-8')) >> 8) & 0xFF
         d = chr(l0) + chr(l1) + data
         self.sock.send(d)
 
