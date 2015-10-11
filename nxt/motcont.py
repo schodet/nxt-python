@@ -108,7 +108,7 @@ Sends an "ISMOTORREADY" to MotorControl and returns the reply.'''
             time.sleep(0.015) #10ms pause from the docs seems to not be adequate
             reply = self.brick.message_read(0, 1, 1)[1]
             if reply[0] != str(port):
-                raise MotorConError, 'Wrong port returned from ISMOTORREADY'
+                raise MotorConError('Wrong port returned from ISMOTORREADY')
         self.last_is_ready = time.time()
         return bool(int(reply[1]))
 

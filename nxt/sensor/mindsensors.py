@@ -230,7 +230,7 @@ class RTC(BaseDigitalSensor):
                 hm3 = hm - 64
                 self.write_value('hours', (hm3, ))
             else:
-                print 'That mode is already selected!'
+                print('That mode is already selected!')
         else:
             raise ValueError('Must be 12 or 24!')
 
@@ -243,7 +243,7 @@ class RTC(BaseDigitalSensor):
             mer3 = mer3 >> 0x10
             return mer3
         else:
-            print 'Cannot get mer! In 24-hour mode!'
+            print('Cannot get mer! In 24-hour mode!')
     
     def get_sample(self):
         """Returns a struct_time() tuple which can be processed by the time module."""

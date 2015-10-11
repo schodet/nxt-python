@@ -84,4 +84,4 @@ def check_status(status):
         if ex:
             raise ex
         else:
-            raise ProtocolError, status
+            raise ProtocolError(status)

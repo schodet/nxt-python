@@ -6,7 +6,7 @@
 #For more info and warnings see:
 #http://groups.google.com/group/nxt-python/browse_thread/thread/f6ef0865ae768ef
 
-import nxt, thread, time
+import nxt, _thread, time
 b = nxt.find_one_brick()
 mx = nxt.Motor(b, nxt.PORT_A)
 my = nxt.Motor(b, nxt.PORT_B)
@@ -36,14 +36,14 @@ length = 5
 def runinstruction(i):
 	motorid, speed, degrees = i
 	#THIS IS THE IMPORTANT PART!
-	thread.start_new_thread(
+	_thread.start_new_thread(
 		turnmotor,
 		(motors[motorid], speed, degrees))
 
 #main loop
 seconds = 0
 while 1:
-	print "Tick %d" % seconds
+	print(("Tick %d" % seconds))
 	for i in instructions:
 		if i[0] == seconds:
 			runinstruction(i[1:])

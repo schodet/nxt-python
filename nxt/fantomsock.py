@@ -39,17 +39,17 @@ class BluetoothSocket:
     def connect(self, addrport=None):
         if self._sock is None:
             if self.debug:
-                print "No NXT object assigned"
+                print("No NXT object assigned")
             assert addrport is not None
             # Port is ignored
             addr, port = addrport
             paired_addr = pyfantom.pair_bluetooth(addr)
             if self.debug:
-                print "BT Paired Addr: ", paired_addr
+                print(("BT Paired Addr: ", paired_addr))
             self._sock = pyfantom.NXT(paired_addr)
         else:
             if self.debug:
-                print "Using existing NXT object"
+                print("Using existing NXT object")
         return Brick(self)
     
     def send(self, data):
@@ -82,14 +82,14 @@ class USBSocket:
     def connect(self, addrport=None):
         if self._sock is None:
             if self.debug:
-                print "No NXT object assigned"
+                print("No NXT object assigned")
             assert addrport is not None
             # Port is ignored
             addr, port = addrport
             self._sock = pyfantom.NXT(addr)
         else:
             if self.debug:
-                print "Using existing NXT object"
+                print("Using existing NXT object")
         return Brick(self)
     
     def send(self, data):

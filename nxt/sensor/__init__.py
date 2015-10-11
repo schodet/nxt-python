@@ -17,7 +17,7 @@ from .common import *
 from .analog import BaseAnalogSensor
 from .digital import BaseDigitalSensor, find_class
 from .generic import Touch, Light, Sound, Ultrasonic, Color20
-import mindsensors
+from . import mindsensors
 MSSumoEyes = mindsensors.SumoEyes
 MSCompassv2 = mindsensors.Compassv2
 MSDIST = mindsensors.DIST
@@ -29,7 +29,7 @@ MSLineLeader = mindsensors.LineLeader
 MSMMX = mindsensors.MMX
 MSPS2 = mindsensors.PS2
 MSHID = mindsensors.HID
-import hitechnic
+from . import hitechnic
 HTCompass = hitechnic.Compass
 HTAccelerometer = hitechnic.Accelerometer
 HTGyro = hitechnic.Gyro

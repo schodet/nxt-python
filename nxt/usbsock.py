@@ -37,7 +37,7 @@ class USBSock(object):
     def connect(self):
         'Use to connect to NXT.'
         if self.debug:
-            print 'Connecting via USB...'
+            print('Connecting via USB...')
         config = self.device.configurations[0]
         iface = config.interfaces[0][0]
         self.blk_out, self.blk_in = iface.endpoints
@@ -47,33 +47,33 @@ class USBSock(object):
         if os.name != 'nt': # http://code.google.com/p/nxt-python/issues/detail?id=33
             self.handle.reset()
         if self.debug:
-            print 'Connected.'
+            print('Connected.')
         return Brick(self)
 
     def close(self):
         'Use to close the connection.'
         if self.debug:
-            print 'Closing USB connection...'
+            print('Closing USB connection...')
         self.device = None
         self.handle = None
         self.blk_out = None
         self.blk_in = None
         if self.debug:
-            print 'USB connection closed.'
+            print('USB connection closed.')
 
     def send(self, data):
         'Use to send raw data over USB connection ***ADVANCED USERS ONLY***'
         if self.debug:
-            print 'Send:',
-            print ':'.join('%02x' % ord(c) for c in data)
+            print('Send:', end=' ')
+            print(':'.join('%02x' % ord(c) for c in data))
         self.handle.bulkWrite(self.blk_out.address, data)
 
     def recv(self):
         'Use to recieve raw data over USB connection ***ADVANCED USERS ONLY***'
         data = self.handle.bulkRead(self.blk_in.address, 64)
         if self.debug:
-            print 'Recv:',
-            print ':'.join('%02x' % (c & 0xFF) for c in data)
+            print('Recv:', end=' ')
+            print(':'.join('%02x' % (c & 0xFF) for c in data))
         # NOTE: bulkRead returns a tuple of ints ... make it sane
         return ''.join(chr(d & 0xFF) for d in data)
 

@@ -137,7 +137,7 @@ class BaseMotor(object):
     debug = 0
     def _debug_out(self, message):
         if self.debug:
-            print message
+            print(message)
 
     def turn(self, power, tacho_units, brake=True, timeout=1, emulate=True):
         """Use this to turn a motor. The motor will not stop until it turns the
@@ -160,7 +160,7 @@ class BaseMotor(object):
         tacho_limit = tacho_units
  
         if tacho_limit < 0:
-            raise ValueError, "tacho_units must be greater than 0!"
+            raise ValueError("tacho_units must be greater than 0!")
         #TODO Calibrate the new values for ip socket latency.
         if self.method == 'bluetooth':
             threshold = 70
@@ -230,10 +230,10 @@ class Motor(BaseMotor):
         try:
             self.method = brick.sock.type
         except:
-            print "Warning: Socket did not report a type!"
-            print "Please report this problem to the developers!"
-            print "For now, turn() accuracy will not be optimal."
-            print "Continuing happily..."
+            print("Warning: Socket did not report a type!")
+            print("Please report this problem to the developers!")
+            print("For now, turn() accuracy will not be optimal.")
+            print("Continuing happily...")
             self.method = None
 
     def _set_state(self, state):

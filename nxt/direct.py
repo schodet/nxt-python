@@ -16,7 +16,7 @@
 
 def _create(opcode, need_reply = True):
     'Create a simple direct telegram'
-    from telegram import Telegram
+    from .telegram import Telegram
     return Telegram(True, opcode, need_reply)
 
 def start_program(opcode, fname):

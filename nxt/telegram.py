@@ -14,7 +14,7 @@
 
 'Used by nxt.system for sending telegrams to the NXT'
 
-from cStringIO import StringIO
+from io import StringIO
 from struct import pack, unpack
 import nxt.error
 
@@ -43,7 +43,7 @@ class Telegram(object):
             if not self.is_reply():
                 raise InvalidReplyError
             if self.opcode != opcode:
-                raise InvalidOpcodeError, self.opcode
+                raise InvalidOpcodeError(self.opcode)
         else:
             self.pkt = StringIO()
             typ = 0
