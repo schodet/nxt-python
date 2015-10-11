@@ -13,7 +13,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-import traceback, ConfigParser, os
+import traceback, configparser, os
 
 class BrickNotFoundError(Exception):
     pass
@@ -39,18 +39,18 @@ def find_bricks(host=None, name=None, silent=False, method=Method()):
 
     if method.usb:
         try:
-            import usbsock
+            from . import usbsock
             methods_available += 1
             socks = usbsock.find_bricks(host, name)
             for s in socks:
                 yield s
         except ImportError:
             import sys
-            if not silent: print >>sys.stderr, "USB module unavailable, not searching there"
+            if not silent: print("USB module unavailable, not searching there", file=sys.stderr)
     
     if method.bluetooth:
         try:
-            import bluesock
+            from . import bluesock
             methods_available += 1
             try:
                 socks = bluesock.find_bricks(host, name)
@@ -60,11 +60,11 @@ def find_bricks(host=None, name=None, silent=False, method=Method()):
                 pass
         except ImportError:
             import sys
-            if not silent: print >>sys.stderr, "Bluetooth module unavailable, not searching there"
+            if not silent: print("Bluetooth module unavailable, not searching there", file=sys.stderr)
     
     if method.device:
         try:
-            import devsock
+            from . import devsock
             methods_available += 1
             socks = devsock.find_bricks(name=name)
             for s in socks:
@@ -74,7 +74,7 @@ def find_bricks(host=None, name=None, silent=False, method=Method()):
 
     if method.fantom:
         try:
-            import fantomsock
+            from . import fantomsock
             methods_available += 1
             if method.fantomusb:
                 usbsocks = fantomsock.find_bricks(host, name, False)
@@ -86,7 +86,7 @@ def find_bricks(host=None, name=None, silent=False, method=Method()):
                     yield s
         except ImportError:
             import sys
-            if not silent: print >>sys.stderr, "Fantom module unavailable, not searching there"
+            if not silent: print("Fantom module unavailable, not searching there", file=sys.stderr)
     
     if methods_available == 0:
         raise NoBackendError("No selected backends are available! Did you install the comm modules?")
@@ -107,7 +107,7 @@ information will be read from if no brick location directives (host,
 name, strict, or method) are provided."""
     if debug and silent:
         silent=False
-        print "silent and debug can't both be set; giving debug priority"
+        print("silent and debug can't both be set; giving debug priority")
 
     conf = read_config(confpath, debug)
     if not (host or name or strict or method):
@@ -118,26 +118,26 @@ name, strict, or method) are provided."""
     if not strict: strict = True
     if not method: method = Method()
     if debug:
-        print "Host: %s Name: %s Strict: %s" % (host, name, str(strict))
-        print "USB: %s BT: %s Fantom: %s FUSB: %s FBT: %s" % (method.usb, method.bluetooth, method.fantom, method.fantombt, method.fantomusb)
+        print("Host: %s Name: %s Strict: %s" % (host, name, str(strict)))
+        print("USB: %s BT: %s Fantom: %s FUSB: %s FBT: %s" % (method.usb, method.bluetooth, method.fantom, method.fantombt, method.fantomusb))
     
     for s in find_bricks(host, name, silent, method):
         try:
             if host and 'host' in dir(s) and s.host != host:
                 if debug:
-                    print "Warning: the brick found does not match the host provided (s.host)."
+                    print("Warning: the brick found does not match the host provided (s.host).")
                 if strict: continue
             b = s.connect()
             info = b.get_device_info()
             if host and info[1] != host:
                 if debug:
-                    print "Warning: the brick found does not match the host provided (get_device_info)."
+                    print("Warning: the brick found does not match the host provided (get_device_info).")
                 if strict:
                     s.close()
                     continue
             if name and info[0].strip('\0') != name:
                 if debug:
-                    print "Warning; the brick found does not match the name provided."
+                    print("Warning; the brick found does not match the name provided.")
                 if strict:
                     s.close()
                     continue
@@ -145,39 +145,39 @@ name, strict, or method) are provided."""
         except:
             if debug:
                 traceback.print_exc()
-                print "Failed to connect to possible brick"
+                print("Failed to connect to possible brick")
     raise BrickNotFoundError
 
 
 def server_brick(host, port = 2727):
-    import ipsock
+    from . import ipsock
     sock = ipsock.IpSock(host, port)
     return sock.connect()
 
 def device_brick(filename):
-    import devsock
+    from . import devsock
     sock = devsock.find_bricks(filename=filename)
     return sock.connect()
 
 
 def read_config(confpath=None, debug=False):
-    conf = ConfigParser.RawConfigParser({'host': None, 'name': None, 'strict': True, 'method': ''})
+    conf = configparser.RawConfigParser({'host': None, 'name': None, 'strict': True, 'method': ''})
     if not confpath: confpath = os.path.expanduser('~/.nxt-python')
     if conf.read([confpath]) == [] and debug:
-        print "Warning: Config file (should be at %s) was not read. Use nxt.locator.make_config() to create a config file." % confpath
+        print("Warning: Config file (should be at %s) was not read. Use nxt.locator.make_config() to create a config file." % confpath)
     if conf.has_section('Brick') == False:
         conf.add_section('Brick')
     return conf
 
 def make_config(confpath=None):
-    conf = ConfigParser.RawConfigParser()
+    conf = configparser.RawConfigParser()
     if not confpath: confpath = os.path.expanduser('~/.nxt-python')
-    print "Welcome to the nxt-python config file generator!"
-    print "This function creates an example file which find_one_brick uses to find a brick."
+    print("Welcome to the nxt-python config file generator!")
+    print("This function creates an example file which find_one_brick uses to find a brick.")
     try:
-        if os.path.exists(confpath): raw_input("File already exists at %s. Press Enter to overwrite or Ctrl+C to abort." % confpath)
+        if os.path.exists(confpath): input("File already exists at %s. Press Enter to overwrite or Ctrl+C to abort." % confpath)
     except KeyboardInterrupt:
-        print "Not writing file."
+        print("Not writing file.")
         return
     conf.add_section('Brick')
     conf.set('Brick', 'name', 'MyNXT')
@@ -185,10 +185,10 @@ def make_config(confpath=None):
     conf.set('Brick', 'strict', 0)
     conf.set('Brick', 'method', 'usb=True, bluetooth=False, fantomusb=True')
     conf.write(open(confpath, 'w'))
-    print "The file has been written at %s" % confpath
-    print "The file contains less-than-sane default values to get you started."
-    print "You must now edit the file with a text editor and change the values to match what you would pass to find_one_brick"
-    print "The fields for name, host, and strict correspond to the similar args accepted by find_one_brick"
-    print "The method field contains the string which would be passed to Method()"
-    print "Any field whose corresponding option does not need to be passed to find_one_brick should be commented out (using a # at the start of the line) or simply removed."
-    print "If you have questions, check the wiki and then ask on the mailing list."
+    print("The file has been written at %s" % confpath)
+    print("The file contains less-than-sane default values to get you started.")
+    print("You must now edit the file with a text editor and change the values to match what you would pass to find_one_brick")
+    print("The fields for name, host, and strict correspond to the similar args accepted by find_one_brick")
+    print("The method field contains the string which would be passed to Method()")
+    print("Any field whose corresponding option does not need to be passed to find_one_brick should be commented out (using a # at the start of the line) or simply removed.")
+    print("If you have questions, check the wiki and then ask on the mailing list.")

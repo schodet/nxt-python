@@ -1,0 +1,222 @@
+RefactoringTool: Adding transformation: apply
+RefactoringTool: Adding transformation: asserts
+RefactoringTool: Adding transformation: basestring
+RefactoringTool: Skipping optional fixer: buffer
+RefactoringTool: Adding transformation: callable
+RefactoringTool: Adding transformation: dict
+RefactoringTool: Adding transformation: except
+RefactoringTool: Adding transformation: exec
+RefactoringTool: Adding transformation: execfile
+RefactoringTool: Adding transformation: exitfunc
+RefactoringTool: Adding transformation: filter
+RefactoringTool: Adding transformation: funcattrs
+RefactoringTool: Adding transformation: future
+RefactoringTool: Adding transformation: getcwdu
+RefactoringTool: Adding transformation: has_key
+RefactoringTool: Skipping optional fixer: idioms
+RefactoringTool: Adding transformation: import
+RefactoringTool: Adding transformation: imports
+RefactoringTool: Adding transformation: imports2
+RefactoringTool: Adding transformation: input
+RefactoringTool: Adding transformation: intern
+RefactoringTool: Adding transformation: isinstance
+RefactoringTool: Adding transformation: itertools
+RefactoringTool: Adding transformation: itertools_imports
+RefactoringTool: Adding transformation: long
+RefactoringTool: Adding transformation: map
+RefactoringTool: Adding transformation: metaclass
+RefactoringTool: Adding transformation: methodattrs
+RefactoringTool: Adding transformation: ne
+RefactoringTool: Adding transformation: next
+RefactoringTool: Adding transformation: nonzero
+RefactoringTool: Adding transformation: numliterals
+RefactoringTool: Adding transformation: operator
+RefactoringTool: Adding transformation: paren
+RefactoringTool: Adding transformation: print
+RefactoringTool: Adding transformation: raise
+RefactoringTool: Adding transformation: raw_input
+RefactoringTool: Adding transformation: reduce
+RefactoringTool: Adding transformation: reload
+RefactoringTool: Adding transformation: renames
+RefactoringTool: Adding transformation: repr
+RefactoringTool: Skipping optional fixer: set_literal
+RefactoringTool: Adding transformation: standarderror
+RefactoringTool: Adding transformation: sys_exc
+RefactoringTool: Adding transformation: throw
+RefactoringTool: Adding transformation: tuple_params
+RefactoringTool: Adding transformation: types
+RefactoringTool: Adding transformation: unicode
+RefactoringTool: Adding transformation: urllib
+RefactoringTool: Skipping optional fixer: ws_comma
+RefactoringTool: Adding transformation: xrange
+RefactoringTool: Adding transformation: xreadlines
+RefactoringTool: Adding transformation: zip
+RefactoringTool: Can't parse build_dists.bat: ParseError: bad input: type=1, value='setup', context=(' ', (1, 6))
+RefactoringTool: No changes in build_dists.bat
+RefactoringTool: Descending into docs
+RefactoringTool: Descending into examples
+RefactoringTool: Refactoring examples/alpharex.py
+RefactoringTool: No changes to examples/alpharex.py
+RefactoringTool: No changes to examples/alpharex.py
+RefactoringTool: Refactoring examples/cnc.py
+RefactoringTool: No changes to examples/cnc.py
+RefactoringTool: No changes to examples/cnc.py
+RefactoringTool: Refactoring examples/latency.py
+RefactoringTool: No changes to examples/latency.py
+RefactoringTool: No changes to examples/latency.py
+RefactoringTool: Refactoring examples/mary.py
+RefactoringTool: No changes to examples/mary.py
+RefactoringTool: No changes to examples/mary.py
+RefactoringTool: Refactoring examples/message_test.py
+RefactoringTool: No changes to examples/message_test.py
+RefactoringTool: No changes to examples/message_test.py
+RefactoringTool: Refactoring examples/spin.py
+RefactoringTool: No changes in examples/spin.py
+RefactoringTool: Refactoring examples/test_sensors.py
+RefactoringTool: No changes to examples/test_sensors.py
+RefactoringTool: No changes to examples/test_sensors.py
+RefactoringTool: Descending into examples/mindsensors
+RefactoringTool: Refactoring examples/mindsensors/ACCL.py
+RefactoringTool: No changes to examples/mindsensors/ACCL.py
+RefactoringTool: No changes to examples/mindsensors/ACCL.py
+RefactoringTool: Refactoring examples/mindsensors/HID.py
+RefactoringTool: No changes to examples/mindsensors/HID.py
+RefactoringTool: No changes to examples/mindsensors/HID.py
+RefactoringTool: Refactoring examples/mindsensors/LineLeader.py
+RefactoringTool: No changes to examples/mindsensors/LineLeader.py
+RefactoringTool: No changes to examples/mindsensors/LineLeader.py
+RefactoringTool: Refactoring examples/mindsensors/MMX.py
+RefactoringTool: No changes to examples/mindsensors/MMX.py
+RefactoringTool: No changes to examples/mindsensors/MMX.py
+RefactoringTool: Refactoring examples/mindsensors/MTRMUX.py
+RefactoringTool: No changes in examples/mindsensors/MTRMUX.py
+RefactoringTool: Refactoring examples/mindsensors/PS2.py
+RefactoringTool: No changes to examples/mindsensors/PS2.py
+RefactoringTool: No changes to examples/mindsensors/PS2.py
+RefactoringTool: Refactoring examples/mindsensors/RTC.py
+RefactoringTool: No changes to examples/mindsensors/RTC.py
+RefactoringTool: No changes to examples/mindsensors/RTC.py
+RefactoringTool: Refactoring examples/mindsensors/Servo.py
+RefactoringTool: No changes to examples/mindsensors/Servo.py
+RefactoringTool: No changes to examples/mindsensors/Servo.py
+RefactoringTool: Can't parse install.bat: ParseError: bad input: type=1, value='off', context=(' ', (1, 6))
+RefactoringTool: No changes in install.bat
+RefactoringTool: Can't parse LICENSE: ParseError: bad input: type=5, value='                    ', context=('', (1, 0))
+RefactoringTool: No changes in LICENSE
+RefactoringTool: Can't parse MANIFEST.in: ParseError: bad input: type=1, value='docs', context=(' ', (1, 8))
+RefactoringTool: No changes in MANIFEST.in
+RefactoringTool: Descending into nxt
+RefactoringTool: Refactoring nxt/__init__.py
+RefactoringTool: No changes in nxt/__init__.py
+RefactoringTool: Can't parse nxt/bluesock.py: ParseError: bad input: type=22, value='=', context=('', (55, 30))
+RefactoringTool: No changes in nxt/bluesock.py
+RefactoringTool: Refactoring nxt/brick.py
+RefactoringTool: No changes to nxt/brick.py
+RefactoringTool: No changes to nxt/brick.py
+RefactoringTool: Refactoring nxt/devsock.py
+RefactoringTool: No changes to nxt/devsock.py
+RefactoringTool: No changes to nxt/devsock.py
+RefactoringTool: Refactoring nxt/direct.py
+RefactoringTool: No changes to nxt/direct.py
+RefactoringTool: No changes to nxt/direct.py
+RefactoringTool: Refactoring nxt/error.py
+RefactoringTool: No changes to nxt/error.py
+RefactoringTool: No changes to nxt/error.py
+RefactoringTool: Refactoring nxt/fantomsock.py
+RefactoringTool: No changes to nxt/fantomsock.py
+RefactoringTool: No changes to nxt/fantomsock.py
+RefactoringTool: Can't parse nxt/ipsock.py: ParseError: bad input: type=22, value='=', context=('', (50, 30))
+RefactoringTool: No changes in nxt/ipsock.py
+RefactoringTool: Refactoring nxt/lightblueglue.py
+RefactoringTool: No changes to nxt/lightblueglue.py
+RefactoringTool: No changes to nxt/lightblueglue.py
+RefactoringTool: Can't parse nxt/locator.py: ParseError: bad input: type=22, value='=', context=('', (49, 84))
+RefactoringTool: No changes in nxt/locator.py
+RefactoringTool: Refactoring nxt/motcont.py
+RefactoringTool: No changes to nxt/motcont.py
+RefactoringTool: No changes to nxt/motcont.py
+RefactoringTool: Refactoring nxt/motor.py
+RefactoringTool: No changes to nxt/motor.py
+RefactoringTool: No changes to nxt/motor.py
+RefactoringTool: Refactoring nxt/system.py
+RefactoringTool: No changes to nxt/system.py
+RefactoringTool: No changes to nxt/system.py
+RefactoringTool: Refactoring nxt/telegram.py
+RefactoringTool: No changes to nxt/telegram.py
+RefactoringTool: No changes to nxt/telegram.py
+RefactoringTool: Can't parse nxt/usbsock.py: ParseError: bad input: type=22, value='=', context=('', (67, 30))
+RefactoringTool: No changes in nxt/usbsock.py
+RefactoringTool: Refactoring nxt/utils.py
+RefactoringTool: No changes to nxt/utils.py
+RefactoringTool: No changes to nxt/utils.py
+RefactoringTool: Descending into nxt/sensor
+RefactoringTool: Refactoring nxt/sensor/__init__.py
+RefactoringTool: No changes to nxt/sensor/__init__.py
+RefactoringTool: No changes to nxt/sensor/__init__.py
+RefactoringTool: Refactoring nxt/sensor/analog.py
+RefactoringTool: No changes to nxt/sensor/analog.py
+RefactoringTool: No changes to nxt/sensor/analog.py
+RefactoringTool: Refactoring nxt/sensor/common.py
+RefactoringTool: No changes to nxt/sensor/common.py
+RefactoringTool: No changes to nxt/sensor/common.py
+RefactoringTool: Refactoring nxt/sensor/digital.py
+RefactoringTool: No changes to nxt/sensor/digital.py
+RefactoringTool: No changes to nxt/sensor/digital.py
+RefactoringTool: Refactoring nxt/sensor/generic.py
+RefactoringTool: No changes to nxt/sensor/generic.py
+RefactoringTool: No changes to nxt/sensor/generic.py
+RefactoringTool: Refactoring nxt/sensor/hitechnic.py
+RefactoringTool: No changes to nxt/sensor/hitechnic.py
+RefactoringTool: No changes to nxt/sensor/hitechnic.py
+RefactoringTool: Refactoring nxt/sensor/mindsensors.py
+RefactoringTool: No changes to nxt/sensor/mindsensors.py
+RefactoringTool: No changes to nxt/sensor/mindsensors.py
+RefactoringTool: Can't parse README.md: ParseError: bad input: type=1, value='package', context=(' ', (3, 16))
+RefactoringTool: No changes in README.md
+RefactoringTool: Descending into scripts
+RefactoringTool: Refactoring setup.py
+RefactoringTool: No changes to setup.py
+RefactoringTool: No changes to setup.py
+RefactoringTool: Files that need to be modified:
+RefactoringTool: examples/alpharex.py
+RefactoringTool: examples/cnc.py
+RefactoringTool: examples/latency.py
+RefactoringTool: examples/mary.py
+RefactoringTool: examples/message_test.py
+RefactoringTool: examples/test_sensors.py
+RefactoringTool: examples/mindsensors/ACCL.py
+RefactoringTool: examples/mindsensors/HID.py
+RefactoringTool: examples/mindsensors/LineLeader.py
+RefactoringTool: examples/mindsensors/MMX.py
+RefactoringTool: examples/mindsensors/PS2.py
+RefactoringTool: examples/mindsensors/RTC.py
+RefactoringTool: examples/mindsensors/Servo.py
+RefactoringTool: nxt/brick.py
+RefactoringTool: nxt/devsock.py
+RefactoringTool: nxt/direct.py
+RefactoringTool: nxt/error.py
+RefactoringTool: nxt/fantomsock.py
+RefactoringTool: nxt/lightblueglue.py
+RefactoringTool: nxt/motcont.py
+RefactoringTool: nxt/motor.py
+RefactoringTool: nxt/system.py
+RefactoringTool: nxt/telegram.py
+RefactoringTool: nxt/utils.py
+RefactoringTool: nxt/sensor/__init__.py
+RefactoringTool: nxt/sensor/analog.py
+RefactoringTool: nxt/sensor/common.py
+RefactoringTool: nxt/sensor/digital.py
+RefactoringTool: nxt/sensor/generic.py
+RefactoringTool: nxt/sensor/hitechnic.py
+RefactoringTool: nxt/sensor/mindsensors.py
+RefactoringTool: setup.py
+RefactoringTool: There were 9 errors:
+RefactoringTool: Can't parse build_dists.bat: ParseError: bad input: type=1, value='setup', context=(' ', (1, 6))
+RefactoringTool: Can't parse install.bat: ParseError: bad input: type=1, value='off', context=(' ', (1, 6))
+RefactoringTool: Can't parse LICENSE: ParseError: bad input: type=5, value='                    ', context=('', (1, 0))
+RefactoringTool: Can't parse MANIFEST.in: ParseError: bad input: type=1, value='docs', context=(' ', (1, 8))
+RefactoringTool: Can't parse nxt/bluesock.py: ParseError: bad input: type=22, value='=', context=('', (55, 30))
+RefactoringTool: Can't parse nxt/ipsock.py: ParseError: bad input: type=22, value='=', context=('', (50, 30))
+RefactoringTool: Can't parse nxt/locator.py: ParseError: bad input: type=22, value='=', context=('', (49, 84))
+RefactoringTool: Can't parse nxt/usbsock.py: ParseError: bad input: type=22, value='=', context=('', (67, 30))
+RefactoringTool: Can't parse README.md: ParseError: bad input: type=1, value='package', context=(' ', (3, 16))

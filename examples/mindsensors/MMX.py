@@ -7,8 +7,8 @@ b = nxt.locator.find_one_brick()#find brick and connect
 s = MSMMX(b, PORT_1)
 s.command('R')
 
-print s.get_encoder_pos(1)      #get encoder position(Motor#)
-print s.read_value('command_a_1')[0] #Read values in command register a
+print((s.get_encoder_pos(1)))      #get encoder position(Motor#)
+print((s.read_value('command_a_1')[0])) #Read values in command register a
 for i in range(8):
     s.command_a(1, i, 1)    #write to motor command register 
     #(motor#, bit#, bitvalue)
@@ -21,8 +21,8 @@ s.set_time_run(2, 5)
 s.command_a(1, 7, 1) #Tell motors to GO!
 s.command_a(2, 7, 1)
 time.sleep(.1)
-print s.get_tasks(1)      # motor tasks running
-print s.get_motor_status(1, 7)
+print((s.get_tasks(1)))      # motor tasks running
+print((s.get_motor_status(1, 7)))
 time.sleep(6)
 s.set_encoder_target(1, 1000)
 s.set_encoder_target(2, 500)

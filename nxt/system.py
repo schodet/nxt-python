@@ -16,7 +16,7 @@
 
 def _create(opcode):
     'Create a simple system telegram'
-    from telegram import Telegram
+    from .telegram import Telegram
     return Telegram(False, opcode)
 
 def _create_with_file(opcode, fname):
@@ -202,7 +202,7 @@ def _parse_boot(tgram):
 def set_brick_name(opcode, bname):
     tgram = _create(opcode)
     if len(bname) > 15:
-        print "Warning! Brick name %s will be truncated to %s!" % (bname, bname[0:15])
+        print(("Warning! Brick name %s will be truncated to %s!" % (bname, bname[0:15])))
         bname = bname[0:15]
     elif len(bname) < 15:
         bname += '\x00' * (15-len(bname)) #fill the extra chars with nulls

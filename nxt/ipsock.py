@@ -26,36 +26,36 @@ class IpSock(object):
 
     def connect(self):
         if self.debug:
-            print 'Connecting via Server...'
+            print('Connecting via Server...')
         sock = socket.socket (socket.AF_INET, socket.SOCK_STREAM)
         sock.connect((self.host, self.port))
         #TODO: sasl authentication here?
         self.sock = sock
         if self.debug:
-            print 'Connected.'
+            print('Connected.')
         self.send('\x98')
         self.type = 'ip'+self.recv()
         return Brick(self)
 
     def close(self):
         if self.debug:
-            print 'Closing Server connection...'
+            print('Closing Server connection...')
         self.sock.send('\x99')
         self.sock.close()
         if self.debug:
-            print 'Server connection closed.'
+            print('Server connection closed.')
 
     def send(self, data):
         if self.debug:
-            print 'Send:',
-            print ':'.join('%02x' % ord(c) for c in data)
+            print('Send:', end=' ')
+            print(':'.join('%02x' % ord(c) for c in data))
         self.sock.send(data)
 
     def recv(self):
         data = self.sock.recv(1024)
         if self.debug:
-            print 'Recv:',
-            print ':'.join('%02x' % ord(c) for c in data)
+            print('Recv:', end=' ')
+            print(':'.join('%02x' % ord(c) for c in data))
         return data
 
 #TODO: add a find_bricks method and a corresponding broadcast system to nxt_server?

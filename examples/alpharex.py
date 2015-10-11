@@ -35,7 +35,7 @@ class AlphaRex(object):
                 Either an nxt.brick.Brick object, or an NXT brick's name as a
                 string. If omitted, a Brick named 'NXT' is looked up.
         '''
-        if isinstance(brick, basestring):
+        if isinstance(brick, str):
             brick = find_one_brick(name=brick)
     
         self.brick = brick

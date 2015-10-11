@@ -15,7 +15,7 @@
 
 from nxt.error import I2CError, I2CPendingError, DirProtError
 
-from common import *
+from .common import *
 from time import sleep, time
 import struct
 
@@ -72,13 +72,13 @@ class BaseDigitalSensor(Sensor):
         if check_compatible:
             sensor = self.get_sensor_info()
             if not sensor in self.compatible_sensors:
-                print ('WARNING: Wrong sensor class chosen for sensor ' + 
+                print(('WARNING: Wrong sensor class chosen for sensor ' + 
                           str(sensor.product_id) + ' on port ' + str(port) + '. ' + """
 You may be using the wrong type of sensor or may have connected the cable
 incorrectly. If you are sure you're using the correct sensor class for the
 sensor, this message is likely in error and you should disregard it and file a
 bug report, including the output of get_sensor_info(). This message can be
-suppressed by passing "check_compatible=False" when creating the sensor object.""")
+suppressed by passing "check_compatible=False" when creating the sensor object."""))
 
     def _ls_get_status(self, n_bytes):
         for n in range(30): #https://code.google.com/p/nxt-python/issues/detail?id=35
@@ -88,7 +88,7 @@ suppressed by passing "check_compatible=False" when creating the sensor object."
                     return b
             except I2CPendingError:
                 pass
-        raise I2CError, 'ls_get_status timeout'
+        raise I2CError('ls_get_status timeout')
 
     def _i2c_command(self, address, value, format):
         """Writes an i2c value to the given address. value must be a string. value is
@@ -122,7 +122,7 @@ suppressed by passing "check_compatible=False" when creating the sensor object."
             #we should clear the buffer no matter what happens
             data = self.brick.ls_read(self.port)
         if len(data) < n_bytes:
-            raise I2CError, 'Read failure: Not enough bytes'
+            raise I2CError('Read failure: Not enough bytes')
         data = struct.unpack(format, data[-n_bytes:])
         return data
         
@@ -139,7 +139,7 @@ suppressed by passing "check_compatible=False" when creating the sensor object."
                 return self._i2c_query(address, fmt)
             except DirProtError:
                 pass
-        raise I2CError, "read_value timeout"
+        raise I2CError("read_value timeout")
 
     def write_value(self, name, value):
         """Writes value to the sensor. Name must be a string found in
