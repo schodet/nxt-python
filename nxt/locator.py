@@ -119,7 +119,7 @@ name, strict, or method) are provided."""
     if not method: method = Method()
     if debug:
         print "Host: %s Name: %s Strict: %s" % (host, name, str(strict))
-        print "USB: %s BT: %s Fantom: %s FUSB: %s FBT: %s" % (method.usb, method.bluetooth, method.fantom, method.fantombt, method.fantomusb)
+        print "USB: %s BT: %s Fantom: %s FUSB: %s FBT: %s" % (method.usb, method.bluetooth, method.fantom, method.fantomusb, method.fantombt)
     
     for s in find_bricks(host, name, silent, method):
         try:
