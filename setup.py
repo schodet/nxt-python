@@ -11,11 +11,11 @@ except:
 
 setup(
     name='nxt-python',
-    version='2.2',
-    author='Marcus Wanner',
-    author_email='marcus@wanners.net',
+    version='3.0',
+    author='Elvin Luff',
+    author_email='elvinluff@gmail.com',
     description='LEGO Mindstorms NXT Control Package',
-    url='http://code.google.com/p/nxt-python/',
+    url='https://github.com/Eelviny/nxt-python/',
     license='Gnu GPL v3',
     packages=['nxt', 'nxt.sensor'],
     scripts=['scripts/nxt_push', 'scripts/nxt_test', 'scripts/nxt_filer', 'scripts/nxt_server'],
