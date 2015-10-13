@@ -1,4 +1,4 @@
-# ![Logo](https://github.com/Eelviny/nxt-python/blob/master/logo-text.png) NXT-Python
+# ![NXT-Python](https://github.com/Eelviny/nxt-python/blob/master/logo-text.png)
 NXT-Python is a package for controlling a LEGO NXT robot using the Python programming language. It can communicate using either USB or Bluetooth. It is based on Marcus Wanner's work ending in 2013, which in turn is based on NXT_Python, where releases halted in May 2007.
 
 ## Requirements
