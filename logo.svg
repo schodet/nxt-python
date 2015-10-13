@@ -10,13 +10,13 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="1000"
+   width="9500"
    height="1000"
-   viewBox="0 0 999.99997 999.99997"
+   viewBox="0 0 9499.9997 999.99997"
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
-   sodipodi:docname="drawing.svg">
+   sodipodi:docname="logo.svg">
   <defs
      id="defs4">
     <linearGradient
@@ -69,18 +69,22 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.7"
-     inkscape:cx="557.92827"
-     inkscape:cy="534.62502"
+     inkscape:zoom="0.12"
+     inkscape:cx="4860.8008"
+     inkscape:cy="1661.437"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
      units="px"
      inkscape:window-width="1920"
-     inkscape:window-height="1050"
-     inkscape:window-x="1920"
-     inkscape:window-y="0"
-     inkscape:window-maximized="1" />
+     inkscape:window-height="1023"
+     inkscape:window-x="0"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -97,7 +101,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-52.362229)">
+     transform="translate(-0.5,-51.862228)">
     <rect
        style="fill:#ffa500;fill-opacity:1;stroke:none;stroke-opacity:1"
        id="rect4159"
@@ -109,7 +113,7 @@
        ry="25" />
     <path
        id="rect4157"
-       style="fill:#ffffff;fill-opacity:1;stroke:#808080;stroke-opacity:1;stroke-width:5;stroke-miterlimit:4;stroke-dasharray:none"
+       style="fill:#ffffff;fill-opacity:1;stroke:#808080;stroke-width:5;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="m 895.5,951.86223 c 2.77,0 5,-2.23 5,-5 l 0,-790 c 0,-2.77 -2.23,-5 -5,-5 l -790,0 c -2.77,0 -5,2.23 -5,5 l 0,790 c 0,2.77 2.23,5 5,5 l 344.5,0 0,-149.99999 -194.5,0 c -2.77,0 -5,-2.23 -5,-5 l 0,-490 c 0,-2.77 2.23,-5 5,-5 l 490,0 c 2.77,0 5,2.23 5,5 l 0,490 c 0,2.77 -2.23,5 -5,5 l -195.5,0 0,149.99999 z"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="ssssssssccssssssssccs" />
@@ -136,5 +140,17 @@
          style="fill:url(#linearGradient1475);fill-opacity:1"
          inkscape:connector-curvature="0" />
     </g>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:253.8973999px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="1200"
+       y="952.36224"
+       id="text3347"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3349"
+         x="1200"
+         y="952.36224"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1142.53833008px;font-family:'SF Square Head';-inkscape-font-specification:'SF Square Head'">NXT-PYTHON</tspan></text>
   </g>
 </svg>

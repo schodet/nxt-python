@@ -1,4 +1,4 @@
-# ![Logo](https://raw.githubusercontent.com/Eelviny/nxt-python/master/logo.png) NXT-Python
+# ![Logo](https://github.com/Eelviny/nxt-python/blob/master/logo-text.png) NXT-Python
 NXT-Python is a package for controlling a LEGO NXT robot using the Python programming language. It can communicate using either USB or Bluetooth. It is based on Marcus Wanner's work ending in 2013, which in turn is based on NXT_Python, where releases halted in May 2007.
 
 ## Requirements
@@ -15,6 +15,7 @@ Fantom Communications:
 1. Untar/unzip source package
 2. Navigate to the package directory, and run `python setup.py install`
 3. `import nxt` in your program and get going!
+
 *This is a quick overview, detailed instructions can be found on the [wiki](https://github.com/Eelviny/nxt-python/wiki/Installation) page.*
 
 ## About v3
@@ -27,9 +28,11 @@ Since the 3.x and 2.x series use the same API, in most cases code can be automat
 However, there is no converter between the 1.x and 2.x series - it's very unlikely you will come across a 1.x program these days. Read the documentation and do it manually!
 
 ## Contact
-NXT-Python repository maintainer: @Eelviny
+NXT-Python repository maintainer: [Eelviny](https://github.com/Eelviny)
 
 [Github issues page](https://github.com/Eelviny/nxt-python/issues): Send all questions, bugs and requests here!
+
+*Please read the [issue rules](https://github.com/Eelviny/nxt-python/wiki/Issue-Rules) before posting here.*
 
 ## Thanks to:
 * Doug Lau for writing NXT_Python, our starting point.
