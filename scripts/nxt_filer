@@ -14,10 +14,10 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-import cStringIO
+import io
 import gtk
 import os.path
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import sys
 
 import nxt.locator
@@ -44,23 +44,23 @@ class NXTListing(gtk.ListStore):
 
 def write_file(b, fname, data):
     w = FileWriter(b, fname, len(data))
-    print 'Pushing %s (%d bytes) ...' % (fname, w.size),
+    print('Pushing %s (%d bytes) ...' % (fname, w.size), end=' ')
     sys.stdout.flush()
     w.write(data)
-    print 'wrote %d bytes' % len(data)
+    print('wrote %d bytes' % len(data))
     w.close()
         
 def write_files(b, names):
     for fname in names.split('\r\n'):
         if fname:
-            print 'File:', fname
+            print('File:', fname)
             bname = os.path.basename(fname)
-            url = urllib2.urlopen(fname)
+            url = urllib.request.urlopen(fname)
             try:
                 data = url.read()
             finally:
                 url.close()
-            print 'name %s, size: %d ' % (bname, len(data))
+            print('name %s, size: %d ' % (bname, len(data)))
             write_file(b, bname, data)
 
 class NXT_Filer(gtk.Window):
@@ -117,7 +117,7 @@ class NXT_Filer(gtk.Window):
         treeselection = treeview.get_selection()
         model, iter = treeselection.get_selected()
         data = model.get_value(iter, 0)
-        print data
+        print(data)
         selection.set(selection.target, 8, data)
 
     def drag_data_received_data(self, treeview, context, x, y, selection,
@@ -137,8 +137,8 @@ if __name__ == '__main__':
     arguments, keyword_arguments = parse_command_line_arguments(sys.argv)
 
     if '--help' in arguments:
-        print '''nxt_filer -- Simple GUI to manage files on a LEGO Mindstorms NXT
-Usage:	nxt_filer [--host <macaddress>]'''
+        print('''nxt_filer -- Simple GUI to manage files on a LEGO Mindstorms NXT
+Usage:	nxt_filer [--host <macaddress>]''')
         exit(0)
 
     brick = nxt.locator.find_one_brick(keyword_arguments.get('host',None))

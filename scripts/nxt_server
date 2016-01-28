@@ -19,7 +19,7 @@ from nxt.utils import parse_command_line_arguments
 
 def serve(brick, channel, details):
     'handles serving the client'
-    print "Connection started (" + details[0] + ')'
+    print("Connection started (" + details[0] + ')')
     run = True
     try:
         while run:
@@ -41,7 +41,7 @@ def serve(brick, channel, details):
         traceback.print_exc()
     finally:
         channel.close()
-        print "Connection Finished"
+        print("Connection Finished")
 
 if __name__ == "__main__":
     arguments, keyword_arguments = parse_command_line_arguments(sys.argv)
@@ -51,11 +51,11 @@ if __name__ == "__main__":
 Usage: nxt_server.py [--host <macaddress>][--name <name>]
 [--iphost <server ip>][--ipport <server port>]""")
         exit(0)
-    print "Connecting to NXT..."
+    print("Connecting to NXT...")
     brick = nxt.find_one_brick(keyword_arguments.get('host',None),keyword_arguments.get('name',None))
-    print "Brick found."
+    print("Brick found.")
 
-    print "Starting server..."
+    print("Starting server...")
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind((keyword_arguments.get('iphost',''), int(keyword_arguments.get('ipport','2727'))))
     server.listen(1)

@@ -2,6 +2,6 @@
 
 import nxt
 b = nxt.find_one_brick(method=nxt.Method(usb=False, bluetooth=False, fantomusb=True, fantombt=True))
-print b.get_device_info()
+print(b.get_device_info())
 b.sock.close()
 

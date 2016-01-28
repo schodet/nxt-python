@@ -22,10 +22,10 @@ from nxt.utils import parse_command_line_arguments
 
 def _write_file(b, fname, data):
     w = FileWriter(b, fname, len(data))
-    print 'Pushing %s (%d bytes) ...' % (fname, w.size),
+    print('Pushing %s (%d bytes) ...' % (fname, w.size), end=' ')
     sys.stdout.flush()
     w.write(data)
-    print 'wrote %d bytes' % len(data)
+    print('wrote %d bytes' % len(data))
     w.close()
 
 def write_file(b, fname):
@@ -34,7 +34,7 @@ def write_file(b, fname):
     f.close()
     try:
         b.delete(fname)
-        print 'Overwriting %s on NXT' % fname
+        print('Overwriting %s on NXT' % fname)
     except FileNotFound:
         pass
     _write_file(b, fname, data)
@@ -43,8 +43,8 @@ if __name__ == '__main__':
     arguments, keyword_arguments = parse_command_line_arguments(sys.argv)
 
     if '--help' in arguments:
-        print '''nxt_push -- Push a file to a LEGO Mindstorms NXT brick
-Usage:  nxt_push [--host <macaddress>] <file>'''
+        print('''nxt_push -- Push a file to a LEGO Mindstorms NXT brick
+Usage:  nxt_push [--host <macaddress>] <file>''')
         exit(0)
     
     brick = nxt.locator.find_one_brick(keyword_arguments.get('host',None))
