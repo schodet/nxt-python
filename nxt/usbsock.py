@@ -75,7 +75,7 @@ class USBSock(object):
             print('Recv:', end=' ')
             print(':'.join('%02x' % (c & 0xFF) for c in data))
         # NOTE: bulkRead returns a tuple of ints ... make it sane
-        return ''.join(chr(d & 0xFF) for d in data)
+        return bytearray(data)
 
 def find_bricks(host=None, name=None):
     'Use to look for NXTs connected by USB only. ***ADVANCED USERS ONLY***'

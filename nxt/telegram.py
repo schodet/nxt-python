@@ -58,6 +58,9 @@ class Telegram(object):
     def __str__(self):
         return self.pkt.getvalue()
 
+    def bytes(self):
+        return self.pkt.getvalue()
+
     def is_reply(self):
         return self.typ == Telegram.TYPE_REPLY
 
