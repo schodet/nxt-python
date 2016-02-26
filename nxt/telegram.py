@@ -56,7 +56,7 @@ class Telegram(object):
             self.add_u8(opcode)
 
     def __str__(self):
-        return self.pkt.getvalue()
+        return self.pkt.getvalue().decode('windows-1252')
 
     def bytes(self):
         return self.pkt.getvalue()
@@ -65,7 +65,7 @@ class Telegram(object):
         return self.typ == Telegram.TYPE_REPLY
 
     def add_string(self, n_bytes, v):
-        self.pkt.write(pack('%ds' % n_bytes, v))
+        self.pkt.write(pack('%ds' % n_bytes, v.encode('windows-1252')))
 
     def add_filename(self, fname):
         self.pkt.write(pack('20s', fname))
