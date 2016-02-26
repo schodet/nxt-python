@@ -29,3 +29,5 @@ except:
     print("Error while running test:")
     traceback.print_tb(sys.exc_info()[2])
     print str(sys.exc_info()[1])
+    if b in locals():
+        b.sock.close()
