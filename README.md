@@ -1,8 +1,8 @@
-# ![NXT-Python](https://github.com/Eelviny/nxt-python/blob/master/logo-text.png)
+# ![NXT-Python](https://cdn.rawgit.com/Eelviny/nxt-python/master/logo.svg)
 NXT-Python is a package for controlling a LEGO NXT robot using the Python programming language. It can communicate using either USB or Bluetooth. It is based on Marcus Wanner's work ending in 2013, which in turn is based on NXT_Python, where releases halted in May 2007.
 
 ## Requirements
-* [Python 3.x](http://www.python.org) (Currently developed using Python 3.5)
+* [Python 3.x](http://www.python.org) (Currently developed using Python 3.5.1)
 * Bluetooth Comunications:
   * Linux/Windows: [PyBluez](https://github.com/karulis/pybluez)
   * Mac: [LightBlue](http://lightblue.sourceforge.net/)
@@ -12,9 +12,10 @@ Fantom Communications:
   * [Pyfantom](http://pyfantom.ni.fr.eu.org/)
 
 ## Installation
-1. Untar/unzip source package
-2. Navigate to the package directory, and run `python setup.py install`
-3. `import nxt` in your program and get going!
+1. Go and grab the latest version from the [releases](https://github.com/Eelviny/nxt-python/releases) page - the master branch is usually too unstable to use
+2. Untar/unzip source package
+3. Navigate to the package directory, and run `python setup.py install`
+4. `import nxt` in your program and get going!
 
 *This is a quick overview, detailed instructions can be found on the [wiki](https://github.com/Eelviny/nxt-python/wiki/Installation) page.*
 
@@ -28,7 +29,7 @@ Since the 3.x and 2.x series use the same API, in most cases code can be automat
 However, there is no converter between the 1.x and 2.x series - it's very unlikely you will come across a 1.x program these days. Read the documentation and do it manually!
 
 ## Contact
-NXT-Python repository maintainer: [Eelviny](https://github.com/Eelviny)
+NXT-Python repository maintainer: [Eelviny](https://github.com/Eelviny) - He doesn't always have time to code, but he'll endeavour to respond to all pull requests and issues.
 
 [Github issues page](https://github.com/Eelviny/nxt-python/issues): Send all questions, bugs and requests here!
 
