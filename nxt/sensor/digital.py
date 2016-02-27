@@ -152,9 +152,9 @@ suppressed by passing "check_compatible=False" when creating the sensor object."
         self._i2c_command(address, value, fmt)
     
     def get_sensor_info(self):
-        version = self.read_value('version')[0].split('\0')[0]
-        product_id = self.read_value('product_id')[0].split('\0')[0]
-        sensor_type = self.read_value('sensor_type')[0].split('\0')[0]
+        version = self.read_value('version')[0].decode('windows-1252').split('\0')[0]
+        product_id = self.read_value('product_id')[0].decode('windows-1252').split('\0')[0]
+        sensor_type = self.read_value('sensor_type')[0].decode('windows-1252').split('\0')[0]
         return SensorInfo(version, product_id, sensor_type)
         
     @classmethod
