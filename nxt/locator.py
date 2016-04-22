@@ -47,7 +47,7 @@ def find_bricks(host=None, name=None, silent=False, method=Method()):
         except ImportError:
             import sys
             if not silent: print("USB module unavailable, not searching there", file=sys.stderr)
-    
+
     if method.bluetooth:
         try:
             from . import bluesock
@@ -61,7 +61,7 @@ def find_bricks(host=None, name=None, silent=False, method=Method()):
         except ImportError:
             import sys
             if not silent: print("Bluetooth module unavailable, not searching there", file=sys.stderr)
-    
+
     if method.device:
         try:
             from . import devsock
@@ -87,23 +87,23 @@ def find_bricks(host=None, name=None, silent=False, method=Method()):
         except ImportError:
             import sys
             if not silent: print("Fantom module unavailable, not searching there", file=sys.stderr)
-    
+
     if methods_available == 0:
         raise NoBackendError("No selected backends are available! Did you install the comm modules?")
 
 
 def find_one_brick(host=None, name=None, silent=False, strict=None, debug=False, method=None, confpath=None):
-    """Use to find one brick. The host and name args limit the search to 
-a given MAC or brick name. Set silent to True to stop nxt-python from 
-printing anything during the search. This function by default 
-automatically checks to see if the brick found has the correct host/name 
-(if either are provided) and will not return a brick which doesn't 
-match. This can be disabled (so the function returns any brick which can 
-be connected to and provides a valid reply to get_device_info()) by 
-passing strict=False. This will, however, still tell the comm backends 
-to only look for devices which match the args provided. The confpath arg 
-specifies the location of the configuration file which brick location 
-information will be read from if no brick location directives (host, 
+    """Use to find one brick. The host and name args limit the search to
+a given MAC or brick name. Set silent to True to stop nxt-python from
+printing anything during the search. This function by default
+automatically checks to see if the brick found has the correct host/name
+(if either are provided) and will not return a brick which doesn't
+match. This can be disabled (so the function returns any brick which can
+be connected to and provides a valid reply to get_device_info()) by
+passing strict=False. This will, however, still tell the comm backends
+to only look for devices which match the args provided. The confpath arg
+specifies the location of the configuration file which brick location
+information will be read from if no brick location directives (host,
 name, strict, or method) are provided."""
     if debug and silent:
         silent=False
@@ -120,7 +120,7 @@ name, strict, or method) are provided."""
     if debug:
         print("Host: %s Name: %s Strict: %s" % (host, name, str(strict)))
         print("USB: %s BT: %s Fantom: %s FUSB: %s FBT: %s" % (method.usb, method.bluetooth, method.fantom, method.fantomusb, method.fantombt))
-    
+
     for s in find_bricks(host, name, silent, method):
         try:
             if host and 'host' in dir(s) and s.host != host:
