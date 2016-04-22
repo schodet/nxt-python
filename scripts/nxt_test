@@ -12,6 +12,7 @@ Usage:  nxt_test (takes no arguments except --help)''')
 import nxt.locator
 import nxt.brick
 
+b = None
 try:
     b = nxt.locator.find_one_brick()
     name, host, signal_strength, user_flash = b.get_device_info()
@@ -29,5 +30,5 @@ except:
     print("Error while running test:")
     traceback.print_tb(sys.exc_info()[2])
     print(str(sys.exc_info()[1]))
-    if b in locals(): # What is this supposed to do? I get 'NameError: name 'b' is not defined'
+    if b in locals():
         b.sock.close()
