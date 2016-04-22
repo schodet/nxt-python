@@ -146,6 +146,11 @@ name, strict, or method) are provided."""
             if debug:
                 traceback.print_exc()
                 print("Failed to connect to possible brick")
+
+    print("""No brick was found.
+    Is the brick turned on?
+    For more diagnosing use the debug=True argument or
+    try the 'nxt_test' script located in /bin or ~/.local/bin""")
     raise BrickNotFoundError
 
 
