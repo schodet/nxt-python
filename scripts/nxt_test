@@ -21,13 +21,13 @@ try:
     print('Free user flash: %s' % user_flash)
     prot_version, fw_version = b.get_firmware_version()
     print('Protocol version %s.%s' % prot_version)
-    print(Firmware version %s.%s' % fw_version)
+    print('Firmware version %s.%s' % fw_version)
     millivolts = b.get_battery_level()
     print('Battery level %s mV' % millivolts)
     b.sock.close()
 except:
     print("Error while running test:")
     traceback.print_tb(sys.exc_info()[2])
-    print str(sys.exc_info()[1])
-    if b in locals():
+    print(str(sys.exc_info()[1]))
+    if b in locals(): # What is this supposed to do? I get 'NameError: name 'b' is not defined'
         b.sock.close()
