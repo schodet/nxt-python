@@ -38,6 +38,7 @@ HTEOPD = hitechnic.EOPD
 HTIRReceiver = hitechnic.IRReceiver
 HTIRSeekerv2 = hitechnic.IRSeekerv2
 HTPrototype = hitechnic.Prototype
+HTAngle = hitechnic.Angle
 
 
 def get_sensor(brick, port):
