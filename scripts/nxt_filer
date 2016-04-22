@@ -44,12 +44,12 @@ class NXTListing(gtk.ListStore):
 
 def write_file(b, fname, data):
     w = FileWriter(b, fname, len(data))
-    print('Pushing %s (%d bytes) ...' % (fname, w.size), end=' ')
+    print("Pushing {} ({} bytes) ... ".format(fname, w.size))
     sys.stdout.flush()
     w.write(data)
     print('wrote %d bytes' % len(data))
     w.close()
-        
+
 def write_files(b, names):
     for fname in names.split('\r\n'):
         if fname:
