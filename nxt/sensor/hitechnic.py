@@ -610,3 +610,44 @@ MotorCon.PID_Data(p, i, d) format.
         return high << 2 + low
 
 MotorCon.add_compatible_sensor(None, 'HiTechnc', 'MotorCon')
+
+
+class Angle(BaseDigitalSensor):
+#HiTechnic Angle Sensor, Nikola Jovic 2016
+    I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
+    I2C_ADDRESS.update({
+        'mode': (0x41, 'B'),
+        'angle': (0x42, 'B'),
+        'angle_inc': (0x43, 'B'),
+        'angle_acc': (0x44, '4B'),
+        'rpm': (0x48, '2B'),
+        'reset_acc': (0x52, 'B'),
+        'write_zero': (0x43, 'B'),
+    })
+
+    def __init__(self,brick,port):
+        super(Angle, self).__init__(brick, port)
+
+    def get_angle(self):  #Absoulute angle 0-360 in 2 degree increments. (Returns 0-180)
+        return self.read_value('angle')
+
+    def get_angle_inc(self):
+        return self.read_value('angle_inc')
+
+    def get_accumulated_angle(self):
+        if (self.read_value('angle_acc')[0] & 0b10000000):
+            return -0xffffffff + self.read_value('angle_acc')[0] * 0x1000000 + self.read_value('angle_acc')[1] * 0x10000 + self.read_value('angle_acc')[2] * 0x100 + self.read_value('angle_acc')[3]
+        else:
+            return self.read_value('angle_acc')[0] * 0x1000000 + self.read_value('angle_acc')[1] * 0x10000 + self.read_value('angle_acc')[2] * 0x100 + self.read_value('angle_acc')[3]
+
+    def get_rpm(self):
+        if (self.read_value('rpm')[0] & 0b10000000):
+            return -0xffff + self.read_value('rpm')[0] * 0x100 + self.read_value('rpm')[1]
+        else:
+            return self.read_value('rpm')[0] * 0x100 + self.read_value('rpm')[1]
+
+    def calibrate(self):  #Current angle will be zero degrees written in EEPROM
+        self.write_value('mode', 'write_zero')
+
+    def reset(self):    #Reset accumulated angle
+        self.write_value('mode', 'reset_acc')
