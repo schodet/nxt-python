@@ -12,6 +12,7 @@ Usage:  nxt_test (takes no arguments except --help)''')
 import nxt.locator
 import nxt.brick
 
+b = None
 try:
     b = nxt.locator.find_one_brick()
     name, host, signal_strength, user_flash = b.get_device_info()
@@ -21,13 +22,13 @@ try:
     print('Free user flash: %s' % user_flash)
     prot_version, fw_version = b.get_firmware_version()
     print('Protocol version %s.%s' % prot_version)
-    print(Firmware version %s.%s' % fw_version)
+    print('Firmware version %s.%s' % fw_version)
     millivolts = b.get_battery_level()
     print('Battery level %s mV' % millivolts)
     b.sock.close()
 except:
     print("Error while running test:")
     traceback.print_tb(sys.exc_info()[2])
-    print str(sys.exc_info()[1])
+    print(str(sys.exc_info()[1]))
     if b in locals():
         b.sock.close()
