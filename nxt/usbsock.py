@@ -65,14 +65,14 @@ class USBSock(object):
 
     def send(self, data):
         'Use to send raw data over USB connection'
-        self._debug('Send:', end=' ')
+        self._debug('Send:')
         self._debug(':'.join('%02x' % ord(c) for c in data))
         self.device.write(OUT_ENDPOINT, data, TIMEOUT)
 
     def recv(self):
         'Use to recieve raw data over USB connection'
         data = self.device.read(IN_ENDPOINT, 64, TIMEOUT)
-        self._debug('Recv:', end=' ')
+        self._debug('Recv:')
         self._debug(':'.join('%02x' % (c & 0xFF) for c in data))
         # NOTE: bulkRead returns a tuple of ints ... make it sane
         return bytearray(data)
