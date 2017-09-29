@@ -1,8 +1,10 @@
 # ![NXT-Python](https://cdn.rawgit.com/Eelviny/nxt-python/master/logo.svg)
+**DISCLAIMER: The NXT-Python v3 implementation is incomplete. Development is not active due to lack of interest. Find the latest stable version for Python2 on the [releases](https://github.com/Eelviny/nxt-python/releases) page. Pull requests and improvements are very welcome!**
+
 NXT-Python is a package for controlling a LEGO NXT robot using the Python programming language. It can communicate using either USB or Bluetooth. It is based on Marcus Wanner's work ending in 2013, which in turn is based on NXT_Python, where releases halted in May 2007.
 
 ## Requirements
-* [Python 3.x](http://www.python.org) (Currently developed using Python 3.5.1)
+* [Python 3.x](http://www.python.org)
 * Bluetooth Comunications:
   * Linux/Windows: [PyBluez](https://github.com/karulis/pybluez)
   * Mac: [LightBlue](http://lightblue.sourceforge.net/)
@@ -12,16 +14,16 @@ Fantom Communications:
   * [Pyfantom](http://pyfantom.ni.fr.eu.org/)
 
 ## Installation
-1. Go and grab the latest version from the [releases](https://github.com/Eelviny/nxt-python/releases) page - the master branch is usually too unstable to use
+1. Go and grab the latest version from the [releases](https://github.com/Eelviny/nxt-python/releases) page - **the master branch is too unstable to use**
 2. Untar/unzip source package
-3. Navigate to the package directory, and run `python setup.py install`
+3. Navigate to the package directory, and run `python3 setup.py install`
 4. `import nxt` in your program and get going!
 
 *This is a quick overview, detailed instructions can be found on the [wiki](https://github.com/Eelviny/nxt-python/wiki/Installation) page.*
 
 ## About v3
 This version is part of the 3.x series of releases. Programs written for series 1.x or 2.x will not run properly or at all using this version, due API-breaking changes.
-v3.x is functionally similar to v2.x, however is written for Python3 releases and as such will not behave correctly running code designed for Python2!
+v3.x is functionally similar to v2.x, however is written for Python3 and as such will not behave correctly running code designed for Python2!
 If you wish to run an older program, older versions can be downloaded from the [releases](https://github.com/Eelviny/nxt-python/releases) page.
 
 ### Converting between versions
