@@ -121,7 +121,8 @@ name, strict, or method) are provided."""
         print("Host: %s Name: %s Strict: %s" % (host, name, str(strict)))
         print("USB: %s BT: %s Fantom: %s FUSB: %s FBT: %s" % (method.usb, method.bluetooth, method.fantom, method.fantomusb, method.fantombt))
 
-    for s in find_bricks(host, name, silent, method):
+        for s in find_bricks(host, name, silent, method):
+        print('Point Reached')
         try:
             if host and 'host' in dir(s) and s.host != host:
                 if debug:
@@ -129,6 +130,8 @@ name, strict, or method) are provided."""
                 if strict: continue
             b = s.connect()
             info = b.get_device_info()
+            print(info)
+            strict = False
             if host and info[1] != host:
                 if debug:
                     print("Warning: the brick found does not match the host provided (get_device_info).")
@@ -136,14 +139,9 @@ name, strict, or method) are provided."""
                     s.close()
                     continue
             info = list(info)
-            info[0] = 'Computer'
             info[0] = str(info[0])
             info[0] = info[0][2:(len(info[0])-1)]
-            print('Info[0] is {}'.format(info[0]))
             info[0] = info[0].strip('\\x00')
-            print('Info[0] is {}'.format(info[0]))
-            # /\ Inserted
-            print('Name parsed is {}'.format(name))
             if info[0] != name:
                 if debug:
                     print("Warning; the brick found does not match the name provided.")
