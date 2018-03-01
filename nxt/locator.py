@@ -122,37 +122,36 @@ name, strict, or method) are provided."""
         print("USB: %s BT: %s Fantom: %s FUSB: %s FBT: %s" % (method.usb, method.bluetooth, method.fantom, method.fantomusb, method.fantombt))
 
         for s in find_bricks(host, name, silent, method):
-        print('Point Reached')
-        try:
-            if host and 'host' in dir(s) and s.host != host:
+            try:
+                if host and 'host' in dir(s) and s.host != host:
+                    if debug:
+                        print("Warning: the brick found does not match the host provided (s.host).")
+                    if strict: continue
+                b = s.connect()
+                info = b.get_device_info()
+                print(info)
+                strict = False
+                if host and info[1] != host:
+                    if debug:
+                        print("Warning: the brick found does not match the host provided (get_device_info).")
+                    if strict:
+                        s.close()
+                        continue
+                info = list(info)
+                info[0] = str(info[0])
+                info[0] = info[0][2:(len(info[0])-1)]
+                info[0] = info[0].strip('\\x00')
+                if info[0] != name:
+                    if debug:
+                        print("Warning; the brick found does not match the name provided.")
+                    if strict:
+                        s.close()
+                        continue
+                return b
+            except:
                 if debug:
-                    print("Warning: the brick found does not match the host provided (s.host).")
-                if strict: continue
-            b = s.connect()
-            info = b.get_device_info()
-            print(info)
-            strict = False
-            if host and info[1] != host:
-                if debug:
-                    print("Warning: the brick found does not match the host provided (get_device_info).")
-                if strict:
-                    s.close()
-                    continue
-            info = list(info)
-            info[0] = str(info[0])
-            info[0] = info[0][2:(len(info[0])-1)]
-            info[0] = info[0].strip('\\x00')
-            if info[0] != name:
-                if debug:
-                    print("Warning; the brick found does not match the name provided.")
-                if strict:
-                    s.close()
-                    continue
-            return b
-        except:
-            if debug:
-                traceback.print_exc()
-                print("Failed to connect to possible brick")
+                    traceback.print_exc()
+                    print("Failed to connect to possible brick")
 
     print("""No brick was found.
     Is the brick turned on?
