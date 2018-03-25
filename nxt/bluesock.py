@@ -63,7 +63,7 @@ class BlueSock(object):
         self.sock.send(d)
 
     def recv(self):
-        data = self.sock.recv(2)
+        data = str(self.sock.recv(2))
         l0 = ord(data[0])
         l1 = ord(data[1])
         plen = l0 + (l1 << 8)
