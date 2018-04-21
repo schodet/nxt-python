@@ -100,9 +100,9 @@ class Ultrasonic(BaseDigitalSensor):
         return self.read_value('measurement_byte_0')[0]
     
     get_sample = get_distance
-            
+
     def get_measurement_units(self):
-        return self.read_value('measurement_units')[0].decode('windows-1252').split('\0')[0]
+        return self.read_value('measurement_units')[0].decode('windows-1252')
 
     def get_all_measurements(self):
         "Returns all the past readings in measurement_byte_0 through 7"
