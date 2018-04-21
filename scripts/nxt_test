@@ -24,6 +24,12 @@ if '--verbose' in sys.argv or '--debug' in sys.argv:
 b = None
 try:
     b = nxt.locator.find_one_brick(debug=debug)
+    print('Play test sound...')
+    b.play_tone_and_wait(300, 50)
+    b.play_tone_and_wait(400, 50)
+    b.play_tone_and_wait(500, 50)
+    b.play_tone_and_wait(600, 50)
+    print('...done.')
     name, host, signal_strength, user_flash = b.get_device_info()
     print('NXT brick name: %s' % name)
     print('Host address: %s' % host)
