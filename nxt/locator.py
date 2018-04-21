@@ -87,7 +87,7 @@ specifies the location of the configuration file which brick location
 information will be read from if no brick location directives (host,
 name, strict, or method) are provided."""
     if debug and silent:
-        silent=False
+        silent = False
         print("silent and debug can't both be set; giving debug priority")
 
     conf = read_config(confpath, debug)
@@ -98,6 +98,7 @@ name, strict, or method) are provided."""
         method	= eval('Method(%s)' % conf.get('Brick', 'method'))
     if not strict: strict = True
     if not method: method = Method()
+
     if debug:
         print("Host: %s Name: %s Strict: %s" % (host, name, str(strict)))
         print("USB: {} BT: {}".format(method.usb, method.bluetooth))
@@ -150,7 +151,6 @@ name, strict, or method) are provided."""
     try the 'nxt_test' script located in /bin or ~/.local/bin""")
     raise BrickNotFoundError
 
-
 def server_brick(host, port = 2727):
     from . import ipsock
     sock = ipsock.IpSock(host, port)
@@ -160,7 +160,6 @@ def device_brick(filename):
     from . import devsock
     sock = devsock.find_bricks(filename=filename)
     return sock.connect()
-
 
 def read_config(confpath=None, debug=False):
     conf = configparser.RawConfigParser({'host': None, 'name': None, 'strict': True, 'method': ''})
