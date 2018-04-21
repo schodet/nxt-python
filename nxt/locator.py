@@ -111,8 +111,9 @@ name, strict, or method) are provided."""
                 if strict: continue
             b = s.connect()
             info = b.get_device_info()
-            print("info:")
-            print(info)
+            if debug:
+                print("info: " + str(info))
+
             strict = False
 
             if host and info[1] != host:
