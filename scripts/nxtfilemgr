@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# nxt_filemgr program -- Updated from nxt_filer 
+# nxt_filemgr program -- Updated from nxt_filer
 # Based on: nxt_filer program -- Simple GUI to manage files on a LEGO Mindstorms NXT
 # Copyright (C) 2006  Douglas P Lau
 # Copyright (C) 2010  rhn
@@ -68,12 +68,12 @@ def run_program(b, fname):
     if DEBUG:
         print("Running %s" % fname)
     b.start_program(fname)
-    
+
 def delete_file(b, fname):
     b.delete(fname)
     if DEBUG:
         print("Deleted %s" % fname)
-    
+
 def read_file(b, fname):
     with FileReader(b, fname) as r:
         with open(fname, 'wb') as f:
@@ -124,7 +124,7 @@ def write_file(b, fname, data):
         system_error_dialog()
     except USBError:
         raise
-        
+
 def write_files(b, names):
     for fname in names.split('\r\n'):
         if fname:
@@ -167,7 +167,7 @@ class NXT_FileMgr(Gtk.Window):
         self.selected_file = None
         self.brick_info_str = CONNECT_STRING
         self.nxt_filelist = NXTListing()
-        
+
         h = Gtk.Grid()
         h.set_orientation(Gtk.Orientation.VERTICAL)
         self.brick_button = Gtk.Button(label=self.brick_info_str)
@@ -211,12 +211,12 @@ class NXT_FileMgr(Gtk.Window):
         return tv
 
     def make_file_panel(self):
-        v = Gtk.Box(Gtk.Orientation.VERTICAL, 0)     
+        v = Gtk.Box(Gtk.Orientation.VERTICAL, 0)
         tv = self.make_file_view()
         tv.set_model(self.nxt_filelist)
         select = tv.get_selection()
         select.connect("changed", self.on_tree_selection_changed)
-        
+
         s = Gtk.ScrolledWindow()
         s.set_min_content_width(FILELIST_MINWIDTH)
         s.set_max_content_width(min(FILENAME_MAXWIDTH+FILESIZE_MAXWIDTH, FILELIST_MAXWIDTH))
@@ -228,12 +228,12 @@ class NXT_FileMgr(Gtk.Window):
         return v
 
     def make_button_panel(self):
-        vb = Gtk.Box(Gtk.Orientation.HORIZONTAL, 0)     
- 
+        vb = Gtk.Box(Gtk.Orientation.HORIZONTAL, 0)
+
         self.about_button = Gtk.Button(label="?")
         self.about_button.connect("clicked", self.about)
         vb.pack_start(self.about_button, True, True, 10)
-        
+
         self.delete_button = Gtk.Button(label="Remove")
         self.delete_button.connect("clicked", self.remove_file)
         vb.pack_start(self.delete_button, True, True, 10)
@@ -251,7 +251,7 @@ class NXT_FileMgr(Gtk.Window):
         self.brick.sock.close()
         self.brick = None
         self.selected_file = None
-    
+
     def	reload_filelist(self, widget):
         if DEBUG:
             print("Reloading filelist...")
@@ -274,7 +274,7 @@ class NXT_FileMgr(Gtk.Window):
         self.nxt_filelist.clear()
         if self.brick != None:
             self.nxt_filelist.populate(self.brick, '*.*')
-    
+
     def get_brick_info(self):
         if self.brick != None:
             print("Reading from NXT..."),
@@ -293,7 +293,7 @@ class NXT_FileMgr(Gtk.Window):
         else:
             self.brick_info_str = CONNECT_STRING
         sys.stdout.flush()
- 
+
     def choose_files(self):
         dialog = Gtk.FileChooserNative();
         dialog.new("Add File", self, Gtk.FileChooserAction.OPEN, None, None)
@@ -324,7 +324,7 @@ class NXT_FileMgr(Gtk.Window):
             self.selected_file = model[treeiter][0]
         else:
             self.selected_file = None
-        
+
     def drag_data_get_data(self, treeview, context, selection, target_id,
         etime):
         treeselection = treeview.get_selection()
@@ -369,7 +369,7 @@ class NXT_FileMgr(Gtk.Window):
                     self.do_housekeeping()
                     self.update_view()
                 else:
-                    print("Can't execute '*.%s' files" % ext)    
+                    print("Can't execute '*.%s' files" % ext)
             except ValueError:
                 print("No file extension (unknown file type)")
             except USBError:
@@ -377,7 +377,7 @@ class NXT_FileMgr(Gtk.Window):
                 usb_error_dialog()
                 self.do_housekeeping()
                 self.update_view()
-                        
+
     def	remove_file(self, widget):
         if self.selected_file != None:
             warning_str = "Do you really want to remove %s?" % self.selected_file
@@ -402,7 +402,7 @@ class NXT_FileMgr(Gtk.Window):
             elif response == Gtk.ResponseType.CANCEL:
                 if DEBUG:
                     print("CANCEL Delete File")
-                       
+
     def	add_file(self, widget):
         if self.brick != None:
             if DEBUG:
@@ -410,7 +410,7 @@ class NXT_FileMgr(Gtk.Window):
             self.choose_files()
             self.selected_file = None
             self.update_view()
-  
+
     def quit(self, w):
         'Quit the program'
         if self.brick != None:
