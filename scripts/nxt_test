@@ -17,8 +17,9 @@ import nxt.locator
 import nxt.brick
 
 debug = False
-if '--verbose' in sys.argv:
+if '--verbose' in sys.argv or '--debug' in sys.argv:
     debug = True
+    print('debug = True')
 
 b = None
 try:
