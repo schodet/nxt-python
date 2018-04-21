@@ -2,6 +2,7 @@
 # Copyright (C) 2006, 2007  Douglas P Lau
 # Copyright (C) 2009  Marcus Wanner
 # Copyright (C) 2013  Dave Churchill, Marcus Wanner
+# Copyright (C) 2015, 2016, 2017, 2018 Multiple Authors
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -72,7 +73,6 @@ def find_bricks(host=None, name=None, silent=False, method=Method()):
     if methods_available == 0:
         raise NoBackendError("No selected backends are available! Did you install the comm modules?")
 
-
 def find_one_brick(host=None, name=None, silent=False, strict=None, debug=False, method=None, confpath=None):
     """Use to find one brick. The host and name args limit the search to
 a given MAC or brick name. Set silent to True to stop nxt-python from
@@ -102,37 +102,47 @@ name, strict, or method) are provided."""
         print("Host: %s Name: %s Strict: %s" % (host, name, str(strict)))
         print("USB: {} BT: {}".format(method.usb, method.bluetooth))
 
-        for s in find_bricks(host, name, silent, method):
-            try:
-                if host and 'host' in dir(s) and s.host != host:
-                    if debug:
-                        print("Warning: the brick found does not match the host provided (s.host).")
-                    if strict: continue
-                b = s.connect()
-                info = b.get_device_info()
-                print(info)
-                strict = False
-                if host and info[1] != host:
-                    if debug:
-                        print("Warning: the brick found does not match the host provided (get_device_info).")
-                    if strict:
-                        s.close()
-                        continue
-                info = list(info)
-                info[0] = str(info[0])
-                info[0] = info[0][2:(len(info[0])-1)]
-                info[0] = info[0].strip('\\x00')
-                if info[0] != name:
-                    if debug:
-                        print("Warning; the brick found does not match the name provided.")
-                    if strict:
-                        s.close()
-                        continue
-                return b
-            except:
+    for s in find_bricks(host, name, silent, method):
+        try:
+            if host and 'host' in dir(s) and s.host != host:
                 if debug:
-                    traceback.print_exc()
-                    print("Failed to connect to possible brick")
+                    print("Warning: the brick found does not match the host provided (s.host).")
+                if strict: continue
+            b = s.connect()
+            info = b.get_device_info()
+            print("info:")
+            print(info)
+            strict = False
+
+            if host and info[1] != host:
+                if debug:
+                    print("Warning: the brick found does not match the host provided (get_device_info).")
+                    print("  host:" + str(host))
+                    print("  info[1]:" + info[1])
+                if strict:
+                    s.close()
+                    continue
+
+            info = list(info)
+            info[0] = str(info[0])
+            info[0] = info[0][2:(len(info[0])-1)]
+            info[0] = info[0].strip('\\x00')
+
+            if info[0] != name:
+                if debug:
+                    print("Warning; the brick found does not match the name provided.")
+                    print("  host:" + str(host))
+                    print("  info[0]:" + info[0])
+                    print("  name:" + str(name))
+                if strict:
+                    s.close()
+                    continue
+
+            return b
+        except:
+            if debug:
+                traceback.print_exc()
+                print("Failed to connect to possible brick")
 
     print("""No brick was found.
     Is the brick turned on?
