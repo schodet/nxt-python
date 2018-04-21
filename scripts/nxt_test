@@ -23,13 +23,8 @@ if '--verbose' in sys.argv or '--debug' in sys.argv:
 
 b = None
 try:
+    print('Find brick...', flush=True)
     b = nxt.locator.find_one_brick(debug=debug)
-    print('Play test sound...')
-    b.play_tone_and_wait(300, 50)
-    b.play_tone_and_wait(400, 50)
-    b.play_tone_and_wait(500, 50)
-    b.play_tone_and_wait(600, 50)
-    print('...done.')
     name, host, signal_strength, user_flash = b.get_device_info()
     print('NXT brick name: %s' % name)
     print('Host address: %s' % host)
@@ -40,6 +35,12 @@ try:
     print('Firmware version %s.%s' % fw_version)
     millivolts = b.get_battery_level()
     print('Battery level %s mV' % millivolts)
+    print('Play test sound...', end='', flush=True)
+    b.play_tone_and_wait(300, 50)
+    b.play_tone_and_wait(400, 50)
+    b.play_tone_and_wait(500, 50)
+    b.play_tone_and_wait(600, 50)
+    print('done')
     b.sock.close()
 except:
     print("Error while running test:")
