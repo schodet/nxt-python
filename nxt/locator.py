@@ -19,8 +19,10 @@ import traceback, configparser, os
 class BrickNotFoundError(Exception):
     pass
 
+
 class NoBackendError(Exception):
     pass
+
 
 class Method():
     """Used to indicate which comm backends should be tried by find_bricks/
@@ -30,6 +32,7 @@ find_one_brick. Any or all can be selected."""
         self.usb = usb
         self.bluetooth = bluetooth
         self.device = device
+
 
 def find_bricks(host=None, name=None, silent=False, method=Method()):
     """Used by find_one_brick to look for bricks ***ADVANCED USERS ONLY***"""
@@ -72,6 +75,7 @@ def find_bricks(host=None, name=None, silent=False, method=Method()):
 
     if methods_available == 0:
         raise NoBackendError("No selected backends are available! Did you install the comm modules?")
+
 
 def find_one_brick(host=None, name=None, silent=False, strict=None, debug=False, method=None, confpath=None):
     """Use to find one brick. The host and name args limit the search to
@@ -152,15 +156,18 @@ name, strict, or method) are provided."""
     try the 'nxt_test' script located in /bin or ~/.local/bin""")
     raise BrickNotFoundError
 
+
 def server_brick(host, port = 2727):
     from . import ipsock
     sock = ipsock.IpSock(host, port)
     return sock.connect()
 
+
 def device_brick(filename):
     from . import devsock
     sock = devsock.find_bricks(filename=filename)
     return sock.connect()
+
 
 def read_config(confpath=None, debug=False):
     conf = configparser.RawConfigParser({'host': None, 'name': None, 'strict': True, 'method': ''})
@@ -170,6 +177,7 @@ def read_config(confpath=None, debug=False):
     if conf.has_section('Brick') == False:
         conf.add_section('Brick')
     return conf
+
 
 def make_config(confpath=None):
     conf = configparser.RawConfigParser()
