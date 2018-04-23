@@ -217,7 +217,7 @@ def get_device_info(opcode):
 
 def _parse_get_device_info(tgram):
     tgram.check_status()
-    name = tgram.parse_string(15).decode('windows-1252').split('\0')[0]
+    name = tgram.parse_string(15).decode('utf-8').split('\0')[0]
     a0 = tgram.parse_u8()
     a1 = tgram.parse_u8()
     a2 = tgram.parse_u8()
