@@ -24,13 +24,10 @@ class NoBackendError(Exception):
 class Method():
     """Used to indicate which comm backends should be tried by find_bricks/
 find_one_brick. Any or all can be selected."""
-    def __init__(self, usb=True, bluetooth=True, fantomusb=False, fantombt=False, device=False):
+    def __init__(self, usb=True, bluetooth=True, device=False):
         #new method options MUST default to False!
         self.usb = usb
         self.bluetooth = bluetooth
-        self.fantom = fantomusb or fantombt
-        self.fantomusb = fantomusb
-        self.fantombt = fantombt
         self.device = device
 
 def find_bricks(host=None, name=None, silent=False, method=Method()):
@@ -72,22 +69,6 @@ def find_bricks(host=None, name=None, silent=False, method=Method()):
         except IOError:
             pass
 
-    if method.fantom:
-        try:
-            from . import fantomsock
-            methods_available += 1
-            if method.fantomusb:
-                usbsocks = fantomsock.find_bricks(host, name, False)
-                for s in usbsocks:
-                    yield s
-            if method.fantombt:
-                btsocks = fantomsock.find_bricks(host, name, True)
-                for s in btsocks:
-                    yield s
-        except ImportError:
-            import sys
-            if not silent: print("Fantom module unavailable, not searching there", file=sys.stderr)
-
     if methods_available == 0:
         raise NoBackendError("No selected backends are available! Did you install the comm modules?")
 
@@ -119,40 +100,39 @@ name, strict, or method) are provided."""
     if not method: method = Method()
     if debug:
         print("Host: %s Name: %s Strict: %s" % (host, name, str(strict)))
-        print("USB: %s BT: %s Fantom: %s FUSB: %s FBT: %s" % (method.usb, method.bluetooth, method.fantom, method.fantomusb, method.fantombt))
+        print("USB: {} BT: {}".format(method.usb, method.bluetooth))
 
         for s in find_bricks(host, name, silent, method):
-        print('Point Reached')
-        try:
-            if host and 'host' in dir(s) and s.host != host:
+            try:
+                if host and 'host' in dir(s) and s.host != host:
+                    if debug:
+                        print("Warning: the brick found does not match the host provided (s.host).")
+                    if strict: continue
+                b = s.connect()
+                info = b.get_device_info()
+                print(info)
+                strict = False
+                if host and info[1] != host:
+                    if debug:
+                        print("Warning: the brick found does not match the host provided (get_device_info).")
+                    if strict:
+                        s.close()
+                        continue
+                info = list(info)
+                info[0] = str(info[0])
+                info[0] = info[0][2:(len(info[0])-1)]
+                info[0] = info[0].strip('\\x00')
+                if info[0] != name:
+                    if debug:
+                        print("Warning; the brick found does not match the name provided.")
+                    if strict:
+                        s.close()
+                        continue
+                return b
+            except:
                 if debug:
-                    print("Warning: the brick found does not match the host provided (s.host).")
-                if strict: continue
-            b = s.connect()
-            info = b.get_device_info()
-            print(info)
-            strict = False
-            if host and info[1] != host:
-                if debug:
-                    print("Warning: the brick found does not match the host provided (get_device_info).")
-                if strict:
-                    s.close()
-                    continue
-            info = list(info)
-            info[0] = str(info[0])
-            info[0] = info[0][2:(len(info[0])-1)]
-            info[0] = info[0].strip('\\x00')
-            if info[0] != name:
-                if debug:
-                    print("Warning; the brick found does not match the name provided.")
-                if strict:
-                    s.close()
-                    continue
-            return b
-        except:
-            if debug:
-                traceback.print_exc()
-                print("Failed to connect to possible brick")
+                    traceback.print_exc()
+                    print("Failed to connect to possible brick")
 
     print("""No brick was found.
     Is the brick turned on?
@@ -195,7 +175,7 @@ def make_config(confpath=None):
     conf.set('Brick', 'name', 'MyNXT')
     conf.set('Brick', 'host', '54:32:59:92:F9:39')
     conf.set('Brick', 'strict', 0)
-    conf.set('Brick', 'method', 'usb=True, bluetooth=False, fantomusb=True')
+    conf.set('Brick', 'method', 'usb=True, bluetooth=False')
     conf.write(open(confpath, 'w'))
     print("The file has been written at %s" % confpath)
     print("The file contains less-than-sane default values to get you started.")
