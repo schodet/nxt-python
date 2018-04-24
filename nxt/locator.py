@@ -2,6 +2,7 @@
 # Copyright (C) 2006, 2007  Douglas P Lau
 # Copyright (C) 2009  Marcus Wanner
 # Copyright (C) 2013  Dave Churchill, Marcus Wanner
+# Copyright (C) 2015, 2016, 2017, 2018 Multiple Authors
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,8 +19,10 @@ import traceback, configparser, os
 class BrickNotFoundError(Exception):
     pass
 
+
 class NoBackendError(Exception):
     pass
+
 
 class Method():
     """Used to indicate which comm backends should be tried by find_bricks/
@@ -29,6 +32,7 @@ find_one_brick. Any or all can be selected."""
         self.usb = usb
         self.bluetooth = bluetooth
         self.device = device
+
 
 def find_bricks(host=None, name=None, silent=False, method=Method()):
     """Used by find_one_brick to look for bricks ***ADVANCED USERS ONLY***"""
@@ -87,7 +91,7 @@ specifies the location of the configuration file which brick location
 information will be read from if no brick location directives (host,
 name, strict, or method) are provided."""
     if debug and silent:
-        silent=False
+        silent = False
         print("silent and debug can't both be set; giving debug priority")
 
     conf = read_config(confpath, debug)
@@ -98,41 +102,53 @@ name, strict, or method) are provided."""
         method	= eval('Method(%s)' % conf.get('Brick', 'method'))
     if not strict: strict = True
     if not method: method = Method()
+
     if debug:
         print("Host: %s Name: %s Strict: %s" % (host, name, str(strict)))
         print("USB: {} BT: {}".format(method.usb, method.bluetooth))
 
-        for s in find_bricks(host, name, silent, method):
-            try:
-                if host and 'host' in dir(s) and s.host != host:
-                    if debug:
-                        print("Warning: the brick found does not match the host provided (s.host).")
-                    if strict: continue
-                b = s.connect()
-                info = b.get_device_info()
-                print(info)
-                strict = False
-                if host and info[1] != host:
-                    if debug:
-                        print("Warning: the brick found does not match the host provided (get_device_info).")
-                    if strict:
-                        s.close()
-                        continue
-                info = list(info)
-                info[0] = str(info[0])
-                info[0] = info[0][2:(len(info[0])-1)]
-                info[0] = info[0].strip('\\x00')
-                if info[0] != name:
-                    if debug:
-                        print("Warning; the brick found does not match the name provided.")
-                    if strict:
-                        s.close()
-                        continue
-                return b
-            except:
+    for s in find_bricks(host, name, silent, method):
+        try:
+            if host and 'host' in dir(s) and s.host != host:
                 if debug:
-                    traceback.print_exc()
-                    print("Failed to connect to possible brick")
+                    print("Warning: the brick found does not match the host provided (s.host).")
+                if strict: continue
+            b = s.connect()
+            info = b.get_device_info()
+            if debug:
+                print("info: " + str(info))
+
+            strict = False
+
+            if host and info[1] != host:
+                if debug:
+                    print("Warning: the brick found does not match the host provided (get_device_info).")
+                    print("  host:" + str(host))
+                    print("  info[1]:" + info[1])
+                if strict:
+                    s.close()
+                    continue
+
+            info = list(info)
+            info[0] = str(info[0])
+            info[0] = info[0][2:(len(info[0])-1)]
+            info[0] = info[0].strip('\\x00')
+
+            if info[0] != name:
+                if debug:
+                    print("Warning; the brick found does not match the name provided.")
+                    print("  host:" + str(host))
+                    print("  info[0]:" + info[0])
+                    print("  name:" + str(name))
+                if strict:
+                    s.close()
+                    continue
+
+            return b
+        except:
+            if debug:
+                traceback.print_exc()
+                print("Failed to connect to possible brick")
 
     print("""No brick was found.
     Is the brick turned on?
@@ -145,6 +161,7 @@ def server_brick(host, port = 2727):
     from . import ipsock
     sock = ipsock.IpSock(host, port)
     return sock.connect()
+
 
 def device_brick(filename):
     from . import devsock
@@ -160,6 +177,7 @@ def read_config(confpath=None, debug=False):
     if conf.has_section('Brick') == False:
         conf.add_section('Brick')
     return conf
+
 
 def make_config(confpath=None):
     conf = configparser.RawConfigParser()

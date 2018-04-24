@@ -18,6 +18,6 @@ setup(
     url='https://github.com/Eelviny/nxt-python/',
     license='Gnu GPL v3',
     packages=['nxt', 'nxt.sensor'],
-    scripts=['scripts/nxt_push', 'scripts/nxt_test', 'scripts/nxt_server'],
+    scripts=['scripts/nxt_push', 'scripts/nxt_test', 'scripts/nxt_server', 'scripts/nxtfilemgr'],
     long_description=ldesc
 )
