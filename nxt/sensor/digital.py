@@ -73,7 +73,7 @@ class BaseDigitalSensor(Sensor):
             sensor = self.get_sensor_info()
             if not sensor in self.compatible_sensors:
                 print(('WARNING: Wrong sensor class chosen for sensor ' +
-                          str(sensor.product_id) + ' on port ' + str(port) + '. ' + """
+                          str(sensor.product_id) + ' on port ' + str(port + 1) + '. ' + """
 You may be using the wrong type of sensor or may have connected the cable
 incorrectly. If you are sure you're using the correct sensor class for the
 sensor, this message is likely in error and you should disregard it and file a
