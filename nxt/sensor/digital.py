@@ -95,7 +95,7 @@ suppressed by passing "check_compatible=False" when creating the sensor object."
         a tuple of values corresponding to the given format.
         """
         value = struct.pack(format, *value)
-        msg = chr(self.I2C_DEV) + chr(address) + value
+        msg = bytes((self.I2C_DEV, address)) + value
         now = time()
         if self.last_poll+self.poll_delay > now:
             diff = now - self.last_poll
@@ -109,7 +109,7 @@ suppressed by passing "check_compatible=False" when creating the sensor object."
         module. See http://docs.python.org/library/struct.html#format-strings
         """
         n_bytes = struct.calcsize(format)
-        msg = chr(self.I2C_DEV) + chr(address)
+        msg = bytes((self.I2C_DEV, address))
         now = time()
         if self.last_poll+self.poll_delay > now:
             diff = now - self.last_poll

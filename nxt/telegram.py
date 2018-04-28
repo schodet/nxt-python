@@ -64,6 +64,9 @@ class Telegram(object):
     def is_reply(self):
         return self.typ == Telegram.TYPE_REPLY
 
+    def add_bytes(self, b):
+        self.pkt.write(pack('%ds' % len(b), b))
+
     def add_string(self, n_bytes, v):
         self.pkt.write(pack('%ds' % n_bytes, v.encode('windows-1252')))
 
