@@ -12,8 +12,6 @@ NXT-Python is a package for controlling a LEGO NXT robot using the Python progra
   * Mac: [LightBlue](http://lightblue.sourceforge.net/)
 * USB Communications:
   * [PyUSB](https://walac.github.io/pyusb/)
-Fantom Communications:
-  * [Pyfantom](http://pyfantom.ni.fr.eu.org/)
 
 ## Installation
 1. Go and grab the latest version from the [releases](https://github.com/Eelviny/nxt-python/releases) page - **the master branch is too unstable to use**
