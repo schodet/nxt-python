@@ -156,7 +156,7 @@ def ls_write(opcode, port, tx_data, rx_bytes):
     tgram.add_u8(port)
     tgram.add_u8(len(tx_data))
     tgram.add_u8(rx_bytes)
-    tgram.add_string(len(tx_data), tx_data)
+    tgram.add_bytes(tx_data)
     return tgram
 
 def ls_read(opcode, port):
