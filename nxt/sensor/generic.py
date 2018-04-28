@@ -151,3 +151,34 @@ class Color20(BaseAnalogSensor):
         return self.get_input_values().scaled_value
 
     get_sample = get_color
+
+
+class Temperature(BaseDigitalSensor):
+    """Object for LEGO MINDSTORMS NXT Temperature sensors"""
+    # This is actually a TI TMP275 chip: http://www.ti.com/product/tmp275
+    I2C_DEV = 0x98
+    I2C_ADDRESS = {'raw_value': (0x00, '>h')}
+
+    def __init__(self, brick, port):
+        # This sensor does not follow the convention of having version/vendor/
+        # product at I2C registers 0x00/0x08/0x10, so check_compatible is
+        # always False
+        super(Temperature, self).__init__(brick, port, False)
+
+    def _get_raw_value(self):
+        """Returns raw unscaled value"""
+        # this is a 12-bit value
+        return self.read_value('raw_value')[0] >> 4
+
+    def get_deg_c(self):
+        """Returns the temperature in degrees C"""
+        v = self._get_raw_value()
+        # technically, 16 should be 0x7ff/128 but 16 is close enough
+        return round(v / 16, 1)
+
+    def get_deg_f(self):
+        v = self._get_raw_value()
+        # technically, 16 should be 0x7ff/128 but 16 is close enough
+        return round(9 / 5 * v / 16 + 32, 1)
+
+    get_sample = get_deg_c
