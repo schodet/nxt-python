@@ -71,7 +71,8 @@ class Telegram(object):
         self.pkt.write(pack('%ds' % n_bytes, v.encode('windows-1252')))
 
     def add_filename(self, fname):
-        self.pkt.write(pack('20s', fname.encode('utf-8')))
+      self.pkt.write(pack('20s', fname.encode('windows-1252')))
+
 
     def add_s8(self, v):
         self.pkt.write(pack('<b', v))
