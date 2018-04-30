@@ -99,10 +99,12 @@ name, strict, or method) are provided."""
         host	= conf.get('Brick', 'host')
         name	= conf.get('Brick', 'name')
         strict	= bool(int(conf.get('Brick', 'strict')))
-        methods = map(lambda x: x.strip().split('='),
-                      conf.get('Brick', 'method').split(','))
-        method = Method(**{k: v == 'True' for k, v in methods
-                           if k in ('bluetooth', 'usb', 'device')})
+        method_value = conf.get('Brick', 'method')
+        if method_value:
+            methods = map(lambda x: x.strip().split('='),
+                          method_value.split(','))
+            method = Method(**{k: v == 'True' for k, v in methods
+                               if k in ('bluetooth', 'usb', 'device')})
     if not strict: strict = True
     if not method: method = Method()
 
