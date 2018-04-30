@@ -24,10 +24,10 @@ class Touch(BaseAnalogSensor):
     def __init__(self, brick, port):
         super(Touch, self).__init__(brick, port)
         self.set_input_mode(Type.SWITCH, Mode.BOOLEAN)
-    
+
     def is_pressed(self):
         return bool(self.get_input_values().scaled_value)
-    
+
     get_sample = is_pressed
 
 
@@ -46,8 +46,8 @@ class Light(BaseAnalogSensor):
         self.set_input_mode(type_, Mode.RAW)
 
     def get_lightness(self):
-        return self.get_input_values().scaled_value	
-    
+        return self.get_input_values().scaled_value
+
     get_sample = get_lightness
 
 
@@ -64,10 +64,10 @@ class Sound(BaseAnalogSensor):
         else:
             type_ = Type.SOUND_DB
         self.set_input_mode(type_, Mode.RAW)
-    
+
     def get_loudness(self):
         return self.get_input_values().scaled_value
-    
+
     get_sample = get_loudness
 
 
@@ -82,7 +82,7 @@ class Ultrasonic(BaseDigitalSensor):
         'actual_scale_factor': (0x51, 'B'),
         'actual_scale_divisor': (0x52, 'B'),
     })
-    
+
     class Commands:
         'These are for passing to command()'
         OFF = 0x00
@@ -90,7 +90,7 @@ class Ultrasonic(BaseDigitalSensor):
         CONTINUOUS_MEASUREMENT = 0x02
         EVENT_CAPTURE = 0x03 #Optimize results when other Ultrasonic sensors running
         REQUEST_WARM_RESET = 0x04
-    
+
     def __init__(self, brick, port, check_compatible=True):
         super(Ultrasonic, self).__init__(brick, port, check_compatible)
         self.set_input_mode(Type.LOW_SPEED_9V, Mode.RAW)
@@ -98,16 +98,15 @@ class Ultrasonic(BaseDigitalSensor):
     def get_distance(self):
         'Function to get data from the ultrasonic sensor'
         return self.read_value('measurement_byte_0')[0]
-    
+
     get_sample = get_distance
-            
     def get_measurement_units(self):
         return self.read_value('measurement_units')[0].decode('windows-1252').split('\0')[0]
 
     def get_all_measurements(self):
         "Returns all the past readings in measurement_byte_0 through 7"
         return self.read_value('measurements')
-    
+
     def get_measurement_no(self, number):
         "Returns measurement_byte_number"
         if not 0 <= number < 8:
@@ -117,11 +116,11 @@ class Ultrasonic(BaseDigitalSensor):
 
     def command(self, command):
         self.write_value('command', (command, ))
-    
+
     def get_interval(self):
         'Get the sample interval for continuous measurement mode -- Unknown units'
         return self.read_value('continuous_measurement_interval')
-    
+
     def set_interval(self, interval):
         """Set the sample interval for continuous measurement mode.
 Unknown units; default is 1"""
@@ -146,9 +145,40 @@ class Color20(BaseAnalogSensor):
     def get_reflected_light(self, color):
         self.set_light_color(color)
         return self.get_input_values().scaled_value
-    
+
     def get_color(self):
         self.get_reflected_light(Type.COLORFULL)
         return self.get_input_values().scaled_value
-    
+
     get_sample = get_color
+
+
+class Temperature(BaseDigitalSensor):
+    """Object for LEGO MINDSTORMS NXT Temperature sensors"""
+    # This is actually a TI TMP275 chip: http://www.ti.com/product/tmp275
+    I2C_DEV = 0x98
+    I2C_ADDRESS = {'raw_value': (0x00, '>h')}
+
+    def __init__(self, brick, port):
+        # This sensor does not follow the convention of having version/vendor/
+        # product at I2C registers 0x00/0x08/0x10, so check_compatible is
+        # always False
+        super(Temperature, self).__init__(brick, port, False)
+
+    def _get_raw_value(self):
+        """Returns raw unscaled value"""
+        # this is a 12-bit value
+        return self.read_value('raw_value')[0] >> 4
+
+    def get_deg_c(self):
+        """Returns the temperature in degrees C"""
+        v = self._get_raw_value()
+        # technically, 16 should be 0x7ff/128 but 16 is close enough
+        return round(v / 16, 1)
+
+    def get_deg_f(self):
+        v = self._get_raw_value()
+        # technically, 16 should be 0x7ff/128 but 16 is close enough
+        return round(9 / 5 * v / 16 + 32, 1)
+
+    get_sample = get_deg_c

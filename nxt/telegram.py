@@ -64,12 +64,15 @@ class Telegram(object):
     def is_reply(self):
         return self.typ == Telegram.TYPE_REPLY
 
+    def add_bytes(self, b):
+        self.pkt.write(pack('%ds' % len(b), b))
+
     def add_string(self, n_bytes, v):
         self.pkt.write(pack('%ds' % n_bytes, v.encode('windows-1252')))
 
     def add_filename(self, fname):
-        #self.pkt.write(pack('20s', fname))
-        self.pkt.write(pack('20s', fname.encode('windows-1252')))
+      self.pkt.write(pack('20s', fname.encode('windows-1252')))
+
 
     def add_s8(self, v):
         self.pkt.write(pack('<b', v))

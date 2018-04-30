@@ -286,9 +286,10 @@ class NXT_FileMgr(Gtk.Window):
                 connection_type = str(self.brick.sock)
                 brick_name_str = brick_name_b.decode('windows-1252')
                 print("brick_name_b = {0}, brick_name_str = {1}".format(brick_name_b, brick_name_str))
+
                 if DEBUG:
-                    print("Brick Info: ", connection_type, brick_name_str, brick_hostid, brick_signal_strength, fw_version, brick_user_flash)
-                self.brick_info_str = "%s ==> %s [%s]\tFirmware: v%s.%s\tFreespace: %s" % (connection_type, brick_name_str, brick_hostid, fw_version[0], fw_version[1], brick_user_flash)
+                    print("Brick Info: ", connection_type, brick_name, brick_hostid, brick_signal_strength, fw_version, brick_user_flash)
+                self.brick_info_str = "%s ==> %s [%s]\tFirmware: v%s.%s\tFreespace: %s" % (connection_type, brick_name, brick_hostid, fw_version[0], fw_version[1], brick_user_flash)
             else:
                 print("Invalid Protocol version! Closing connection.")
                 self.do_housekeeping()

@@ -25,7 +25,7 @@ class SensorInfo:
         self.version = version
         self.product_id = product_id
         self.sensor_type = sensor_type
-    
+
     def clarifybinary(self, instr, label):
         outstr = ''
         outstr += (label + ': `' + instr + '`\n')
@@ -33,7 +33,7 @@ class SensorInfo:
             outstr += (hex(ord(char))+', ')
         outstr += ('\n')
         return outstr
-    
+
     def __str__(self):
         outstr = ''
         outstr += (self.clarifybinary(str(self.version), 'Version'))
@@ -55,7 +55,7 @@ class BaseDigitalSensor(Sensor):
         'factory_scale_factor': (0x12, 'B'),
         'factory_scale_divisor': (0x13, 'B'),
     }
-    
+
     def __init__(self, brick, port, check_compatible=True):
         """Creates a BaseDigitalSensor. If check_compatible is True, queries
         the sensor for its name, and if a wrong sensor class was used, prints
@@ -72,8 +72,8 @@ class BaseDigitalSensor(Sensor):
         if check_compatible:
             sensor = self.get_sensor_info()
             if not sensor in self.compatible_sensors:
-                print(('WARNING: Wrong sensor class chosen for sensor ' + 
-                          str(sensor.product_id) + ' on port ' + str(port) + '. ' + """
+                print(('WARNING: Wrong sensor class chosen for sensor ' +
+                          str(sensor.product_id) + ' on port ' + str(port + 1) + '. ' + """
 You may be using the wrong type of sensor or may have connected the cable
 incorrectly. If you are sure you're using the correct sensor class for the
 sensor, this message is likely in error and you should disregard it and file a
@@ -95,7 +95,7 @@ suppressed by passing "check_compatible=False" when creating the sensor object."
         a tuple of values corresponding to the given format.
         """
         value = struct.pack(format, *value)
-        msg = chr(self.I2C_DEV) + chr(address) + value
+        msg = bytes((self.I2C_DEV, address)) + value
         now = time()
         if self.last_poll+self.poll_delay > now:
             diff = now - self.last_poll
@@ -109,7 +109,7 @@ suppressed by passing "check_compatible=False" when creating the sensor object."
         module. See http://docs.python.org/library/struct.html#format-strings
         """
         n_bytes = struct.calcsize(format)
-        msg = chr(self.I2C_DEV) + chr(address)
+        msg = bytes((self.I2C_DEV, address))
         now = time()
         if self.last_poll+self.poll_delay > now:
             diff = now - self.last_poll
@@ -125,7 +125,7 @@ suppressed by passing "check_compatible=False" when creating the sensor object."
             raise I2CError('Read failure: Not enough bytes')
         data = struct.unpack(format, data[-n_bytes:])
         return data
-        
+
     def read_value(self, name):
         """Reads a value from the sensor. Name must be a string found in
         self.I2C_ADDRESS dictionary. Entries in self.I2C_ADDRESS are in the
@@ -150,13 +150,13 @@ suppressed by passing "check_compatible=False" when creating the sensor object."
         """
         address, fmt = self.I2C_ADDRESS[name]
         self._i2c_command(address, value, fmt)
-    
+
     def get_sensor_info(self):
         version = self.read_value('version')[0].decode('windows-1252').split('\0')[0]
         product_id = self.read_value('product_id')[0].decode('windows-1252').split('\0')[0]
         sensor_type = self.read_value('sensor_type')[0].decode('windows-1252').split('\0')[0]
         return SensorInfo(version, product_id, sensor_type)
-        
+
     @classmethod
     def add_compatible_sensor(cls, version, product_id, sensor_type):
         """Adds an entry in the compatibility table for the sensor. If version
@@ -171,8 +171,8 @@ suppressed by passing "check_compatible=False" when creating the sensor object."
             cls.compatible_sensors.append(SCompatibility(version, product_id,
                                                                             sensor_type))
             add_mapping(cls, version, product_id, sensor_type)
-            
-            
+
+
 class SCompatibility(SensorInfo):
     """An object that helps manage the sensor mappings"""
     def __eq__(self, other):
@@ -194,7 +194,7 @@ def add_mapping(cls, version, product_id, sensor_type):
     if product_id not in sensor_mappings:
         sensor_mappings[product_id] = {}
     models = sensor_mappings[product_id]
-       
+
     if sensor_type is None:
         if sensor_type in models:
             raise ValueError('Already registered!')
@@ -204,7 +204,7 @@ def add_mapping(cls, version, product_id, sensor_type):
     if sensor_type not in models:
         models[sensor_type] = {}
     versions = models[sensor_type]
-    
+
     if version in versions:
         raise ValueError('Already registered!')
     else:
