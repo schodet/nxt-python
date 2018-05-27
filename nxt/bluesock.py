@@ -25,10 +25,10 @@ class BlueSock(object):
 
     type = 'bluetooth'
 
-    def __init__(self, host):
+    def __init__(self, host, debug=False):
         self.host = host
         self.sock = None
-        self.debug = False
+        self.debug = debug
 
     def __str__(self):
         return 'Bluetooth (%s)' % self.host
