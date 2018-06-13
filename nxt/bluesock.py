@@ -25,10 +25,10 @@ class BlueSock(object):
 
     type = 'bluetooth'
 
-    def __init__(self, host):
+    def __init__(self, host, debug=False):
         self.host = host
         self.sock = None
-        self.debug = False
+        self.debug = debug
 
     def __str__(self):
         return 'Bluetooth (%s)' % self.host
@@ -64,13 +64,13 @@ class BlueSock(object):
 
     def recv(self):
         data = self.sock.recv(2)
-        l0 = ord(data[0])
-        l1 = ord(data[1])
+        l0 = data[0]
+        l1 = data[1]
         plen = l0 + (l1 << 8)
         data = self.sock.recv(plen)
         if self.debug:
             print('Recv:', end=' ')
-            print(':'.join('%02x' % ord(c) for c in data))
+            print(':'.join('%02x' % c for c in data))
         return data
 
 def _check_brick(arg, value):

@@ -73,7 +73,7 @@ class BaseDigitalSensor(Sensor):
             sensor = self.get_sensor_info()
             if not sensor in self.compatible_sensors:
                 print(('WARNING: Wrong sensor class chosen for sensor ' +
-                          str(sensor.product_id) + ' on port ' + str(port) + '. ' + """
+                          str(sensor.product_id) + ' on port ' + str(port + 1) + '. ' + """
 You may be using the wrong type of sensor or may have connected the cable
 incorrectly. If you are sure you're using the correct sensor class for the
 sensor, this message is likely in error and you should disregard it and file a
@@ -95,7 +95,7 @@ suppressed by passing "check_compatible=False" when creating the sensor object."
         a tuple of values corresponding to the given format.
         """
         value = struct.pack(format, *value)
-        msg = chr(self.I2C_DEV) + chr(address) + value
+        msg = bytes((self.I2C_DEV, address)) + value
         now = time()
         if self.last_poll+self.poll_delay > now:
             diff = now - self.last_poll
@@ -109,7 +109,7 @@ suppressed by passing "check_compatible=False" when creating the sensor object."
         module. See http://docs.python.org/library/struct.html#format-strings
         """
         n_bytes = struct.calcsize(format)
-        msg = chr(self.I2C_DEV) + chr(address)
+        msg = bytes((self.I2C_DEV, address))
         now = time()
         if self.last_poll+self.poll_delay > now:
             diff = now - self.last_poll
