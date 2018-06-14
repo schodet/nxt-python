@@ -253,7 +253,7 @@ class NXT_FileMgr(Gtk.Window):
         self.brick = None
         self.selected_file = None
 
-    def	reload_filelist(self, widget):
+    def reload_filelist(self, widget):
         if DEBUG:
             print("Reloading filelist...")
         if self.brick != None:
@@ -284,10 +284,9 @@ class NXT_FileMgr(Gtk.Window):
             if prot_version == PROTOCOL_VER:
                 brick_name_b, brick_hostid, brick_signal_strength, brick_user_flash = self.brick.get_device_info()
                 connection_type = str(self.brick.sock)
-                brick_name_str = brick_name_b.decode('windows-1252')
-                print("brick_name_b = {0}, brick_name_str = {1}".format(brick_name_b, brick_name_str))
-
+                brick_name_str = brick_name_b.decode('windows-1252').strip('\00')
                 if DEBUG:
+                    print("brick_name_b = {0}, brick_name_str = {1}".format(brick_name_b, brick_name_str))
                     print("Brick Info: ", connection_type, brick_name_str, brick_hostid, brick_signal_strength, fw_version, brick_user_flash)
                 self.brick_info_str = "%s ==> %s [%s]\tFirmware: v%s.%s\tFreespace: %s" % (connection_type, brick_name_str, brick_hostid, fw_version[0], fw_version[1], brick_user_flash)
             else:
@@ -357,7 +356,7 @@ class NXT_FileMgr(Gtk.Window):
         if DEBUG:
             print("About box closed.")
 
-    def	execute_file(self, widget):
+    def execute_file(self, widget):
         if self.selected_file != None:
             name = ''
             ext = ''
@@ -381,7 +380,7 @@ class NXT_FileMgr(Gtk.Window):
                 self.do_housekeeping()
                 self.update_view()
 
-    def	remove_file(self, widget):
+    def remove_file(self, widget):
         if self.selected_file != None:
             warning_str = "Do you really want to remove %s?" % self.selected_file
             if DEBUG:
@@ -406,7 +405,7 @@ class NXT_FileMgr(Gtk.Window):
                 if DEBUG:
                     print("CANCEL Delete File")
 
-    def	add_file(self, widget):
+    def add_file(self, widget):
         if self.brick != None:
             if DEBUG:
                 print("Adding file...")
@@ -430,7 +429,7 @@ if __name__ == '__main__':
 
     if '--help' in arguments:
         print("nxt_filemgr -- Simple GUI to manage files on a LEGO Mindstorms NXT\n\
-Usage:	nxt_filemgr [--host <macaddress>]")
+Usage:  nxt_filemgr [--host <macaddress>]")
         exit(0)
 
     win = NXT_FileMgr()
