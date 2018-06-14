@@ -16,6 +16,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+PROGNAME = "nxtfilemgr"
 VERSION="1.02"
 CONNECT_STRING = "Connect to NXT"
 PROTOCOL_VER = (1, 124)
@@ -428,8 +429,8 @@ if __name__ == '__main__':
         DEBUG = True
 
     if '--help' in arguments:
-        print("nxt_filemgr -- Simple GUI to manage files on a LEGO Mindstorms NXT\n\
-Usage:  nxt_filemgr [--host <macaddress>]")
+        print("%s -- Simple GUI to manage files on a LEGO Mindstorms NXT\n\
+Usage:  %s [--host <macaddress>]" % (PROGNAME, PROGNAME))
         exit(0)
 
     win = NXT_FileMgr()
