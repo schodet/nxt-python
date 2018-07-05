@@ -1,10 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # nxt_filemgr program -- Updated from nxt_filer
-# Based on: nxt_filer program -- Simple GUI to manage files on a LEGO Mindstorms NXT
+# Based on: nxt_filer program -- Simple GUI to manage files on a LEGO MINDSTORMS NXT
 # Copyright (C) 2006  Douglas P Lau
 # Copyright (C) 2010  rhn
 # Copyright (C) 2017  TC Wan
+# Copyright (C) 2018 David Lechner <david@lechnology.com>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,9 +17,11 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-VERSION="1.02"
-CONNECT_STRING = "Connect to NXT"
+VERSION = "2.0"
 PROTOCOL_VER = (1, 124)
+
+COPYRIGHT = "2006-2018"
+AUTHORS = ["Douglas P. Lau", "rhn", "TC Wan", "David Lechner"]
 
 FILENAME_MINWIDTH = 100
 FILENAME_MAXWIDTH = 300
@@ -28,20 +31,21 @@ FILESIZE_MAXWIDTH = 120
 FILESIZE_WIDTH = 80
 FILELIST_HEIGHT = 300
 
-### WIN_WIDTH = 400
-### WIN_HEIGHT = 300
-WIN_WIDTH = FILENAME_MAXWIDTH + FILESIZE_MAXWIDTH
-WIN_HEIGHT = FILELIST_HEIGHT
+WIN_WIDTH = 800
+WIN_HEIGHT = 600
 
 FILELIST_MINWIDTH = 1.0 * WIN_WIDTH
 FILELIST_MAXWIDTH = 1.0 * WIN_WIDTH
 
-# Use Gtk+ 3.x
 import gi
-gi.require_version("Gtk", "3.0")
-from gi.repository import GObject
-from gi.repository import Gtk
+gi.require_version("GLib", "2.0")
 from gi.repository import GLib
+gi.require_version("GObject", "2.0")
+from gi.repository import GObject
+gi.require_version("Gio", "2.0")
+from gi.repository import Gio
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
 
 import os.path
 import urllib
@@ -155,30 +159,34 @@ class NXTListing(Gtk.ListStore):
             self.append((fname, str(size)))
 
 
-class NXT_FileMgr(Gtk.Window):
- ### FIXME
- ###   TARGETS = Gtk.target_list_add_uri_targets()
+class ApplicationWindow(Gtk.ApplicationWindow):
+    # FIXME
+    # TARGETS = Gtk.target_list_add_uri_targets()
 
-    def __init__(self):
-        Gtk.Window.__init__(self)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.set_default_size(WIN_WIDTH, WIN_HEIGHT)
         self.set_resizable(False)
         self.set_border_width(6)
         self.brick = None
         self.selected_file = None
-        self.brick_info_str = CONNECT_STRING
+        self.brick_info_str = "Disconnected"
         self.nxt_filelist = NXTListing()
 
-        h = Gtk.Grid()
-        h.set_orientation(Gtk.Orientation.VERTICAL)
-        self.brick_button = Gtk.Button(label=self.brick_info_str)
+        self.status_bar = Gtk.Statusbar()
+        self.connect_status_id = self.status_bar.get_context_id('connect')
+        self.connect_msg_id = None
+
+        h = Gtk.Box.new(Gtk.Orientation.VERTICAL, 6)
+        self.brick_button = Gtk.Button(label="Connect")
         self.brick_button.connect("clicked", self.reload_filelist)
-        h.add(self.brick_button)
-        h.add(self.make_file_panel())
-        h.add(self.make_button_panel())
+        h.pack_start(self.brick_button, False, True, 0)
+        h.pack_start(self.make_file_panel(), True, True, 0)
+        h.pack_start(self.make_button_panel(), False, True, 0)
+        h.pack_end(self.status_bar, False, True, 0)
         self.add(h)
-        self.connect('destroy', self.quit)
         self.reload_filelist(self.nxt_filelist)
+        self.show_all()
 
     def make_file_view(self):
         tv = Gtk.TreeView()
@@ -220,7 +228,6 @@ class NXT_FileMgr(Gtk.Window):
 
         s = Gtk.ScrolledWindow()
         s.set_min_content_width(FILELIST_MINWIDTH)
-        s.set_max_content_width(min(FILENAME_MAXWIDTH+FILESIZE_MAXWIDTH, FILELIST_MAXWIDTH))
         s.set_min_content_height(FILELIST_HEIGHT)
         s.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
         s.add(tv)
@@ -230,10 +237,6 @@ class NXT_FileMgr(Gtk.Window):
 
     def make_button_panel(self):
         vb = Gtk.Box(Gtk.Orientation.HORIZONTAL, 0)
-
-        self.about_button = Gtk.Button(label="?")
-        self.about_button.connect("clicked", self.about)
-        vb.pack_start(self.about_button, True, True, 10)
 
         self.delete_button = Gtk.Button(label="Remove")
         self.delete_button.connect("clicked", self.remove_file)
@@ -253,58 +256,62 @@ class NXT_FileMgr(Gtk.Window):
         self.brick = None
         self.selected_file = None
 
-    def	reload_filelist(self, widget):
+    def reload_filelist(self, widget):
         if DEBUG:
             print("Reloading filelist...")
-        if self.brick != None:
+        if self.brick:
             self.do_housekeeping()
         try:
-            self.brick = nxt.locator.find_one_brick(keyword_arguments.get('host',None))
+            # FIXME: use --host command line option here instead of None
+            self.brick = nxt.locator.find_one_brick(None)
         except BrickNotFoundError:
             print("Brick not found!")
             sys.stdout.flush()
         except USBError:
             usb_error_dialog()
             self.do_housekeeping()
-        if self.brick != None:
+        if self.brick:
             self.update_view()
 
     def update_view(self):
         self.get_brick_info()
-        self.brick_button.set_label(self.brick_info_str)
+        if (self.connect_msg_id):
+            self.status_bar.remove(self.connect_status_id, self.connect_msg_id)
+        self.connect_msg_id = self.status_bar.push(self.connect_status_id,
+                                                   self.brick_info_str)
         self.nxt_filelist.clear()
-        if self.brick != None:
+        if self.brick:
             self.nxt_filelist.populate(self.brick, '*.*')
 
     def get_brick_info(self):
-        if self.brick != None:
+        if self.brick:
             print("Reading from NXT..."),
             prot_version, fw_version = self.brick.get_firmware_version()
             print("Protocol version: %s.%s" % prot_version)
             if prot_version == PROTOCOL_VER:
-                brick_name_b, brick_hostid, brick_signal_strength, brick_user_flash = self.brick.get_device_info()
+                brick_name, brick_hostid, brick_signal_strength, brick_user_flash = self.brick.get_device_info()
                 connection_type = str(self.brick.sock)
-                brick_name_str = brick_name_b.decode('windows-1252')
-                print("brick_name_b = {0}, brick_name_str = {1}".format(brick_name_b, brick_name_str))
 
                 if DEBUG:
                     print("Brick Info: ", connection_type, brick_name, brick_hostid, brick_signal_strength, fw_version, brick_user_flash)
-                self.brick_info_str = "%s ==> %s [%s]\tFirmware: v%s.%s\tFreespace: %s" % (connection_type, brick_name, brick_hostid, fw_version[0], fw_version[1], brick_user_flash)
+
+                self.brick_info_str = "Connected via %s to %s [%s]\tFirmware: v%s.%s\tFree space: %s" % (
+                    connection_type, brick_name, brick_hostid, fw_version[0], fw_version[1], brick_user_flash)
             else:
                 print("Invalid Protocol version! Closing connection.")
                 self.do_housekeeping()
         else:
-            self.brick_info_str = CONNECT_STRING
+            self.brick_info_str = "Disconnected"
         sys.stdout.flush()
 
     def choose_files(self):
-        dialog = Gtk.FileChooserNative();
+        dialog = Gtk.FileChooserNative()
         dialog.new("Add File", self, Gtk.FileChooserAction.OPEN, None, None)
         dialog.set_transient_for(self)
         dialog.set_select_multiple(False)
         res = dialog.run()
         if res == Gtk.ResponseType.ACCEPT:
-            ### Handle single file download for now
+            # Handle single file download for now
             uri = dialog.get_uri()
             if DEBUG:
                 print("You selected", uri)
@@ -321,7 +328,7 @@ class NXT_FileMgr(Gtk.Window):
 
     def on_tree_selection_changed(self, selection):
         model, treeiter = selection.get_selected()
-        if treeiter != None:
+        if treeiter:
             if DEBUG:
                 print("You selected %s (%s bytes)" % (model[treeiter][0], model[treeiter][1]))
             self.selected_file = model[treeiter][0]
@@ -329,7 +336,7 @@ class NXT_FileMgr(Gtk.Window):
             self.selected_file = None
 
     def drag_data_get_data(self, treeview, context, selection, target_id,
-        etime):
+                           etime):
         treeselection = treeview.get_selection()
         model, iter = treeselection.get_selected()
         data = model.get_value(iter, 0)
@@ -337,7 +344,7 @@ class NXT_FileMgr(Gtk.Window):
         selection.set(selection.target, 8, data)
 
     def drag_data_received_data(self, treeview, context, x, y, selection,
-        info, etime):
+                                info, etime):
         if context.action == Gtk.gdk.ACTION_COPY:
             write_files(self.brick, selection.data)
         # FIXME: update file listing after writing files
@@ -346,19 +353,8 @@ class NXT_FileMgr(Gtk.Window):
     def row_activated_action(self, treeview, context, selection):
         self.execute_file(selection)
 
-    def about(self, widget):
-        about_str ="\tVersion %s\n\n\n\tBased on nxt_filer\n\n\t(c) 2006-2017, by Douglas P. Lau, rhn and TC Wan\n\n\
-\tReleased under GPL v2 or later." % VERSION
-        dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO,
-            Gtk.ButtonsType.OK, "NXT File Manager")
-        dialog.format_secondary_text(about_str)
-        dialog.run()
-        dialog.destroy()
-        if DEBUG:
-            print("About box closed.")
-
-    def	execute_file(self, widget):
-        if self.selected_file != None:
+    def execute_file(self, widget):
+        if self.selected_file:
             name = ''
             ext = ''
             if DEBUG:
@@ -381,8 +377,8 @@ class NXT_FileMgr(Gtk.Window):
                 self.do_housekeeping()
                 self.update_view()
 
-    def	remove_file(self, widget):
-        if self.selected_file != None:
+    def remove_file(self, widget):
+        if self.selected_file:
             warning_str = "Do you really want to remove %s?" % self.selected_file
             if DEBUG:
                 print("Removing file...%s" % self.selected_file)
@@ -406,33 +402,105 @@ class NXT_FileMgr(Gtk.Window):
                 if DEBUG:
                     print("CANCEL Delete File")
 
-    def	add_file(self, widget):
-        if self.brick != None:
+    def add_file(self, widget):
+        if self.brick:
             if DEBUG:
                 print("Adding file...")
             self.choose_files()
             self.selected_file = None
             self.update_view()
 
-    def quit(self, w):
-        'Quit the program'
-        if self.brick != None:
-            self.do_housekeeping()
-        Gtk.main_quit()
+
+class AboutDialog(Gtk.AboutDialog):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.set_version(VERSION)
+        self.set_copyright(COPYRIGHT)
+        self.set_comments("LEGO® MINDSTORMS NXT File Manager")
+        self.set_license("Released under GPL v2 or later")
+        self.set_website("https://github.com/Eelviny/nxt-python/wiki")
+        self.set_website_label("Wiki")
+        self.set_authors(AUTHORS)
+
+        markup = "<span size='x-small'>{}</span>".format(
+            "LEGO® is a trademark of the LEGO Group of companies which does not sponsor, authorize or endorse this software.")
+        disclaimer = Gtk.Label()
+        disclaimer.set_line_wrap(True)
+        disclaimer.set_max_width_chars(10)
+        disclaimer.set_markup(markup)
+        disclaimer.show()
+        self.get_content_area().pack_end(disclaimer, False, False, 6)
+
+    def do_response(self, response):
+        self.close()
+
+
+class Application(Gtk.Application):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args,
+                         flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE,
+                         **kwargs)
+        self.window = None
+
+        self.set_option_context_summary(
+                "Simple GUI to manage files on a LEGO MINDSTORMS NXT")
+        self.add_main_option("host", ord("h"), GLib.OptionFlags.NONE,
+                             GLib.OptionArg.STRING, "Bluetooth address",
+                             "<bdaddr>")
+        self.add_main_option("verbose", ord("v"), GLib.OptionFlags.NONE,
+                             GLib.OptionArg.NONE, "Enable verbose mode", None)
+
+    def do_startup(self):
+        Gtk.Application.do_startup(self)
+
+        action = Gio.SimpleAction.new("about", None)
+        action.connect("activate", self.on_about)
+        self.add_action(action)
+
+        action = Gio.SimpleAction.new("quit", None)
+        action.connect("activate", self.on_quit)
+        self.add_action(action)
+
+        # on macOS, the menu is created automatically, but still uses the
+        # actions above
+        if app.prefers_app_menu():
+            menu1 = Gio.Menu.new()
+            menu1.append("_About", "app.about")
+
+            menu2 = Gio.Menu.new()
+            menu2.append("_Quit", "app.quit")
+            app.set_accels_for_action("app.quit", ["<Control>q"])
+
+            appMenu = Gio.Menu.new()
+            appMenu.append_section(None, menu1)
+            appMenu.append_section(None, menu2)
+            app.set_app_menu(appMenu)
+
+    def do_activate(self):
+        if not self.window:
+            self.window = ApplicationWindow(application=self)
+        self.window.present()
+
+    def do_command_line(self, command_line):
+        options = command_line.get_options_dict()
+
+        if options.contains("verbose"):
+            print("Verbose mode enabled")
+            DEBUG = True
+
+        self.activate()
+        return 0
+
+    def on_about(self, action, param):
+        about_dialog = AboutDialog(transient_for=self.window, modal=True)
+        about_dialog.present()
+
+    def on_quit(self, action, param):
+        self.quit()
+
 
 if __name__ == '__main__':
-    # FIXME: add dialog with progress bar when scanning bluetooth devices
-    arguments, keyword_arguments = parse_command_line_arguments(sys.argv)
-
-    if '-v' in arguments:
-        print("Enable Verbose Mode")
-        DEBUG = True
-
-    if '--help' in arguments:
-        print("nxt_filemgr -- Simple GUI to manage files on a LEGO Mindstorms NXT\n\
-Usage:	nxt_filemgr [--host <macaddress>]")
-        exit(0)
-
-    win = NXT_FileMgr()
-    win.show_all()
-    Gtk.main()
+    GLib.set_prgname('nxt_filer')
+    GLib.set_application_name("NXT File Manager")
+    app = Application()
+    app.run(sys.argv)
