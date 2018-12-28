@@ -1,4 +1,4 @@
-**CALL TO ACTION: I've noticed a sudden increase in interest for this project (I have no idea why!) but I simply don't have time to keep up with development. If you're interested in developing on this project, ask me and I'll give you access to the repository!**
+**MAINTAINER NEEDED: I am not able to continue working on this repository. Please contact me if you are interested in taking over this project.**
 
 # ![NXT-Python](https://cdn.rawgit.com/Eelviny/nxt-python/master/logo.svg)
 **DISCLAIMER: The NXT-Python v3 implementation is incomplete. Development is not active due to lack of interest. Find the latest stable version for Python2 on the [releases](https://github.com/Eelviny/nxt-python/releases) page. Pull requests and improvements are very welcome!**
