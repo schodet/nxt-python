@@ -39,7 +39,7 @@ class USBSock(object):
         self.debug = False
 
     def __str__(self):
-        return 'USB (%s)' % (self.device.filename)
+        return 'USB (%s)' % str(self.device)
 
     def connect(self):
         'Use to connect to NXT.'
