@@ -1,6 +1,6 @@
 **MAINTAINER NEEDED: I am not able to continue working on this repository. Please contact me if you are interested in taking over this project.**
 
-# ![NXT-Python](https://cdn.rawgit.com/Eelviny/nxt-python/master/logo.svg)
+# ![NXT-Python](https://cdn.jsdelivr.net/gh/Eelviny/nxt-python@master/logo.svg)
 **DISCLAIMER: The NXT-Python v3 implementation is incomplete. Development is not active due to lack of interest. Find the latest stable version for Python2 on the [releases](https://github.com/Eelviny/nxt-python/releases) page. Pull requests and improvements are very welcome!**
 
 NXT-Python is a package for controlling a LEGO NXT robot using the Python programming language. It can communicate using either USB or Bluetooth. It is based on Marcus Wanner's work ending in 2013, which in turn is based on NXT_Python, where releases halted in May 2007.
