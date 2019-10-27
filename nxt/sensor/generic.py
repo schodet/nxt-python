@@ -37,6 +37,7 @@ class Light(BaseAnalogSensor):
     """
     def __init__(self, brick, port, illuminated=True):
         super(Light, self).__init__(brick, port)
+        self.set_illuminated(illuminated)
 
     def set_illuminated(self, active):
         if active:
