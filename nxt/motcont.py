@@ -37,7 +37,7 @@ def interval(delay, lastrun):
     now = time.time()
     if lastrun+delay > now:
         diff = now - lastrun
-        time.sleep(0.010 - diff)
+        time.sleep(delay - diff)
 
 class MotCont():
     '''
@@ -107,10 +107,10 @@ Sends an "ISMOTORREADY" to MotorControl and returns the reply.'''
             self.brick.message_write(1, '3'+str(port))
             time.sleep(0.015) #10ms pause from the docs seems to not be adequate
             reply = self.brick.message_read(0, 1, 1)[1]
-            if reply[0] != str(port):
+            if chr(reply[0]) != str(port):
                 raise MotorConError('Wrong port returned from ISMOTORREADY')
         self.last_is_ready = time.time()
-        return bool(int(reply[1]))
+        return bool(int(chr(reply[1])))
 
     def set_output_state(self, port, power, tacholimit, speedreg=1):
         '''
@@ -134,6 +134,7 @@ the version number passed as the version arg (default is whatever is
 bundled with this version of nxt-python).'''
         try:
             self.brick.stop_program()
+            time.sleep(1)
         except nxt.error.DirProtError:
             pass
         self.brick.start_program('MotorControl%d.rxe' % version)
