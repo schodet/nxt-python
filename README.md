@@ -44,4 +44,5 @@ NXT-Python repository maintainer: [Eelviny](https://github.com/Eelviny) - He doe
 * mindsensors.com (esp. Ryan Kneip) for helping out with the code for a lot of their sensors, expanding the sensors covered by the type checking database, and providing hardware for testing.
 * HiTechnic for providing identification information for their sensors. I note that they have now included this information in their website. ;)
 * Linus Atorf, Samuel Leeman-Munk, melducky, Simon Levy, Steve Castellotti, Paulo Vieira, zonedabone, migpics, TC Wan, jerradgenson, henryacev, Paul Hollensen, and anyone else I forgot for various fixes and additions.
+* Goldsloth for making some useful changes and keeping the tickets moving after the migration to Github.
 * All our users for their interest and support!
