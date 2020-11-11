@@ -110,7 +110,7 @@ Sends an "ISMOTORREADY" to MotorControl and returns the reply.'''
             if chr(reply[0]) != str(port):
                 raise MotorConError('Wrong port returned from ISMOTORREADY')
         self.last_is_ready = time.time()
-        return bool(int(reply[1]))
+        return bool(int(chr(reply[1])))
 
     def set_output_state(self, port, power, tacholimit, speedreg=1):
         '''
