@@ -37,7 +37,7 @@ def interval(delay, lastrun):
     now = time.time()
     if lastrun+delay > now:
         diff = now - lastrun
-        time.sleep(0.010 - diff)
+        time.sleep(delay - diff)
 
 class MotCont():
     '''
@@ -134,6 +134,7 @@ the version number passed as the version arg (default is whatever is
 bundled with this version of nxt-python).'''
         try:
             self.brick.stop_program()
+            time.sleep(1)
         except nxt.error.DirProtError:
             pass
         self.brick.start_program('MotorControl%d.rxe' % version)
