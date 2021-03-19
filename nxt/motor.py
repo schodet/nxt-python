@@ -139,6 +139,24 @@ class BaseMotor(object):
         if self.debug:
             print(message)
 
+    def reset(self,brake=True,acc=5) ''' brake --Brakes When Done Reseting. Else Idle. acc --Controls Accuracy. Works Best At 5'''
+        """
+        Use To Return Motor To Original Possition. Currently VERY SLOW. Work In 
+        Progres.    
+        """
+        deg = 0
+        while motor.get_tacho().tacho_count != deg :
+            tacho = self.get_tacho().tacho_count
+            if tacho > deg:
+                self.turn(-100,acc)
+
+            if tacho < deg:
+                self.turn(100,acc)
+        
+        #if brake == True: 
+        #     
+        #   --Todo--
+        #
     def turn(self, power, tacho_units, brake=True, timeout=1, emulate=True):
         """Use this to turn a motor. The motor will not stop until it turns the
         desired distance. Accuracy is much better over a USB connection than
