@@ -1,2 +1,4 @@
 build/
-
+htmlcov/
+__pycache__/
+.coverage

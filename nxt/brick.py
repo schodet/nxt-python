@@ -116,7 +116,7 @@ class FileReader(object):
                 min(bsize, remaining))
             remaining -= len(buffer_)
             data.append(buffer_)
-        return ''.join(data)
+        return b''.join(data)
 
     def close(self):
         if self.handle is not None:
