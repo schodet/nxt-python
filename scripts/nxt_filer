@@ -48,7 +48,7 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
 import os.path
-import urllib
+import urllib.request
 import sys
 
 import nxt.locator
@@ -84,7 +84,7 @@ def read_file(b, fname):
             for data in r:
                 f.write(data)
 
-def file_exists_dialog(fname):
+def file_exists_dialog(win, fname):
     fileexists_str = "Cannot add %s!" % fname
     dialog = Gtk.MessageDialog(win, 0, Gtk.MessageType.INFO,
         Gtk.ButtonsType.OK, "File Exsts")
@@ -94,7 +94,7 @@ def file_exists_dialog(fname):
     if DEBUG:
         print("File Exists box closed.")
 
-def system_error_dialog():
+def system_error_dialog(win):
     dialog = Gtk.MessageDialog(win, 0, Gtk.MessageType.INFO,
         Gtk.ButtonsType.OK, "System Error")
     dialog.format_secondary_text("Insufficient Contiguous Space!\n\nPlease delete files to create contiguous space.")
@@ -103,7 +103,7 @@ def system_error_dialog():
     if DEBUG:
         print("System Error box closed.")
 
-def usb_error_dialog():
+def usb_error_dialog(win):
     dialog = Gtk.MessageDialog(win, 0, Gtk.MessageType.INFO,
         Gtk.ButtonsType.OK, "USB Error")
     dialog.format_secondary_text("Can't connect to NXT!\n\nIs the NXT powered off?")
@@ -112,7 +112,7 @@ def usb_error_dialog():
     if DEBUG:
         print("USB Error box closed.")
 
-def write_file(b, fname, data):
+def write_file(win, b, fname, data):
     try:
         w = FileWriter(b, fname, len(data))
         if DEBUG:
@@ -123,26 +123,26 @@ def write_file(b, fname, data):
         if DEBUG:
             print("wrote %d bytes" % len(data))
     except FileExistsError:
-        file_exists_dialog(fname)
+        file_exists_dialog(win, fname)
     except SysProtError:
-        system_error_dialog()
+        system_error_dialog(win)
     except USBError:
         raise
 
-def write_files(b, names):
+def write_files(win, b, names):
     for fname in names.split('\r\n'):
         if fname:
             if DEBUG:
                 print("File:", fname)
             bname = os.path.basename(fname)
-            url = urllib.urlopen(fname)
+            url = urllib.request.urlopen(fname)
             try:
                 data = url.read()
             finally:
                 url.close()
             if DEBUG:
                 print("name %s, size: %d " % (bname, len(data)))
-            write_file(b, bname, data)
+            write_file(win, b, bname, data)
 
 class NXTListing(Gtk.ListStore):
 
@@ -219,7 +219,7 @@ class ApplicationWindow(Gtk.ApplicationWindow):
         return tv
 
     def make_file_panel(self):
-        v = Gtk.Box(Gtk.Orientation.VERTICAL, 0)
+        v = Gtk.Box(homogeneous=Gtk.Orientation.VERTICAL, spacing=0)
         tv = self.make_file_view()
         tv.set_model(self.nxt_filelist)
         select = tv.get_selection()
@@ -235,7 +235,7 @@ class ApplicationWindow(Gtk.ApplicationWindow):
         return v
 
     def make_button_panel(self):
-        vb = Gtk.Box(Gtk.Orientation.HORIZONTAL, 0)
+        vb = Gtk.Box(homogeneous=Gtk.Orientation.HORIZONTAL, spacing=0)
 
         self.delete_button = Gtk.Button(label="Remove")
         self.delete_button.connect("clicked", self.remove_file)
@@ -267,7 +267,7 @@ class ApplicationWindow(Gtk.ApplicationWindow):
             print("Brick not found!")
             sys.stdout.flush()
         except USBError:
-            usb_error_dialog()
+            usb_error_dialog(self)
             self.do_housekeeping()
         if self.brick:
             self.update_view()
@@ -315,10 +315,10 @@ class ApplicationWindow(Gtk.ApplicationWindow):
             if DEBUG:
                 print("You selected", uri)
             try:
-                write_files(self.brick, uri)
+                write_files(self, self.brick, uri)
             except USBError:
-                'Cannot recover, close connection'
-                usb_error_dialog()
+                # Cannot recover, close connection
+                usb_error_dialog(self)
                 self.do_housekeeping()
         else:
             if DEBUG:
@@ -345,7 +345,7 @@ class ApplicationWindow(Gtk.ApplicationWindow):
     def drag_data_received_data(self, treeview, context, x, y, selection,
                                 info, etime):
         if context.action == Gtk.gdk.ACTION_COPY:
-            write_files(self.brick, selection.data)
+            write_files(self, self.brick, selection.data)
         # FIXME: update file listing after writing files
         # FIXME: finish context
 
@@ -371,8 +371,8 @@ class ApplicationWindow(Gtk.ApplicationWindow):
             except ValueError:
                 print("No file extension (unknown file type)")
             except USBError:
-                'Cannot recover, close connection'
-                usb_error_dialog()
+                # Cannot recover, close connection
+                usb_error_dialog(self)
                 self.do_housekeeping()
                 self.update_view()
 
@@ -392,8 +392,8 @@ class ApplicationWindow(Gtk.ApplicationWindow):
                 try:
                     delete_file(self.brick,self.selected_file)
                 except USBError:
-                    'Cannot recover, close connection'
-                    usb_error_dialog()
+                    # Cannot recover, close connection
+                    usb_error_dialog(self)
                     self.do_housekeeping()
                 self.selected_file = None
                 self.update_view()
