@@ -119,14 +119,6 @@ def open_write_linear(opcode, fname, size):
     tgram.add_u32(size)
     return tgram
 
-def open_read_linear(opcode, fname):
-    return _create_with_file(opcode, fname)
-
-def _parse_open_read_linear(tgram):
-    tgram.check_status()
-    size = tgram.parse_u32()
-    return size
-
 def open_write_data(opcode, fname, size):
     tgram = _create_with_file(opcode, fname)
     tgram.add_u32(size)
@@ -276,7 +268,6 @@ OPCODES = {
     0x87: (find_next, _parse_find),
     0x88: (get_firmware_version, _parse_get_firmware_version),
     0x89: (open_write_linear, _parse_open_write),
-    0x8A: (open_read_linear, _parse_open_read_linear),
     0x8B: (open_write_data, _parse_open_write),
     0x8C: (open_append_data, _parse_open_append_data),
     0x90: (request_first_module, _parse_request_module),

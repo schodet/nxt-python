@@ -136,11 +136,6 @@ class TestSystem:
         )
         assert handle == 0x42
 
-    def test_open_read_linear(self, sock, brick):
-        sock.recv.return_value = bytes.fromhex("028a00 00000000")
-        brick.open_read_linear("test.rxe")
-        # TODO: Should not exist, this is an internal only command.
-
     def test_open_write_data(self, sock, brick):
         sock.recv.return_value = bytes.fromhex("028b00 42")
         handle = brick.open_write_data("test.rxe", 0x04030201)
