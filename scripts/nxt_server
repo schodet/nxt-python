@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # nxt_server program -- Serve an interface to the NXT brick
 # Copyright (C) 2011  zonedabone, Marcus Wanner

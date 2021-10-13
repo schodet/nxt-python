@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # nxt_push program -- Push a file to a LEGO Mindstorms NXT brick
 # Copyright (C) 2006  Douglas P Lau
