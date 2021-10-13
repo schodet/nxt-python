@@ -2,6 +2,7 @@
 # Copyright (C) 2006  Douglas P Lau
 # Copyright (C) 2009  Marcus Wanner, rhn
 # Copyright (C) 2010  rhn, Marcus Wanner, zonedabone
+# Copyright (C) 2021  Nicolas Schodet
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -112,9 +113,10 @@ class FileReader(object):
         bsize = self.brick.sock.bsize
         data = []
         while remaining > 0:
-            handle, bsize, buffer_ = self.brick.read(self.handle,
+            handle, buffer_ = self.brick.read(self.handle,
                 min(bsize, remaining))
-            remaining -= len(buffer_)
+            bsize = len(buffer_)
+            remaining -= bsize
             data.append(buffer_)
         return b''.join(data)
 
@@ -136,10 +138,10 @@ class FileReader(object):
         rem = self.size
         bsize = self.brick.sock.bsize
         while rem > 0:
-            handle, bsize, data = self.brick.read(self.handle,
-                min(bsize, rem))
+            handle, data = self.brick.read(self.handle, min(bsize, rem))
             yield data
-            rem -= len(data)
+            bsize = len(data)
+            rem -= bsize
 
 
 class FileWriter(object):

@@ -80,11 +80,11 @@ sensor, this message is likely in error and you should disregard it and file a
 bug report, including the output of get_sensor_info(). This message can be
 suppressed by passing "check_compatible=False" when creating the sensor object."""))
 
-    def _ls_get_status(self, n_bytes):
+    def _ls_get_status(self, size):
         for n in range(30): #https://code.google.com/p/nxt-python/issues/detail?id=35
             try:
                 b = self.brick.ls_get_status(self.port)
-                if b >= n_bytes:
+                if b >= size:
                     return b
             except I2CPendingError:
                 pass
@@ -108,22 +108,22 @@ suppressed by passing "check_compatible=False" when creating the sensor object."
         according to the given format. Format is the same as in the struct
         module. See http://docs.python.org/library/struct.html#format-strings
         """
-        n_bytes = struct.calcsize(format)
+        size = struct.calcsize(format)
         msg = bytes((self.I2C_DEV, address))
         now = time()
         if self.last_poll+self.poll_delay > now:
             diff = now - self.last_poll
             sleep(self.poll_delay - diff)
         self.last_poll = time()
-        self.brick.ls_write(self.port, msg, n_bytes)
+        self.brick.ls_write(self.port, msg, size)
         try:
-            self._ls_get_status(n_bytes)
+            self._ls_get_status(size)
         finally:
             #we should clear the buffer no matter what happens
             data = self.brick.ls_read(self.port)
-        if len(data) < n_bytes:
+        if len(data) < size:
             raise I2CError('Read failure: Not enough bytes')
-        data = struct.unpack(format, data[-n_bytes:])
+        data = struct.unpack(format, data[-size:])
         return data
 
     def read_value(self, name):

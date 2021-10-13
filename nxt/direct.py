@@ -1,6 +1,7 @@
 # nxt.direct module -- LEGO Mindstorms NXT direct telegrams
 # Copyright (C) 2006, 2007  Douglas P Lau
 # Copyright (C) 2009  Marcus Wanner
+# Copyright (C) 2021  Nicolas Schodet
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -110,7 +111,7 @@ def message_write(opcode, inbox, message):
     tgram = _create(opcode)
     tgram.add_u8(inbox)
     tgram.add_u8(len(message) + 1)
-    tgram.add_string(len(message), message)
+    tgram.add_bytes(message)
     tgram.add_u8(0)
     return tgram
 
@@ -147,8 +148,8 @@ def ls_get_status(opcode, port):
 
 def _parse_ls_get_status(tgram):
     tgram.check_status()
-    n_bytes = tgram.parse_u8()
-    return n_bytes
+    size = tgram.parse_u8()
+    return size
 
 def ls_write(opcode, port, tx_data, rx_bytes):
     'Write a low-speed command to a sensor (ultrasonic)'
@@ -167,16 +168,16 @@ def ls_read(opcode, port):
 
 def _parse_ls_read(tgram):
     tgram.check_status()
-    n_bytes = tgram.parse_u8()
-    contents = tgram.parse_string()
-    return contents[:n_bytes]
+    size = tgram.parse_u8()
+    contents = tgram.parse_bytes(size)
+    return contents
 
 def get_current_program_name(opcode):
     return _create(opcode)
 
 def _parse_get_current_program_name(tgram):
     tgram.check_status()
-    fname = tgram.parse_string()
+    fname = tgram.parse_filename()
     return fname
 
 def message_read(opcode, remote_inbox, local_inbox, remove):
@@ -189,9 +190,9 @@ def message_read(opcode, remote_inbox, local_inbox, remove):
 def _parse_message_read(tgram):
     tgram.check_status()
     local_inbox = tgram.parse_u8()
-    n_bytes = tgram.parse_u8()
-    message = tgram.parse_string()
-    return (local_inbox, message[:n_bytes])
+    size = tgram.parse_u8()
+    message = tgram.parse_bytes(size)
+    return (local_inbox, message)
 
 #TODO Add docstrings to all methods
 

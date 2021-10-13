@@ -1,6 +1,7 @@
 # nxt.telegram module -- LEGO Mindstorms NXT telegram formatting and parsing
 # Copyright (C) 2006  Douglas P Lau
 # Copyright (C) 2009  Marcus Wanner
+# Copyright (C) 2021  Nicolas Schodet
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -55,9 +56,6 @@ class Telegram(object):
             self.add_u8(typ)
             self.add_u8(opcode)
 
-    def __str__(self):
-        return self.pkt.getvalue().decode('windows-1252')
-
     def bytes(self):
         return self.pkt.getvalue()
 
@@ -65,14 +63,16 @@ class Telegram(object):
         return self.typ == Telegram.TYPE_REPLY
 
     def add_bytes(self, b):
-        self.pkt.write(pack('%ds' % len(b), b))
+        self.pkt.write(b)
 
-    def add_string(self, n_bytes, v):
-        self.pkt.write(pack('%ds' % n_bytes, v.encode('windows-1252')))
+    def add_string(self, size, v):
+        b = v.encode("ascii")
+        if len(b) > size - 1:
+            raise ValueError("String too long")
+        self.pkt.write(pack("%ds" % size, b))
 
     def add_filename(self, fname):
-      self.pkt.write(pack('20s', fname.encode('windows-1252')))
-
+        self.add_string(20, fname)
 
     def add_s8(self, v):
         self.pkt.write(pack('<b', v))
@@ -80,24 +80,24 @@ class Telegram(object):
     def add_u8(self, v):
         self.pkt.write(pack('<B', v))
 
-    def add_s16(self, v):
-        self.pkt.write(pack('<h', v))
-
     def add_u16(self, v):
         self.pkt.write(pack('<H', v))
-
-    def add_s32(self, v):
-        self.pkt.write(pack('<i', v))
 
     def add_u32(self, v):
         self.pkt.write(pack('<I', v))
 
-    def parse_string(self, n_bytes=0):
-        if n_bytes:
-            return unpack('%ss' % n_bytes,
-                self.pkt.read(n_bytes))[0]
-        else:
-            return self.pkt.read()
+    def parse_bytes(self, size=-1):
+        b = self.pkt.read()
+        if size != -1:
+            b = b[:size]
+        return b
+
+    def parse_string(self, size=-1):
+        b = self.pkt.read(size).rstrip(b"\0")
+        return b.decode("ascii")
+
+    def parse_filename(self):
+        return self.parse_string(20)
 
     def parse_s8(self):
         return unpack('<b', self.pkt.read(1))[0]

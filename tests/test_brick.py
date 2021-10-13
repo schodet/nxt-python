@@ -48,10 +48,10 @@ class TestSystem:
 
     def test_open_read(self, sock, brick):
         sock.recv.return_value = bytes.fromhex("028000 42 01020304")
-        handle, n_bytes = brick.open_read("test.rxe")
+        handle, size = brick.open_read("test.rxe")
         assert sock.mock_calls == sent_recved(bytes.fromhex("0180") + test_rxe_bin)
         assert handle == 0x42
-        assert n_bytes == 0x04030201
+        assert size == 0x04030201
 
     def test_open_read_fail(self, sock, brick):
         """Test command failure reported in status code."""
@@ -69,25 +69,21 @@ class TestSystem:
 
     def test_read(self, sock, brick):
         sock.recv.return_value = bytes.fromhex("028200 42 0700 21222324252627")
-        handle, n_bytes, data = brick.read(0x42, 7)
+        handle, data = brick.read(0x42, 7)
         # TODO: The read command will return a EOF error if end of file is reached
-        # before the read can be finished, and n_bytes will still contain the requested
+        # before the read can be finished, and size will still contain the requested
         # data length instead of the actual read length. This is not the classic
         # semantic of a Unix read. Avoid reading past the end of file.
         assert sock.mock_calls == sent_recved(bytes.fromhex("0182 42 0700"))
         assert handle == 0x42
-        assert n_bytes == 7
         assert data == bytes.fromhex("21222324252627")
 
     def test_write(self, sock, brick):
         sock.recv.return_value = bytes.fromhex("028300 42 0700")
-        # TODO: Data should be binary.
-        handle, n_bytes = brick.write(
-            0x42, bytes.fromhex("21222324252627").decode("ascii")
-        )
+        handle, size = brick.write(0x42, bytes.fromhex("21222324252627"))
         assert sock.mock_calls == sent_recved(bytes.fromhex("0183 42 21222324252627"))
         assert handle == 0x42
-        assert n_bytes == 7
+        assert size == 7
 
     def test_close(self, sock, brick):
         sock.recv.return_value = bytes.fromhex("028400 42")
@@ -99,35 +95,31 @@ class TestSystem:
         sock.recv.return_value = (
             bytes.fromhex("028500") + b"test.rxe\0\0\0\0\0\0\0\0\0\0\0\0"
         )
-        handle, fname = brick.delete("test.rxe")
+        fname = brick.delete("test.rxe")
         assert sock.mock_calls == sent_recved(
             bytes.fromhex("0185") + b"test.rxe\0\0\0\0\0\0\0\0\0\0\0\0"
         )
-        # TODO: This is wrong, there is no handle and string should be decoded.
-        assert handle == ord("t")
-        assert fname == b"est.rxe\0\0\0\0\0\0\0\0\0\0\0\0"
+        assert fname == "test.rxe"
 
     def test_find_first(self, sock, brick):
         sock.recv.return_value = (
             bytes.fromhex("028600 42") + test_rxe_bin + bytes.fromhex("01020304")
         )
-        handle, fname, n_bytes = brick.find_first("*.*")
+        handle, fname, size = brick.find_first("*.*")
         assert sock.mock_calls == sent_recved(bytes.fromhex("0186") + star_star_bin)
         assert handle == 0x42
-        # TODO: Should be a string.
-        assert fname == test_rxe_bin
-        assert n_bytes == 0x04030201
+        assert fname == "test.rxe"
+        assert size == 0x04030201
 
     def test_find_next(self, sock, brick):
         sock.recv.return_value = (
             bytes.fromhex("028700 42") + test_rxe_bin + bytes.fromhex("01020304")
         )
-        handle, fname, n_bytes = brick.find_next(0x42)
+        handle, fname, size = brick.find_next(0x42)
         assert sock.mock_calls == sent_recved(bytes.fromhex("0187 42"))
         assert handle == 0x42
-        # TODO: Should be a string.
-        assert fname == test_rxe_bin
-        assert n_bytes == 0x04030201
+        assert fname == "test.rxe"
+        assert size == 0x04030201
 
     def test_get_firmware_version(self, sock, brick):
         sock.recv.return_value = bytes.fromhex("028800 0102 0304")
@@ -159,11 +151,10 @@ class TestSystem:
 
     def test_open_append_data(self, sock, brick):
         sock.recv.return_value = bytes.fromhex("028c00 42 01020304")
-        handle, n_bytes = brick.open_append_data("test.rxe")
+        handle, available_size = brick.open_append_data("test.rxe")
         assert sock.mock_calls == sent_recved(bytes.fromhex("018c") + test_rxe_bin)
         assert handle == 0x42
-        # TODO: Make clear that returned size is available size.
-        assert n_bytes == 0x04030201
+        assert available_size == 0x04030201
 
     def test_request_first_module(self, sock, brick):
         sock.recv.return_value = (
@@ -176,8 +167,7 @@ class TestSystem:
         )
         assert sock.mock_calls == sent_recved(bytes.fromhex("0190") + star_star_bin)
         assert handle == 0x42
-        # TODO: Should be a string.
-        assert mname == loader_bin
+        assert mname == "Loader"
         assert mod_id == 0x00090001
         assert mod_size == 0
         assert mod_iomap_size == 8
@@ -193,8 +183,7 @@ class TestSystem:
         )
         assert sock.mock_calls == sent_recved(bytes.fromhex("0191 42"))
         assert handle == 0x42
-        # TODO: Should be a string.
-        assert mname == loader_bin
+        assert mname == "Loader"
         assert mod_id == 0x00090001
         assert mod_size == 0
         assert mod_iomap_size == 8
@@ -209,23 +198,21 @@ class TestSystem:
         sock.recv.return_value = bytes.fromhex(
             "029400 01020304 0700 212223242526270000"
         )
-        mod_id, n_bytes, contents = brick.read_io_map(0x04030201, 0x3231, 0x4241)
+        mod_id, contents = brick.read_io_map(0x04030201, 0x3231, 0x4241)
         assert sock.mock_calls == sent_recved(bytes.fromhex("0194 01020304 3132 4142"))
         assert mod_id == 0x04030201
-        assert n_bytes == 7
-        assert contents == bytes.fromhex("212223242526270000")
+        assert contents == bytes.fromhex("21222324252627")
 
     def test_write_io_map(self, sock, brick):
         sock.recv.return_value = bytes.fromhex("029500 01020304 0700")
-        # TODO: Data should be binary.
-        mod_id, n_bytes = brick.write_io_map(
-            0x04030201, 0x3231, bytes.fromhex("21222324252627").decode("ascii")
+        mod_id, size = brick.write_io_map(
+            0x04030201, 0x3231, bytes.fromhex("21222324252627")
         )
         assert sock.mock_calls == sent_recved(
             bytes.fromhex("0195 01020304 3132 0700 21222324252627")
         )
         assert mod_id == 0x04030201
-        assert n_bytes == 7
+        assert size == 7
 
     def test_boot(self, sock, brick):
         sock.recv.return_value = bytes.fromhex("029700") + b"Yes\0"
@@ -237,12 +224,14 @@ class TestSystem:
 
     def test_set_brick_name(self, sock, brick):
         sock.recv.return_value = bytes.fromhex("029800")
-        # TODO: Actual permitted name length should be 14 bytes, or else there is no
-        # room in the firmware to store the terminating null char.
         brick.set_brick_name("NXT")
         assert sock.mock_calls == sent_recved(
             bytes.fromhex("0198") + b"NXT\0\0\0\0\0\0\0\0\0\0\0\0"
         )
+
+    def test_set_brick_name_too_long(self, sock, brick):
+        with pytest.raises(ValueError):
+            brick.set_brick_name("NXT456789012345")
 
     def test_get_device_info(self, sock, brick):
         sock.recv.return_value = (
@@ -267,20 +256,19 @@ class TestSystem:
         # TODO: This is wrong, it follows the NXT Bluetooth Developer Kit document, but
         # actual firmware has status first as usual.
         sock.recv.return_value = bytes.fromhex("02a101 00 07")
-        buf_num, n_bytes = brick.poll_command_length(1)
+        buf_num, size = brick.poll_command_length(1)
         assert sock.mock_calls == sent_recved(bytes.fromhex("01a1 01"))
         assert buf_num == 1
-        assert n_bytes == 7
+        assert size == 7
 
     def test_poll_command(self, sock, brick):
         # TODO: This is wrong, it follows the NXT Bluetooth Developer Kit document, but
         # actual firmware has status first as usual.
         sock.recv.return_value = bytes.fromhex("02a201 00 07 212223242526270000")
-        buf_num, n_bytes, command = brick.poll_command(1, 9)
+        buf_num, command = brick.poll_command(1, 9)
         assert sock.mock_calls == sent_recved(bytes.fromhex("01a2 01 09"))
         assert buf_num == 1
-        assert n_bytes == 7
-        assert command == bytes.fromhex("212223242526270000")
+        assert command == bytes.fromhex("21222324252627")
 
     def test_bluetooth_factory_reset(self, sock, brick):
         sock.recv.return_value = bytes.fromhex("02a400")
@@ -394,8 +382,7 @@ class TestDirect:
 
     def test_message_write(self, sock, brick):
         sock.recv.return_value = bytes.fromhex("020900")
-        # TODO: Should allow binary.
-        brick.message_write(3, bytes.fromhex("21222324252627").decode("ascii"))
+        brick.message_write(3, bytes.fromhex("21222324252627"))
         assert sock.mock_calls == sent_recved(
             bytes.fromhex("0009 03 08 21222324252627 00")
         )
@@ -424,9 +411,9 @@ class TestDirect:
 
     def test_ls_get_status(self, sock, brick):
         sock.recv.return_value = bytes.fromhex("020e00 07")
-        n_bytes = brick.ls_get_status(nxt.sensor.PORT_3)
+        size = brick.ls_get_status(nxt.sensor.PORT_3)
         assert sock.mock_calls == sent_recved(bytes.fromhex("000e 02"))
-        assert n_bytes == 7
+        assert size == 7
 
     def test_ls_write(self, sock, brick):
         sock.recv.return_value = bytes.fromhex("020f00")
@@ -447,8 +434,7 @@ class TestDirect:
         sock.recv.return_value = bytes.fromhex("021100") + test_rxe_bin
         fname = brick.get_current_program_name()
         assert sock.mock_calls == sent_recved(bytes.fromhex("0011"))
-        # TODO: Should be a string.
-        assert fname == test_rxe_bin
+        assert fname == "test.rxe"
 
     def test_message_read(self, sock, brick):
         sock.recv.return_value = bytes.fromhex("021300 00 07 21222324252627") + bytes(
@@ -494,7 +480,6 @@ class TestFilesModules:
         ]
 
     def test_find_files_one(self, mbrick):
-        # TODO: Test is lying, real code return bytes, but it should be a string.
         mbrick.find_first.return_value = (0x42, "test.rxe", 0x04030201)
         mbrick.find_next.side_effect = [nxt.error.FileNotFound()]
         results = list(mbrick.find_files("*.*"))
@@ -506,7 +491,6 @@ class TestFilesModules:
         ]
 
     def test_find_files_two(self, mbrick):
-        # TODO: Test is lying, real code return bytes, but it should be a string.
         mbrick.find_first.return_value = (0x42, "test.rxe", 0x04030201)
         mbrick.find_next.side_effect = [
             (0x42, "test.rso", 7),
@@ -531,7 +515,6 @@ class TestFilesModules:
         ]
 
     def test_find_modules_one(self, mbrick):
-        # TODO: Test is lying, real code return bytes, but it should be a string.
         mbrick.request_first_module.return_value = (0x42, "Loader", 0x00090001, 0, 8)
         mbrick.request_next_module.side_effect = [nxt.error.ModuleNotFound()]
         results = list(mbrick.find_modules("*.*"))
@@ -544,7 +527,6 @@ class TestFilesModules:
         assert results == [("Loader", 0x00090001, 0, 8)]
 
     def test_find_modules_two(self, mbrick):
-        # TODO: Test is lying, real code return bytes, but it should be a string.
         mbrick.request_first_module.return_value = (0x42, "Loader", 0x00090001, 0, 8)
         mbrick.request_next_module.side_effect = [
             (0x42, "Dummy", 0x01020304, 0, 12),
@@ -565,7 +547,7 @@ class TestFilesModules:
 
     def test_file_read(self, mbrick):
         mbrick.open_read.return_value = (0x42, 7)
-        mbrick.read.return_value = (0x42, 7, bytes.fromhex("21222324252627"))
+        mbrick.read.return_value = (0x42, bytes.fromhex("21222324252627"))
         with mbrick.open_file("test.bin", "r") as f:
             assert f.read() == bytes.fromhex("21222324252627")
         assert mbrick.mock_calls == [
@@ -576,7 +558,7 @@ class TestFilesModules:
 
     def test_file_read_iter(self, mbrick):
         mbrick.open_read.return_value = (0x42, 7)
-        mbrick.read.return_value = (0x42, 7, bytes.fromhex("21222324252627"))
+        mbrick.read.return_value = (0x42, bytes.fromhex("21222324252627"))
         with mbrick.open_file("test.bin", "r") as f:
             assert list(f) == [bytes.fromhex("21222324252627")]
         assert mbrick.mock_calls == [

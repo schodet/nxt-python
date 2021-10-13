@@ -29,7 +29,7 @@ def _write_file(b, fname, data):
     w.close()
 
 def write_file(b, fname):
-    f = open(fname)
+    f = open(fname, 'rb')
     data = f.read()
     f.close()
     try:

@@ -1,6 +1,7 @@
 # nxt.system module -- LEGO Mindstorms NXT system telegrams
 # Copyright (C) 2006  Douglas P Lau
 # Copyright (C) 2009  Marcus Wanner
+# Copyright (C) 2021  Nicolas Schodet
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,12 +36,12 @@ def open_read(opcode, fname):
 def _parse_open_read(tgram):
     tgram.check_status()
     handle = tgram.parse_u8()
-    n_bytes = tgram.parse_u32()
-    return (handle, n_bytes)
+    size = tgram.parse_u32()
+    return (handle, size)
 
-def open_write(opcode, fname, n_bytes):
+def open_write(opcode, fname, size):
     tgram = _create_with_file(opcode, fname)
-    tgram.add_u32(n_bytes)
+    tgram.add_u32(size)
     return tgram
 
 def _parse_open_write(tgram):
@@ -48,28 +49,28 @@ def _parse_open_write(tgram):
     handle = tgram.parse_u8()
     return handle
 
-def read(opcode, handle, n_bytes):
+def read(opcode, handle, size):
     tgram = _create_with_handle(opcode, handle)
-    tgram.add_u16(n_bytes)
+    tgram.add_u16(size)
     return tgram
 
 def _parse_read(tgram):
     tgram.check_status()
     handle = tgram.parse_u8()
-    n_bytes = tgram.parse_u16()
-    data = tgram.parse_string()
-    return (handle, n_bytes, data)
+    size = tgram.parse_u16()
+    data = tgram.parse_bytes(size)
+    return (handle, data)
 
 def write(opcode, handle, data):
     tgram = _create_with_handle(opcode, handle)
-    tgram.add_string(len(data), data)
+    tgram.add_bytes(data)
     return tgram
 
 def _parse_write(tgram):
     tgram.check_status()
     handle = tgram.parse_u8()
-    n_bytes = tgram.parse_u16()
-    return (handle, n_bytes)
+    size = tgram.parse_u16()
+    return (handle, size)
 
 def close(opcode, handle):
     return _create_with_handle(opcode, handle)
@@ -84,9 +85,8 @@ def delete(opcode, fname):
 
 def _parse_delete(tgram):
     tgram.check_status()
-    handle = tgram.parse_u8()
-    fname = tgram.parse_string()
-    return (handle, fname)
+    fname = tgram.parse_filename()
+    return fname
 
 def find_first(opcode, fname):
     return _create_with_file(opcode, fname)
@@ -94,9 +94,9 @@ def find_first(opcode, fname):
 def _parse_find(tgram):
     tgram.check_status()
     handle = tgram.parse_u8()
-    fname = tgram.parse_string(20)
-    n_bytes = tgram.parse_u32()
-    return (handle, fname, n_bytes)
+    fname = tgram.parse_filename()
+    size = tgram.parse_u32()
+    return (handle, fname, size)
 
 def find_next(opcode, handle):
     return _create_with_handle(opcode, handle)
@@ -114,9 +114,9 @@ def _parse_get_firmware_version(tgram):
     fw_version = (fw_major, fw_minor)
     return (prot_version, fw_version)
 
-def open_write_linear(opcode, fname, n_bytes):
+def open_write_linear(opcode, fname, size):
     tgram = _create_with_file(opcode, fname)
-    tgram.add_u32(n_bytes)
+    tgram.add_u32(size)
     return tgram
 
 def open_read_linear(opcode, fname):
@@ -124,12 +124,12 @@ def open_read_linear(opcode, fname):
 
 def _parse_open_read_linear(tgram):
     tgram.check_status()
-    n_bytes = tgram.parse_u32()
-    return n_bytes
+    size = tgram.parse_u32()
+    return size
 
-def open_write_data(opcode, fname, n_bytes):
+def open_write_data(opcode, fname, size):
     tgram = _create_with_file(opcode, fname)
-    tgram.add_u32(n_bytes)
+    tgram.add_u32(size)
     return tgram
 
 def open_append_data(opcode, fname):
@@ -138,8 +138,8 @@ def open_append_data(opcode, fname):
 def _parse_open_append_data(tgram):
     tgram.check_status()
     handle = tgram.parse_u8()
-    n_bytes = tgram.parse_u32()
-    return (handle, n_bytes)
+    available_size = tgram.parse_u32()
+    return (handle, available_size)
 
 def request_first_module(opcode, mname):
     return _create_with_file(opcode, mname)
@@ -147,7 +147,7 @@ def request_first_module(opcode, mname):
 def _parse_request_module(tgram):
     tgram.check_status()
     handle = tgram.parse_u8()
-    mname = tgram.parse_string(20)
+    mname = tgram.parse_filename()
     mod_id = tgram.parse_u32()
     mod_size = tgram.parse_u32()
     mod_iomap_size = tgram.parse_u16()
@@ -159,54 +159,49 @@ def request_next_module(opcode, handle):
 def close_module_handle(opcode, handle):
     return _create_with_handle(opcode, handle)
 
-def read_io_map(opcode, mod_id, offset, n_bytes):
+def read_io_map(opcode, mod_id, offset, size):
     tgram = _create(opcode)
     tgram.add_u32(mod_id)
     tgram.add_u16(offset)
-    tgram.add_u16(n_bytes)
+    tgram.add_u16(size)
     return tgram
 
 def _parse_read_io_map(tgram):
     tgram.check_status()
     mod_id = tgram.parse_u32()
-    n_bytes = tgram.parse_u16()
-    contents = tgram.parse_string()
-    return (mod_id, n_bytes, contents)
+    size = tgram.parse_u16()
+    contents = tgram.parse_bytes(size)
+    return (mod_id, contents)
 
 def write_io_map(opcode, mod_id, offset, content):
     tgram = _create(opcode)
     tgram.add_u32(mod_id)
     tgram.add_u16(offset)
     tgram.add_u16(len(content))
-    tgram.add_string(len(content), content)
+    tgram.add_bytes(content)
     return tgram
 
 def _parse_write_io_map(tgram):
     tgram.check_status()
     mod_id = tgram.parse_u32()
-    n_bytes = tgram.parse_u16()
-    return (mod_id, n_bytes)
+    size = tgram.parse_u16()
+    return (mod_id, size)
 
 def boot(opcode):
     # Note: this command is USB only (no Bluetooth)
     tgram = _create(opcode)
-    tgram.add_string(19, "Let's dance: SAMBA\0")
+    tgram.add_bytes(b"Let's dance: SAMBA\0")
     return tgram
 
 def _parse_boot(tgram):
     tgram.check_status()
-    resp = tgram.parse_string()
+    resp = tgram.parse_bytes()
     # Resp should be 'Yes\0'
     return resp
 
 def set_brick_name(opcode, bname):
     tgram = _create(opcode)
-    if len(bname) > 15:
-        print(("Warning! Brick name %s will be truncated to %s!" % (bname, bname[0:15])))
-        bname = bname[0:15]
-    elif len(bname) < 15:
-        bname += '\x00' * (15-len(bname)) #fill the extra chars with nulls
-    tgram.add_string(len(bname), bname)
+    tgram.add_string(15, bname)
     return tgram
 
 def _parse_set_brick_name(tgram):
@@ -217,7 +212,7 @@ def get_device_info(opcode):
 
 def _parse_get_device_info(tgram):
     tgram.check_status()
-    name = tgram.parse_string(15).decode('utf-8').split('\0')[0]
+    name = tgram.parse_string(15)
     a0 = tgram.parse_u8()
     a1 = tgram.parse_u8()
     a2 = tgram.parse_u8()
@@ -245,21 +240,21 @@ def poll_command_length(opcode, buf_num):
 def _parse_poll_command_length(tgram):
     buf_num = tgram.parse_u8()
     tgram.check_status()
-    n_bytes = tgram.parse_u8()
-    return (buf_num, n_bytes)
+    size = tgram.parse_u8()
+    return (buf_num, size)
 
-def poll_command(opcode, buf_num, n_bytes):
+def poll_command(opcode, buf_num, size):
     tgram = _create(opcode)
     tgram.add_u8(buf_num)
-    tgram.add_u8(n_bytes)
+    tgram.add_u8(size)
     return tgram
 
 def _parse_poll_command(tgram):
     buf_num = tgram.parse_u8()
     tgram.check_status()
-    n_bytes = tgram.parse_u8()
-    command = tgram.parse_string()
-    return (buf_num, n_bytes, command)
+    size = tgram.parse_u8()
+    command = tgram.parse_bytes(size)
+    return (buf_num, command)
 
 def bluetooth_factory_reset(opcode):
     # Note: this command is USB only (no Bluetooth)

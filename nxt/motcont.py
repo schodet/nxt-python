@@ -1,5 +1,6 @@
 # nxt.motcont module -- Interface to Linus Atorf's MotorControl NXC
 # Copyright (C) 2011  Marcus Wanner
+# Copyright (C) 2021  Nicolas Schodet
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -76,7 +77,7 @@ place (DIFFERENT from the nxt.motor.turn() function's brake arg).'''
             0x04*int(smoothstart)
             )
         command = '1'+str(port)+_power(power)+_tacho(tacholimit)+mode
-        self.brick.message_write(1, command)
+        self.brick.message_write(1, command.encode("ascii"))
         self.last_cmd[port] = time.time()
     
     def move_to(self, port, power, tachocount, speedreg=1, smoothstart=0, brake=0):
@@ -96,7 +97,8 @@ current position and that value is used to turn the motor. Power is
 Sends a "RESET_ERROR_CORRECTION" to MotorControl, which causes it to
 reset the current tacho count for that motor.'''
         interval(0.010, self.last_is_ready)
-        self.brick.message_write(1, '2'+str(port))
+        command = '2'+str(port)
+        self.brick.message_write(1, command.encode("ascii"))
         self.last_cmd[port] = time.time()
     
     def is_ready(self, port):
@@ -104,7 +106,8 @@ reset the current tacho count for that motor.'''
 Sends an "ISMOTORREADY" to MotorControl and returns the reply.'''
         interval(0.010, self.last_is_ready)
         with self.is_ready_lock:
-            self.brick.message_write(1, '3'+str(port))
+            command = '3'+str(port)
+            self.brick.message_write(1, command.encode("ascii"))
             time.sleep(0.015) #10ms pause from the docs seems to not be adequate
             reply = self.brick.message_read(0, 1, 1)[1]
             if chr(reply[0]) != str(port):
@@ -123,7 +126,7 @@ place (DIFFERENT from the nxt.motor.turn() function's brake arg).'''
         if port in self.last_cmd:
             interval(0.015, self.last_cmd[port])
         command = '4'+str(port)+_power(power)+_tacho(tacholimit)+str(speedreg)
-        self.brick.message_write(1, command)
+        self.brick.message_write(1, command.encode("ascii"))
         self.last_cmd[port] = time.time()
 
     def start(self, version=22):
