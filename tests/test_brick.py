@@ -441,27 +441,6 @@ class TestDirect:
         assert message == bytes.fromhex("21222324252627")
 
 
-@pytest.fixture
-def mbrick():
-    """A brick with mocked low level functions."""
-    b = Mock()
-
-    def find_files(pattern):
-        return nxt.brick.Brick.find_files(b, pattern)
-
-    def find_modules(pattern):
-        return nxt.brick.Brick.find_modules(b, pattern)
-
-    def open_file(*args, **kwargs):
-        return nxt.brick.Brick.open_file(b, *args, **kwargs)
-
-    b.sock.bsize = 60
-    b.find_files = find_files
-    b.find_modules = find_modules
-    b.open_file = open_file
-    return b
-
-
 class TestFilesModules:
     """Test nxt.brick files & modules access."""
 
