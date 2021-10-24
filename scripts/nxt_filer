@@ -57,7 +57,7 @@ from nxt.utils import parse_command_line_arguments
 
 from usb.core import USBError
 from nxt.locator import BrickNotFoundError
-from nxt.error import FileNotFound, ModuleNotFound, FileExistsError, SysProtError
+from nxt.error import FileExistsError, SysProtError
 from nxt.telegram import OPCODES, Telegram
 
 

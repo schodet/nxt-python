@@ -445,9 +445,8 @@ class TestFilesModules:
 
     def test_find_files_none(self, mbrick):
         mbrick.find_first.side_effect = [nxt.error.FileNotFound()]
-        # TODO: Should yield no result instead of raising.
-        with pytest.raises(nxt.error.FileNotFound):
-            list(mbrick.find_files("*.*"))
+        results = list(mbrick.find_files("*.*"))
+        assert results == []
         assert mbrick.mock_calls == [
             call.find_first("*.*"),
         ]
@@ -480,9 +479,8 @@ class TestFilesModules:
 
     def test_find_modules_none(self, mbrick):
         mbrick.request_first_module.side_effect = [nxt.error.ModuleNotFound()]
-        # TODO: Should yield no result instead of raising.
-        with pytest.raises(nxt.error.ModuleNotFound):
-            list(mbrick.find_modules("*.*"))
+        results = list(mbrick.find_modules("*.*"))
+        assert results == []
         assert mbrick.mock_calls == [
             call.request_first_module("*.*"),
         ]
@@ -494,8 +492,7 @@ class TestFilesModules:
         assert mbrick.mock_calls == [
             call.request_first_module("*.*"),
             call.request_next_module(0x42),
-            # TODO: Should be close_module_handle.
-            call.close(0x42),
+            call.close_module_handle(0x42),
         ]
         assert results == [("Loader", 0x00090001, 0, 8)]
 
@@ -510,8 +507,7 @@ class TestFilesModules:
             call.request_first_module("*.*"),
             call.request_next_module(0x42),
             call.request_next_module(0x42),
-            # TODO: Should be close_module_handle.
-            call.close(0x42),
+            call.close_module_handle(0x42),
         ]
         assert results == [
             ("Loader", 0x00090001, 0, 8),

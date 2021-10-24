@@ -67,7 +67,10 @@ class FileFinder(object):
 
     def __iter__(self):
         results = []
-        self.handle, fname, size = self.brick.find_first(self.pattern)
+        try:
+            self.handle, fname, size = self.brick.find_first(self.pattern)
+        except FileNotFound:
+            return None
         results.append((fname, size))
         while True:
             try:
@@ -193,15 +196,18 @@ class ModuleFinder(object):
 
     def _close(self):
         if self.handle:
-            self.brick.close(self.handle)
+            self.brick.close_module_handle(self.handle)
             self.handle = None
 
     def __del__(self):
         self._close()
 
     def __iter__(self):
-        self.handle, mname, mid, msize, miomap_size = \
-            self.brick.request_first_module(self.pattern)
+        try:
+            self.handle, mname, mid, msize, miomap_size = \
+                self.brick.request_first_module(self.pattern)
+        except ModuleNotFound:
+            return None
         yield (mname, mid, msize, miomap_size)
         while True:
             try:
