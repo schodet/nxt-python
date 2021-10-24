@@ -234,12 +234,11 @@ class TestSystem:
             + b"NXT\0\0\0\0\0\0\0\0\0\0\0\0"
             + bytes.fromhex("01020304050600" "11121314" "21222324")
         )
-        name, address, signal_strength, user_flash = brick.get_device_info()
+        name, address, signal_strengths, user_flash = brick.get_device_info()
         assert sock.mock_calls == sent_recved(bytes.fromhex("019b"))
         assert name == "NXT"
         assert address == "01:02:03:04:05:06"
-        # TODO: This is wrong, signal_strength should be 4 link qualities.
-        assert signal_strength == 0x14131211
+        assert signal_strengths == (0x11, 0x12, 0x13, 0x14)
         assert user_flash == 0x24232221
 
     def test_delete_user_flash(self, sock, brick):

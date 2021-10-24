@@ -211,12 +211,17 @@ def _parse_get_device_info(tgram):
     a3 = tgram.parse_u8()
     a4 = tgram.parse_u8()
     a5 = tgram.parse_u8()
+    # a6 is not used, should be zero.
     a6 = tgram.parse_u8()
-    # FIXME: what is a6 for?
     address = '%02X:%02X:%02X:%02X:%02X:%02X' % (a0, a1, a2, a3, a4, a5)
-    signal_strength = tgram.parse_u32()
+    signal_strengths = (
+        tgram.parse_u8(),
+        tgram.parse_u8(),
+        tgram.parse_u8(),
+        tgram.parse_u8(),
+    )
     user_flash = tgram.parse_u32()
-    return (name, address, signal_strength, user_flash)
+    return (name, address, signal_strengths, user_flash)
 
 def delete_user_flash(opcode):
     return _create(opcode)

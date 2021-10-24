@@ -25,10 +25,10 @@ b = None
 try:
     print('Find brick...', flush=True)
     b = nxt.locator.find_one_brick(debug=debug)
-    name, host, signal_strength, user_flash = b.get_device_info()
+    name, host, signal_strengths, user_flash = b.get_device_info()
     print('NXT brick name: %s' % name)
     print('Host address: %s' % host)
-    print('Bluetooth signal strength: %s' % signal_strength)
+    print('Bluetooth signal strengths: %r' % (signal_strengths,))
     print('Free user flash: %s' % user_flash)
     prot_version, fw_version = b.get_firmware_version()
     print('Protocol version %s.%s' % prot_version)
