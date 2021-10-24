@@ -247,18 +247,14 @@ class TestSystem:
         assert sock.mock_calls == sent_recved(bytes.fromhex("01a0"))
 
     def test_poll_command_length(self, sock, brick):
-        # TODO: This is wrong, it follows the NXT Bluetooth Developer Kit document, but
-        # actual firmware has status first as usual.
-        sock.recv.return_value = bytes.fromhex("02a101 00 07")
+        sock.recv.return_value = bytes.fromhex("02a100 01 07")
         buf_num, size = brick.poll_command_length(1)
         assert sock.mock_calls == sent_recved(bytes.fromhex("01a1 01"))
         assert buf_num == 1
         assert size == 7
 
     def test_poll_command(self, sock, brick):
-        # TODO: This is wrong, it follows the NXT Bluetooth Developer Kit document, but
-        # actual firmware has status first as usual.
-        sock.recv.return_value = bytes.fromhex("02a201 00 07 212223242526270000")
+        sock.recv.return_value = bytes.fromhex("02a200 01 07 212223242526270000")
         buf_num, command = brick.poll_command(1, 9)
         assert sock.mock_calls == sent_recved(bytes.fromhex("01a2 01 09"))
         assert buf_num == 1

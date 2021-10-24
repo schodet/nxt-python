@@ -235,8 +235,8 @@ def poll_command_length(opcode, buf_num):
     return tgram
 
 def _parse_poll_command_length(tgram):
-    buf_num = tgram.parse_u8()
     tgram.check_status()
+    buf_num = tgram.parse_u8()
     size = tgram.parse_u8()
     return (buf_num, size)
 
@@ -247,8 +247,8 @@ def poll_command(opcode, buf_num, size):
     return tgram
 
 def _parse_poll_command(tgram):
-    buf_num = tgram.parse_u8()
     tgram.check_status()
+    buf_num = tgram.parse_u8()
     size = tgram.parse_u8()
     command = tgram.parse_bytes(size)
     return (buf_num, command)
