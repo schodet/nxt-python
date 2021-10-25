@@ -1,2 +1,3 @@
-include docs/*.html *.url *.css *.txt
-include README LICENSE install.bat MANIFEST.in
+include logo.svg
+include tests/*.py
+include scripts/python-nxt-filer.desktop
