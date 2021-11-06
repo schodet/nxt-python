@@ -1,4 +1,4 @@
-# ![NXT-Python](https://cdn.jsdelivr.net/gh/schodet/nxt-python@master/logo.svg)
+# ![NXT-Python](./logo.svg)
 
 **The NXT-Python v3 implementation is incomplete, but this is currently being
 worked on. Stay tuned!**
