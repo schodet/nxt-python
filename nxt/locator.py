@@ -42,7 +42,7 @@ def find_bricks(host=None, name=None, silent=False, method=Method()):
         try:
             from . import usbsock
             methods_available += 1
-            socks = usbsock.find_bricks(host, name)
+            socks = usbsock.find_bricks()
             for s in socks:
                 yield s
         except ImportError:

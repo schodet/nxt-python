@@ -18,6 +18,33 @@ import nxt.brick
 import nxt.motcont
 
 
+def pytest_addoption(parser):
+    parser.addoption(
+        "--run-nxt",
+        action="append",
+        choices=("usb",),
+        metavar="usb",
+        default=[],
+        help="run tests needing a real NXT connected over given interface",
+    )
+
+
+def pytest_configure(config):
+    config.addinivalue_line("markers", "nxt: mark test as needing a real NXT")
+
+
+def pytest_collection_modifyitems(config, items):
+    run_nxt = config.getoption("--run-nxt")
+    for item in items:
+        for marker in item.iter_markers("nxt"):
+            if marker.args[0] not in run_nxt:
+                item.add_marker(
+                    pytest.mark.skip(
+                        reason="need --run-nxt=%s option to run" % marker.args[0]
+                    )
+                )
+
+
 @pytest.fixture
 def mtime():
     with patch("nxt.motcont.time") as time:
