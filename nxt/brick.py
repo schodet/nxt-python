@@ -231,6 +231,9 @@ class Brick(object, metaclass=_Meta): #TODO: this begs to have explicit methods
         Other parameters (`buffering`, `encoding`, `errors` and `newline`) have the same
         meaning as the standard :func:`open` function, they must be given as keyword
         parameters.
+
+        When `encoding` is None or not given, it defaults to ``ascii`` as this is the
+        only encoding understood by the NXT brick.
         """
         rw = None
         tb = None
@@ -255,6 +258,8 @@ class Brick(object, metaclass=_Meta): #TODO: this begs to have explicit methods
         else:
             if buffering == 0:
                 raise ValueError("invalid buffering argument for text mode")
+            if encoding is None:
+                encoding = "ascii"
         if buffering == -1:
             buffering = self.sock.bsize
         if rw == "r":

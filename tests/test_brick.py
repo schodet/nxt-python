@@ -557,6 +557,18 @@ class TestFilesModules:
             call.close(0x42),
         ]
 
+    def test_file_write_text_encoding(self, mbrick):
+        mbrick.open_write.return_value = 0x42
+        mbrick.write.return_value = (0x42, 16)
+        f = mbrick.open_file("test.txt", "wt", 16, errors="replace")
+        f.write("un petit café ?\n")
+        f.close()
+        assert mbrick.mock_calls == [
+            call.open_write("test.txt", 16),
+            call.write(0x42, b"un petit caf? ?\n"),
+            call.close(0x42),
+        ]
+
     def test_file_write_bin(self, mbrick):
         mbrick.open_write.return_value = 0x42
         mbrick.write.return_value = (0x42, 7)
