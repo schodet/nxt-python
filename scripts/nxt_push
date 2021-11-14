@@ -16,22 +16,19 @@
 
 import sys
 import nxt.locator
-from nxt.brick import FileWriter
 from nxt.error import FileNotFound
 from nxt.utils import parse_command_line_arguments
 
 def _write_file(b, fname, data):
-    w = FileWriter(b, fname, len(data))
-    print('Pushing %s (%d bytes) ...' % (fname, w.size), end=' ')
+    print('Pushing %s (%d bytes) ...' % (fname, len(data)), end=' ')
     sys.stdout.flush()
-    w.write(data)
+    with b.open_file(fname, 'wb', len(data)) as w:
+        w.write(data)
     print('wrote %d bytes' % len(data))
-    w.close()
 
 def write_file(b, fname):
-    f = open(fname, 'rb')
-    data = f.read()
-    f.close()
+    with open(fname, 'rb') as f:
+        data = f.read()
     try:
         b.delete(fname)
         print('Overwriting %s on NXT' % fname)

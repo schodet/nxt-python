@@ -510,10 +510,22 @@ class TestFilesModules:
             ("Dummy", 0x01020304, 0, 12),
         ]
 
-    def test_file_read(self, mbrick):
+    def test_file_read_text(self, mbrick):
+        mbrick.open_read.return_value = (0x42, 12)
+        mbrick.read.return_value = (0x42, b"hello\nworld\n")
+        with mbrick.open_file("test.txt") as f:
+            results = list(f)
+        assert results == ["hello\n", "world\n"]
+        assert mbrick.mock_calls == [
+            call.open_read("test.txt"),
+            call.read(0x42, 12),
+            call.close(0x42),
+        ]
+
+    def test_file_read_bin(self, mbrick):
         mbrick.open_read.return_value = (0x42, 7)
         mbrick.read.return_value = (0x42, bytes.fromhex("21222324252627"))
-        with mbrick.open_file("test.bin", "r") as f:
+        with mbrick.open_file("test.bin", "rb") as f:
             assert f.read() == bytes.fromhex("21222324252627")
         assert mbrick.mock_calls == [
             call.open_read("test.bin"),
@@ -521,21 +533,34 @@ class TestFilesModules:
             call.close(0x42),
         ]
 
-    def test_file_read_iter(self, mbrick):
+    def test_file_read_raw(self, mbrick):
         mbrick.open_read.return_value = (0x42, 7)
         mbrick.read.return_value = (0x42, bytes.fromhex("21222324252627"))
-        with mbrick.open_file("test.bin", "r") as f:
-            assert list(f) == [bytes.fromhex("21222324252627")]
+        with mbrick.open_file("test.bin", "rb", buffering=0) as f:
+            assert f.read() == bytes.fromhex("21222324252627")
         assert mbrick.mock_calls == [
             call.open_read("test.bin"),
             call.read(0x42, 7),
             call.close(0x42),
         ]
 
-    def test_file_write(self, mbrick):
+    def test_file_write_text(self, mbrick):
+        mbrick.open_write.return_value = 0x42
+        mbrick.write.return_value = (0x42, 12)
+        f = mbrick.open_file("test.txt", "wt", 12)
+        f.write("hello\n")
+        f.write("world\n")
+        f.close()
+        assert mbrick.mock_calls == [
+            call.open_write("test.txt", 12),
+            call.write(0x42, b"hello\nworld\n"),
+            call.close(0x42),
+        ]
+
+    def test_file_write_bin(self, mbrick):
         mbrick.open_write.return_value = 0x42
         mbrick.write.return_value = (0x42, 7)
-        f = mbrick.open_file("test.bin", "w", 7)
+        f = mbrick.open_file("test.bin", "wb", 7)
         f.write(bytes.fromhex("21222324252627"))
         f.close()
         assert mbrick.mock_calls == [
@@ -543,3 +568,68 @@ class TestFilesModules:
             call.write(0x42, bytes.fromhex("21222324252627")),
             call.close(0x42),
         ]
+
+    def test_file_write_raw(self, mbrick):
+        mbrick.open_write.return_value = 0x42
+        mbrick.write.return_value = (0x42, 7)
+        f = mbrick.open_file("test.bin", "wb", 7, buffering=0)
+        f.write(bytes.fromhex("21222324252627"))
+        f.close()
+        assert mbrick.mock_calls == [
+            call.open_write("test.bin", 7),
+            call.write(0x42, bytes.fromhex("21222324252627")),
+            call.close(0x42),
+        ]
+
+    def test_file_write_too_much(self, mbrick):
+        mbrick.open_write.return_value = 0x42
+        mbrick.write.return_value = (0x42, 7)
+        f = mbrick.open_file("test.bin", "wb", 7)
+        f.write(bytes.fromhex("2122232425262728"))
+        with pytest.raises(ValueError):
+            # Flush done on close.
+            f.close()
+        assert f.closed
+        assert mbrick.mock_calls == [
+            call.open_write("test.bin", 7),
+            call.write(0x42, bytes.fromhex("21222324252627")),
+            call.close(0x42),
+        ]
+
+    def test_file_write_closed(self, mbrick):
+        mbrick.open_write.return_value = 0x42
+        mbrick.write.return_value = (0x42, 7)
+        # Write directly to raw file to bypass error check in buffered file.
+        f = mbrick.open_file("test.bin", "wb", 7, buffering=0)
+        f.close()
+        assert f.closed
+        with pytest.raises(ValueError):
+            f.write(bytes.fromhex("28"))
+        assert mbrick.mock_calls == [
+            call.open_write("test.bin", 7),
+            call.close(0x42),
+        ]
+
+    def test_file_invalid_params(self, mbrick):
+        with pytest.raises(ValueError):
+            mbrick.open_file("test.bin", "ww", 7)
+        with pytest.raises(ValueError):
+            mbrick.open_file("test.bin", "wr", 7)
+        with pytest.raises(ValueError):
+            mbrick.open_file("test.bin", "tb")
+        with pytest.raises(ValueError):
+            mbrick.open_file("test.bin", "t")
+        with pytest.raises(ValueError):
+            mbrick.open_file("test.bin", "x")
+        with pytest.raises(ValueError):
+            mbrick.open_file("test.bin", "rb", encoding="ascii")
+        with pytest.raises(ValueError):
+            mbrick.open_file("test.bin", "rb", errors="ignore")
+        with pytest.raises(ValueError):
+            mbrick.open_file("test.bin", "rb", newline="\n")
+        with pytest.raises(ValueError):
+            mbrick.open_file("test.bin", "r", buffering=0)
+        with pytest.raises(ValueError):
+            mbrick.open_file("test.bin", "r", 7)
+        with pytest.raises(ValueError):
+            mbrick.open_file("test.bin", "w")

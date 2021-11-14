@@ -14,8 +14,10 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+import io
 from time import sleep
 from threading import Lock
+
 from nxt.error import FileNotFound, ModuleNotFound
 from nxt.telegram import OPCODES, Telegram
 from nxt.sensor import get_sensor
@@ -83,107 +85,57 @@ class FileFinder(object):
             yield result
 
 
-def File(brick, name, mode='r', size=None):
-    """Opens a file for reading/writing. Mode is 'r' or 'w'. If mode is 'w',
-    size must be provided.
-    """
-    if mode == 'w':
-        if size is not None:
-            return FileWriter(brick, name, size)
-        else:
-            return ValueError('Size not specified')
-    elif mode == 'r':
-        return FileReader(brick, name)
-    else:
-        return ValueError('Mode ' + str(mode) + ' not supported')
+class RawFileReader(io.RawIOBase):
+    """Implement RawIOBase for reading a file on the NXT brick."""
 
-
-class FileReader(object):
-    """Context manager to read a file on a NXT brick. Do use the iterator or
-    the read() method, but not both at the same time!
-    The iterator returns strings of an arbitrary (short) length.
-    """
-
-    def __init__(self, brick, fname):
-        self.brick = brick
-        self.handle, self.size = brick.open_read(fname)
-
-    def read(self, bytes=None):
-        if bytes is not None:
-            remaining = bytes
-        else:
-            remaining = self.size
-        bsize = self.brick.sock.bsize
-        data = []
-        while remaining > 0:
-            handle, buffer_ = self.brick.read(self.handle,
-                min(bsize, remaining))
-            bsize = len(buffer_)
-            remaining -= bsize
-            data.append(buffer_)
-        return b''.join(data)
+    def __init__(self, brick, name):
+        self._brick = brick
+        self._handle, self._remaining = brick.open_read(name)
 
     def close(self):
-        if self.handle is not None:
-            self.brick.close(self.handle)
-            self.handle = None
+        if not self.closed:
+            super().close()
+            self._brick.close(self._handle)
 
-    def __del__(self):
-        self.close()
+    def readable(self):
+        return True
 
-    def __enter__(self):
-        return self
-
-    def __exit__(self, etp, value, tb):
-        self.close()
-
-    def __iter__(self):
-        rem = self.size
-        bsize = self.brick.sock.bsize
-        while rem > 0:
-            handle, data = self.brick.read(self.handle, min(bsize, rem))
-            yield data
-            bsize = len(data)
-            rem -= bsize
+    def readinto(self, b):
+        rsize = min(self._brick.sock.bsize, self._remaining, len(b))
+        if rsize == 0:
+            return 0
+        _, data = self._brick.read(self._handle, rsize)
+        size = len(data)
+        self._remaining -= size
+        b[0:size] = data
+        return size
 
 
-class FileWriter(object):
-    "Object to write to a file on a NXT brick"
+class RawFileWriter(io.RawIOBase):
+    """Implement RawIOBase for writing a file on the NXT brick."""
 
-    def __init__(self, brick, fname, size):
-        self.brick = brick
-        self.handle = self.brick.open_write(fname, size)
-        self._position = 0
-        self.size = size
-
-    def __del__(self):
-        self.close()
+    def __init__(self, brick, name, size):
+        self._brick = brick
+        self._handle = brick.open_write(name, size)
+        self._remaining = size
 
     def close(self):
-        if self.handle is not None:
-            self.brick.close(self.handle)
-            self.handle = None
+        if not self.closed:
+            super().close()
+            self._brick.close(self._handle)
 
-    def tell(self):
-        return self._position
+    def writable(self):
+        return True
 
-    def write(self, data):
-        remaining = len(data)
-        if remaining > self.size - self._position:
-            raise ValueError('Data will not fit into remaining space')
-        bsize = self.brick.sock.bsize
-        data_position = 0
-
-        while remaining > 0:
-            batch_size = min(bsize, remaining)
-            next_data_position = data_position + batch_size
-            buffer_ = data[data_position:next_data_position]
-
-            handle, size = self.brick.write(self.handle, buffer_)
-
-            self._position += batch_size
-            data_position = next_data_position
-            remaining -= batch_size
+    def write(self, b):
+        if self.closed:
+            raise ValueError("write to closed file")
+        if self._remaining == 0:
+            raise ValueError("write to a full file")
+        wsize = min(self._brick.sock.bsize, self._remaining, len(b))
+        _, size = self._brick.write(self._handle, bytes(b[:wsize]))
+        self._remaining -= size
+        return size
 
 
 class ModuleFinder(object):
@@ -235,7 +187,95 @@ class Brick(object, metaclass=_Meta): #TODO: this begs to have explicit methods
     def __del__(self):
         self.sock.close()
 
+    def open_file(
+        self,
+        name,
+        mode="r",
+        size=None,
+        *,
+        buffering=-1,
+        encoding=None,
+        errors=None,
+        newline=None
+    ):
+        """Open a file and return a corresponding file-like object.
+
+        :param str name: Name of the file to open.
+        :param str mode: Specification of open mode.
+        :param int size: For writing, give the final size of the file.
+        :param int buffering: Buffering control.
+        :param encoding: Encoding for text mode.
+        :type encoding: str or None
+        :param errors: Encoding error handling for text mode.
+        :type errors: str or None
+        :param newline: Newline handling for text mode.
+        :type newline: str or None
+        :return: A file-like object connected to the file on the NXT brick.
+        :rtype: file-like
+
+        `mode` is a string which specifies how the file should be open. You can combine
+        several characters to build the specification:
+
+        =========  =====================================
+        Character  Meaning
+        =========  =====================================
+        'r'        open for reading (default)
+        'w'        open for writing (`size` must be given)
+        't'        use text mode (default)
+        'b'        use binary mode
+        =========  =====================================
+
+        When writing a file, the NXT brick needs to know the total size when opening the
+        file, so this must be given as parameter.
+
+        Other parameters (`buffering`, `encoding`, `errors` and `newline`) have the same
+        meaning as the standard :func:`open` function, they must be given as keyword
+        parameters.
+        """
+        rw = None
+        tb = None
+        for c in mode:
+            if c in "rw" and rw is None:
+                rw = c
+            elif c in "tb" and tb is None:
+                tb = c
+            else:
+                raise ValueError("invalid mode")
+        if rw is None:
+            raise ValueError("must give read or write mode")
+        if tb is None:
+            tb = "t"
+        if tb == "b":
+            if encoding is not None:
+                raise ValueError("invalid encoding argument for binary mode")
+            if errors is not None:
+                raise ValueError("invalid errors argument for binary mode")
+            if newline is not None:
+                raise ValueError("invalid newline argument for binary mode")
+        else:
+            if buffering == 0:
+                raise ValueError("invalid buffering argument for text mode")
+        if buffering == -1:
+            buffering = self.sock.bsize
+        if rw == "r":
+            if size is not None:
+                raise ValueError("size given for reading")
+            raw = RawFileReader(self, name)
+            if buffering == 0:
+                return raw
+            buf = io.BufferedReader(raw, buffering)
+        else:
+            if size is None:
+                raise ValueError("size not given for writing")
+            raw = RawFileWriter(self, name, size)
+            if buffering == 0:
+                return raw
+            buf = io.BufferedWriter(raw, buffering)
+        if tb == "t":
+            return io.TextIOWrapper(buf, encoding, errors, newline, buffering == 1)
+        else:
+            return buf
+
     find_files = FileFinder
     find_modules = ModuleFinder
-    open_file = File
     get_sensor = get_sensor

@@ -49,10 +49,11 @@ from gi.repository import Gtk
 
 import os.path
 import urllib.request
+import shutil
 import sys
 
 import nxt.locator
-from nxt.brick import FileFinder, FileReader, FileWriter
+from nxt.brick import FileFinder
 from nxt.utils import parse_command_line_arguments
 
 from usb.core import USBError
@@ -79,10 +80,9 @@ def delete_file(b, fname):
         print("Deleted %s" % fname)
 
 def read_file(b, fname):
-    with FileReader(b, fname) as r:
+    with b.open_file(fname, 'rb') as r:
         with open(fname, 'wb') as f:
-            for data in r:
-                f.write(data)
+            shutil.copyfileobj(r, f)
 
 def file_exists_dialog(win, fname):
     fileexists_str = "Cannot add %s!" % fname
@@ -114,12 +114,10 @@ def usb_error_dialog(win):
 
 def write_file(win, b, fname, data):
     try:
-        w = FileWriter(b, fname, len(data))
         if DEBUG:
-            print("Pushing %s (%d bytes) ..." % (fname, w.size)),
-        sys.stdout.flush()
-        w.write(data)
-        w.close()
+            print("Pushing %s (%d bytes) ..." % (fname, len(data)))
+        with b.open_file(fname, 'wb', len(data)) as w:
+            w.write(data)
         if DEBUG:
             print("wrote %d bytes" % len(data))
     except FileExistsError:
