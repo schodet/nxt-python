@@ -53,7 +53,6 @@ import shutil
 import sys
 
 import nxt.locator
-from nxt.brick import FileFinder
 from nxt.utils import parse_command_line_arguments
 
 from usb.core import USBError
@@ -148,11 +147,9 @@ class NXTListing(Gtk.ListStore):
         'Create an empty file list'
         Gtk.ListStore.__init__(self, str, str)
         self.set_sort_column_id(0, Gtk.SortType(Gtk.SortType.ASCENDING))
-###        self.populate(brick, '*.*')
 
     def populate(self, brick, pattern):
-        f = FileFinder(brick, pattern)
-        for (fname, size) in f:
+        for (fname, size) in brick.find_files(pattern):
             self.append((fname, str(size)))
 
 

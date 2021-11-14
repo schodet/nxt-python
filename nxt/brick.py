@@ -51,40 +51,6 @@ class _Meta(type):
             setattr(cls, poll_func.__name__, m)
 
 
-class FileFinder(object):
-    'A generator to find files on a NXT brick.'
-
-    def __init__(self, brick, pattern):
-        self.brick = brick
-        self.pattern = pattern
-        self.handle = None
-
-    def _close(self):
-        if self.handle is not None:
-            self.brick.close(self.handle)
-            self.handle = None
-
-    def __del__(self):
-        self._close()
-
-    def __iter__(self):
-        results = []
-        try:
-            self.handle, fname, size = self.brick.find_first(self.pattern)
-        except FileNotFound:
-            return None
-        results.append((fname, size))
-        while True:
-            try:
-                handle, fname, size = self.brick.find_next(self.handle)
-                results.append((fname, size))
-            except FileNotFound:
-                self._close()
-                break
-        for result in results:
-            yield result
-
-
 class RawFileReader(io.RawIOBase):
     """Implement RawIOBase for reading a file on the NXT brick."""
 
@@ -136,40 +102,6 @@ class RawFileWriter(io.RawIOBase):
         _, size = self._brick.write(self._handle, bytes(b[:wsize]))
         self._remaining -= size
         return size
-
-
-class ModuleFinder(object):
-    'Iterator to lookup modules on a NXT brick'
-
-    def __init__(self, brick, pattern):
-        self.brick = brick
-        self.pattern = pattern
-        self.handle = None
-
-    def _close(self):
-        if self.handle:
-            self.brick.close_module_handle(self.handle)
-            self.handle = None
-
-    def __del__(self):
-        self._close()
-
-    def __iter__(self):
-        try:
-            self.handle, mname, mid, msize, miomap_size = \
-                self.brick.request_first_module(self.pattern)
-        except ModuleNotFound:
-            return None
-        yield (mname, mid, msize, miomap_size)
-        while True:
-            try:
-                handle, mname, mid, msize, miomap_size = \
-                    self.brick.request_next_module(
-                    self.handle)
-                yield (mname, mid, msize, miomap_size)
-            except ModuleNotFound:
-                self._close()
-                break
 
 
 class Brick(object, metaclass=_Meta): #TODO: this begs to have explicit methods
@@ -281,6 +213,58 @@ class Brick(object, metaclass=_Meta): #TODO: this begs to have explicit methods
         else:
             return buf
 
-    find_files = FileFinder
-    find_modules = ModuleFinder
+    def find_files(self, pattern="*.*"):
+        """Find all files matching a pattern.
+
+        :param str pattern: Pattern to match files against.
+        :return: An iterator on all matching files, returning file name and
+            file size as a tuple.
+        :rtype: Iterator[str, int]
+
+        Accepted patterns are:
+
+        - ``*.*``: to match anything (default),
+        - ``<name>.*``: to match files with any extension,
+        - ``*.<extension>``: to match files with given extension,
+        - ``<name>.<extension>``: to match using full name.
+        """
+        try:
+            handle, name, size = self.find_first(pattern)
+        except FileNotFound:
+            return None
+        try:
+            yield name, size
+            while True:
+                try:
+                    _, name, size = self.find_next(handle)
+                except FileNotFound:
+                    break
+                yield name, size
+        finally:
+            self.close(handle)
+
+    def find_modules(self, pattern="*.*"):
+        """Find all modules matching a pattern.
+
+        :param str pattern: Pattern to match modules against, use ``*.*``
+            (default) to match any module.
+        :return: An iterator on all matching modules, returning module name,
+            identifier, size and IO map size as a tuple.
+        :rtype: Iterator[str, int, int, int]
+        """
+        try:
+            handle, mname, mid, msize, miomap_size = self.request_first_module(pattern)
+        except ModuleNotFound:
+            return None
+        try:
+            yield mname, mid, msize, miomap_size
+            while True:
+                try:
+                    _, mname, mid, msize, miomap_size = self.request_next_module(handle)
+                except ModuleNotFound:
+                    break
+                yield mname, mid, msize, miomap_size
+        finally:
+            self.close_module_handle(handle)
+
     get_sensor = get_sensor

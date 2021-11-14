@@ -473,6 +473,17 @@ class TestFilesModules:
             call.close(0x42),
         ]
 
+    def test_find_files_interrupted(self, mbrick):
+        mbrick.find_first.return_value = (0x42, "test.rxe", 0x04030201)
+        mbrick.find_next.side_effect = [nxt.error.FileNotFound()]
+        g = mbrick.find_files("*.*")
+        assert next(g) == ("test.rxe", 0x04030201)
+        g.close()
+        assert mbrick.mock_calls == [
+            call.find_first("*.*"),
+            call.close(0x42),
+        ]
+
     def test_find_modules_none(self, mbrick):
         mbrick.request_first_module.side_effect = [nxt.error.ModuleNotFound()]
         results = list(mbrick.find_modules("*.*"))
