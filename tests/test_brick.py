@@ -288,7 +288,7 @@ class TestDirect:
         assert sock.mock_calls == sent(bytes.fromhex("8003 b801 e803"))
 
     def test_play_tone_and_wait(self, sock, brick):
-        with patch("nxt.brick.sleep") as sleep:
+        with patch("nxt.brick.time.sleep") as sleep:
             brick.play_tone_and_wait(440, 1000)
             assert sock.mock_calls == sent(bytes.fromhex("8003 b801 e803"))
             assert sleep.mock_calls == [call(1)]

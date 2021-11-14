@@ -15,13 +15,14 @@
 # GNU General Public License for more details.
 
 import io
-from time import sleep
-from threading import Lock
+import threading
+import time
 
 from nxt.error import FileNotFound, ModuleNotFound
-from nxt.telegram import OPCODES, Telegram
-from nxt.sensor import get_sensor
 from nxt.motcont import MotCont
+from nxt.sensor import get_sensor
+from nxt.telegram import OPCODES, Telegram
+
 
 def _make_poller(opcode, poll_func, parse_func):
     def poll(self, *args, **kwargs):
@@ -34,10 +35,12 @@ def _make_poller(opcode, poll_func, parse_func):
             return parse_func(igram)
         else:
             return None
+
     return poll
 
+
 class _Meta(type):
-    'Metaclass which adds one method for each telegram opcode'
+    """Metaclass which adds one method for each telegram opcode"""
 
     def __init__(cls, name, bases, dict):
         super(_Meta, cls).__init__(name, bases, dict)
@@ -46,7 +49,7 @@ class _Meta(type):
             m = _make_poller(opcode, poll_func, parse_func)
             try:
                 m.__doc__ = OPCODES[opcode][2]
-            except:
+            except IndexError:
                 pass
             setattr(cls, poll_func.__name__, m)
 
@@ -104,17 +107,17 @@ class RawFileWriter(io.RawIOBase):
         return size
 
 
-class Brick(object, metaclass=_Meta): #TODO: this begs to have explicit methods
-    'Main object for NXT Control'
+class Brick(object, metaclass=_Meta):  # TODO: this begs to have explicit methods
+    """Main object for NXT Control"""
 
     def __init__(self, sock):
         self.sock = sock
-        self.lock = Lock()
+        self.lock = threading.Lock()
         self.mc = MotCont(self)
 
     def play_tone_and_wait(self, frequency, duration):
         self.play_tone(frequency, duration)
-        sleep(duration / 1000.0)
+        time.sleep(duration / 1000.0)
 
     def __del__(self):
         self.sock.close()
