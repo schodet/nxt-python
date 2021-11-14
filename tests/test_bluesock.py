@@ -1,4 +1,4 @@
-# test_usbsock -- Test nxt.usbsock module
+# test_bluesock -- Test nxt.bluesock module
 # Copyright (C) 2021  Nicolas Schodet
 #
 # This program is free software: you can redistribute it and/or modify
@@ -10,78 +10,74 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-import array
 from unittest.mock import Mock, patch
 
 import pytest
 
-import nxt.usbsock
+import nxt.bluesock
 
 
 @pytest.fixture
-def mdev():
-    dev = Mock(
+def msock():
+    sock = Mock(
         spec_set=(
-            "reset",
-            "set_configuration",
-            "get_active_configuration",
-            "bus",
-            "address",
+            "connect",
+            "close",
+            "send",
+            "recv",
         )
     )
-    dev.bus = 1
-    dev.address = 2
-    return dev
+    return sock
 
 
 @pytest.fixture
-def musb(mdev):
-    with patch("nxt.usbsock.usb.core") as usb_core:
-        usb_core.find.return_value = [mdev]
-        yield usb_core
+def mbluetooth(msock):
+    with patch("nxt.bluesock.bluetooth") as bluetooth:
+        bluetooth.discover_devices.return_value = [("00:01:02:03:04:05", "NXT")]
+        bluetooth.BluetoothSocket.return_value = msock
+        yield bluetooth
 
 
-def test_usbsock(musb, mdev):
+def test_bluesock(mbluetooth, msock):
     # Find brick.
-    socks = list(nxt.usbsock.find_bricks())
+    socks = list(nxt.bluesock.find_bricks())
     assert len(socks) == 1
     sock = socks[0]
     sock.debug = True
     # str.
-    assert str(sock).startswith("USB (Bus")
+    assert str(sock) == "Bluetooth (00:01:02:03:04:05)"
     # Connect.
-    epout = Mock(spec_set=("write",))
-    epin = Mock(spec_set=("read",))
-    mdev.get_active_configuration.return_value = {(0, 0): (epout, epin)}
     brick = sock.connect()
-    assert mdev.reset.called
-    assert mdev.set_configuration.called
-    assert mdev.get_active_configuration.called
+    assert mbluetooth.BluetoothSocket.called
+    assert msock.connect.called
     # Send.
     some_bytes = bytes.fromhex("01020304")
+    some_len = bytes.fromhex("0400")
+    some_bytes_with_len = some_len + some_bytes
     sock.send(some_bytes)
-    assert epout.write.call_args == ((some_bytes,),)
+    assert msock.send.call_args == ((some_bytes_with_len,),)
     # Recv.
-    epin.read.return_value = array.array("B", (1, 2, 3, 4))
+    msock.recv.side_effect = [some_len, some_bytes]
     r = sock.recv()
     assert r == some_bytes
-    assert epin.read.called
+    assert msock.recv.called
     # Close.
     # TODO: brick.__del__ should close the socket, but nobody knows when
     # python calls the destructor.
     sock.close()
+    assert msock.close.called
     del brick
 
 
-@pytest.mark.nxt("usb")
-def test_usbsock_real():
+@pytest.mark.nxt("bluetooth")
+def test_bluesock_real():
     # Find brick.
-    socks = list(nxt.usbsock.find_bricks())
+    socks = list(nxt.bluesock.find_bricks())
     assert len(socks) > 0, "no NXT found"
     sock = socks[0]
     sock.debug = True
     # str.
-    assert str(sock).startswith("USB (Bus")
+    assert str(sock).startswith("Bluetooth (")
     # Connect.
     brick = sock.connect()
     # Send.

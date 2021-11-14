@@ -16,67 +16,68 @@ try:
     import bluetooth
 except ImportError:
     from . import lightblueglue as bluetooth
+
+import struct
+
 from nxt.brick import Brick
 
-class BlueSock(object):
 
-    bsize = 118  # Bluetooth socket block size
-    PORT = 1     # Standard NXT rfcomm port
+class BlueSock:
+    """Bluetooth socket connected to a NXT brick."""
 
-    type = 'bluetooth'
+    bsize = 118
+    PORT = 1  # Standard NXT rfcomm port
 
-    def __init__(self, host, debug=False):
+    type = "bluetooth"
+
+    def __init__(self, host):
         self.host = host
         self.sock = None
-        self.debug = debug
+        self.debug = False
 
     def __str__(self):
-        return 'Bluetooth (%s)' % self.host
+        return "Bluetooth (%s)" % self.host
 
     def connect(self):
+        """Connect to NXT brick, return a Brick instance."""
         if self.debug:
-            print('Connecting via Bluetooth...')
+            print("Connecting via Bluetooth...")
         sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
         sock.connect((self.host, BlueSock.PORT))
         self.sock = sock
         if self.debug:
-            print('Connected.')
+            print("Connected.")
         return Brick(self)
 
     def close(self):
+        """Close the connection."""
         if self.debug:
-            print('Closing Bluetooth connection...')
+            print("Closing Bluetooth connection...")
         self.sock.close()
         if self.debug:
-            print('Bluetooth connection closed.')
+            print("Bluetooth connection closed.")
 
     def send(self, data):
-        data = bytes(data)
-        l0 = len(data) & 0xFF
-        l1 = (len(data) >> 8) & 0xFF
-        d = [l0, l1]
-        for item in data:
-            d.append(item)
-        d = bytes(d)
+        """Send raw data."""
+        data = struct.pack("<H", len(data)) + data
         if self.debug:
-            print('Sending byte: ' + str(data))
-        self.sock.send(d)
+            print("Send:", data.hex(":"))
+        self.sock.send(data)
 
     def recv(self):
+        """Receive raw data."""
         data = self.sock.recv(2)
-        l0 = data[0]
-        l1 = data[1]
-        plen = l0 + (l1 << 8)
+        if self.debug:
+            print("Recv:", data.hex(":"))
+        (plen,) = struct.unpack("<H", data)
         data = self.sock.recv(plen)
         if self.debug:
-            print('Recv:', end=' ')
-            print(':'.join('%02x' % c for c in data))
+            print("Recv:", data.hex(":"))
         return data
 
-def _check_brick(arg, value):
-    return arg is None or arg == value
 
 def find_bricks(host=None, name=None):
+    """Find all bricks connected using Bluetooth matching given host and name."""
     for h, n in bluetooth.discover_devices(lookup_names=True):
-        if _check_brick(host, h) and _check_brick(name, n):
+        if (host is None or h == host) and (name is None or n == name):
             yield BlueSock(h)

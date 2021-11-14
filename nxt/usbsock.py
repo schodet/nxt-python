@@ -67,7 +67,7 @@ class USBSock:
         self.epout.write(data)
 
     def recv(self):
-        """Recv raw data."""
+        """Receive raw data."""
         data = self.epin.read(64).tobytes()
         if self.debug:
             print("Recv:", data.hex(":"))
