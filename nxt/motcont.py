@@ -12,47 +12,58 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-import nxt
-import nxt.error
 import time
 from threading import Lock
 
+import nxt
+import nxt.error
+
+
 class MotorConError(nxt.error.ProtocolError):
+    """Raised on protocol error."""
+
     pass
+
 
 def _power(power):
     pw = abs(power)
-    psign = int(power >= 0) * 2 - 1
-    if psign == -1:
+    if power < 0:
         pw += 100
-    pw = str(pw)
-    pw = '0'*(3-len(pw))+pw #pad front with 0s to make 3 chars
-    return pw
+    return "{:03}".format(pw)
+
 
 def _tacho(tacholimit):
-    tacho = str(tacholimit)
-    tacho = '0'*(6-len(tacho))+tacho #pad front with 0s to make 6 chars
-    return tacho
+    return "{:06}".format(tacholimit)
 
-class MotCont():
-    '''
-This class provides an interface to Linus Atorf's MotorControl NXC
-program. It is a wrapper which follows the documentation at 
-http://www.mindstorms.rwth-aachen.de/trac/wiki/MotorControl
-and provides command strings and timing intervals as dictated there. To
-use this module, you will need to put MotorControl22.rxe on your NXT
-brick. This file and its corresponding source can be found at
-http://www.mindstorms.rwth-aachen.de/trac/browser/trunk/tools/MotorControl
-You can use nxt_push or any other nxt file manager to put the file on
-the NXT. Before using any of the functions here, use MotCont.start() to
-start the program. You can also start it manually my using the menu on
-the brick. When your script exits, it would be a good idea to do
-b.stop_program().
-'''
+
+class MotCont:
+    """Interface to MotorControl.
+
+    This class provides an interface to Linus Atorf's MotorControl NXC program. It is
+    a wrapper which follows the `MotorControl documentation`_ and provides command
+    strings and timing intervals as dictated there.
+
+    To use this module, you will need to put MotorControl22.rxe on your NXT brick. It
+    can be built using NXC and the corresponding source can be found at
+    https://github.com/schodet/MotorControl.
+
+    Use :func:`MotCont.start` to start the program. You can also start it manually my
+    using the menu on the brick. When your script exits, it would be a good idea to do
+    :func:`MotCont.stop`.
+
+    Original `MotorControl site`_ is no longer available, but you can still find
+    a mirror on web archive.
+
+    .. _MotorControl documentation:
+        https://github.com/schodet/MotorControl/blob/master/doc/MotorControl.md
+    .. _MotorControl site:
+        http://www.mindstorms.rwth-aachen.de/trac/wiki/MotorControl
+    """
+
     def __init__(self, brick):
         self.brick = brick
         self.is_ready_lock = Lock()
-        self.last_is_ready = time.time()-1
+        self.last_is_ready = time.time() - 1
         self.last_cmd = {}
 
     def _interval_is_ready(self):
@@ -80,11 +91,11 @@ b.stop_program().
         try:
             ports = frozenset(ports)
         except TypeError:
-            ports = frozenset((ports, ))
+            ports = frozenset((ports,))
         mapping = {
-            frozenset((nxt.motor.PORT_A, )): "0",
-            frozenset((nxt.motor.PORT_B, )): "1",
-            frozenset((nxt.motor.PORT_C, )): "2",
+            frozenset((nxt.motor.PORT_A,)): "0",
+            frozenset((nxt.motor.PORT_B,)): "1",
+            frozenset((nxt.motor.PORT_C,)): "2",
             frozenset((nxt.motor.PORT_A, nxt.motor.PORT_B)): "3",
             frozenset((nxt.motor.PORT_A, nxt.motor.PORT_C)): "4",
             frozenset((nxt.motor.PORT_B, nxt.motor.PORT_C)): "5",
@@ -93,81 +104,99 @@ b.stop_program().
         if ports not in mapping or len(ports) > max_ports:
             raise ValueError("invalid combination of ports")
         return ports, mapping[ports]
-    
-    def cmd(self, ports, power, tacholimit, speedreg=1, smoothstart=0, brake=0):
-        '''
-Sends a "CONTROLLED_MOTORCMD" to MotorControl. port is
-nxt.motor.PORT_[A-C], power is -100-100, tacholimit is 0-999999,
-speedreg is whether to try to maintain speeds under load, and brake is
-whether to enable active braking after the motor is in the specified
-place (DIFFERENT from the nxt.motor.turn() function's brake arg).'''
+
+    def cmd(
+        self, ports, power, tacholimit, speedreg=True, smoothstart=False, brake=False
+    ):
+        """Send a CONTROLLED_MOTORCMD to MotorControl.
+
+        :param ports: Port or ports to control, use one of the port constant of
+            `nxt.motor`, or a tuple with one or two of them.
+        :type ports: int or Iterable[int]
+        :param int power: Speed or power, -100 to 100.
+        :param int tacholimit: Position to drive to, 1 to 999999, or 0 for unlimited.
+        :param bool speedreg: True to enable regulation (default True).
+        :param bool smoothstart: True to enable smooth start (default False).
+        :param bool brake: True to hold brake at end of movement (default False).
+        """
         self._interval_is_ready()
         ports, strports = self._decode_ports(ports, 2)
         self._interval_motors(ports)
-        mode = str(
-            0x01*int(brake)+
-            0x02*int(speedreg)+
-            0x04*int(smoothstart)
-            )
-        command = '1'+strports+_power(power)+_tacho(tacholimit)+mode
+        mode = str(0x01 * int(brake) + 0x02 * int(speedreg) + 0x04 * int(smoothstart))
+        command = "1" + strports + _power(power) + _tacho(tacholimit) + mode
         self.brick.message_write(1, command.encode("ascii"))
         self._record_time_motors(ports)
-    
+
     def reset_tacho(self, ports):
-        '''
-Sends a "RESET_ERROR_CORRECTION" to MotorControl, which causes it to
-reset the current tacho count for that motor.'''
+        """Reset NXT tacho count.
+
+        :param ports: Port or ports to control, use one of the port constant of
+            `nxt.motor`, or a tuple with one to three of them.
+        :type ports: int or Iterable[int]
+        """
         self._interval_is_ready()
         ports, strports = self._decode_ports(ports, 3)
-        command = '2'+strports
+        command = "2" + strports
         self.brick.message_write(1, command.encode("ascii"))
         self._record_time_motors(ports)
-    
+
     def is_ready(self, port):
-        '''
-Sends an "ISMOTORREADY" to MotorControl and returns the reply.'''
+        """Determine the state of a single motor.
+
+        :param port: Port to control, use one of the port constant of `nxt.motor`, or
+            a tuple with one of them.
+        :type port: int or Iterable[int]
+        :return: True if the motor is ready to accept new commands.
+        """
         self._interval_is_ready()
         ports, strports = self._decode_ports(port, 1)
         with self.is_ready_lock:
-            command = '3'+strports
+            command = "3" + strports
             self.brick.message_write(1, command.encode("ascii"))
-            time.sleep(0.015) #10ms pause from the docs seems to not be adequate
+            time.sleep(0.015)  # 10ms pause from the docs seems to not be adequate
             reply = self.brick.message_read(0, 1, 1)[1]
             if chr(reply[0]) != strports:
-                raise MotorConError('wrong port returned from ISMOTORREADY')
+                raise MotorConError("wrong port returned from ISMOTORREADY")
         self.last_is_ready = time.time()
         return bool(int(chr(reply[1])))
 
-    def set_output_state(self, ports, power, tacholimit, speedreg=1):
-        '''
-Sends a "CLASSIC_MOTORCMD" to MotorControl. Brick is a brick object,
-port is nxt.motor.PORT_[A-C], power is -100-100, tacholimit is 0-999999,
-speedreg is whether to try to maintain speeds under load, and brake is
-whether to enable active braking after the motor is in the specified
-place (DIFFERENT from the nxt.motor.turn() function's brake arg).'''
+    def set_output_state(self, ports, power, tacholimit, speedreg=True):
+        """Send a CLASSIC_MOTORCMD to MotorControl.
+
+        :param ports: Port or ports to control, use one of the port constant of
+            `nxt.motor`, or a tuple with one or two of them.
+        :type ports: int or Iterable[int]
+        :param int power: Speed or power, -100 to 100.
+        :param int tacholimit: Position to drive to, 1 to 999999, or 0 for unlimited.
+        :param bool speedreg: True to enable regulation (default True).
+        """
         self._interval_is_ready()
         ports, strports = self._decode_ports(ports, 2)
         self._interval_motors(ports)
-        command = '4'+strports+_power(power)+_tacho(tacholimit)+str(speedreg)
+        command = "4" + strports + _power(power) + _tacho(tacholimit) + str(speedreg)
         self.brick.message_write(1, command.encode("ascii"))
         self._record_time_motors(ports)
 
     def start(self, version=22):
-        '''
-Starts the MotorControl program on the brick. It needs to already be
-present on the brick's flash and named MotorControlXX.rxc, where XX is
-the version number passed as the version arg (default is whatever is
-bundled with this version of nxt-python).'''
+        """Start the MotorControl program on the brick.
+
+        :param int version: Version to start, default to 22 (version 2.2).
+
+        It needs to already be present on the brick's flash and named
+        `MotorControlXX.rxc`, where XX is the version number passed as the version
+        argument.
+        """
         try:
             self.brick.stop_program()
             time.sleep(1)
         except nxt.error.DirProtError:
             pass
-        self.brick.start_program('MotorControl%d.rxe' % version)
+        self.brick.start_program("MotorControl%d.rxe" % version)
         time.sleep(0.1)
-    
+
     def stop(self):
-        '''
-Used to stop the MotorControl program. All this actually does is stop
-the currently running rxe.'''
+        """Stop the MotorControl program.
+
+        All this actually does is stop the currently running rxe.
+        """
         self.brick.stop_program()
