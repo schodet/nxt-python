@@ -80,18 +80,6 @@ place (DIFFERENT from the nxt.motor.turn() function's brake arg).'''
         self.brick.message_write(1, command.encode("ascii"))
         self.last_cmd[port] = time.time()
     
-    def move_to(self, port, power, tachocount, speedreg=1, smoothstart=0, brake=0):
-        '''
-Same as cmd(), except that the tachocount is subtracted from the motor's
-current position and that value is used to turn the motor. Power is
--100-100, but the sign is rewritten as needed.'''
-        tacho = nxt.Motor(self.brick, port).get_tacho().block_tacho_count
-        tacho = tachocount-tacho
-        tsign = int(tacho >= 0) * 2 - 1
-        tacho = abs(tacho)
-        power = abs(power)*tsign
-        self.cmd(port, power, tacho, speedreg, smoothstart, brake)
-    
     def reset_tacho(self, port):
         '''
 Sends a "RESET_ERROR_CORRECTION" to MotorControl, which causes it to

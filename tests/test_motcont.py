@@ -31,27 +31,6 @@ def test_cmd(mbrick):
     ]
 
 
-def test_move_to(mbrick):
-    mbrick.get_output_state.return_value = (
-        nxt.motor.PORT_B,
-        0,
-        0,
-        0,
-        0,
-        0,
-        1000,
-        2000,
-        3000,
-        4000,
-    )
-    mbrick.mc.move_to(nxt.motor.PORT_B, 100, 10000)
-    assert mbrick.mock_calls == [
-        call.get_output_state(nxt.motor.PORT_B),
-        call.get_output_state(nxt.motor.PORT_B),
-        call.message_write(1, msg("1 1 100 007000 2")),
-    ]
-
-
 def test_reset_tacho(mbrick):
     mbrick.mc.reset_tacho(nxt.motor.PORT_B)
     assert mbrick.mock_calls == [call.message_write(1, msg("2 1"))]
