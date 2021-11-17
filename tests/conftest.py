@@ -46,8 +46,19 @@ def pytest_collection_modifyitems(config, items):
 
 @pytest.fixture
 def mtime():
+    current_time = 0
     with patch("nxt.motcont.time") as time:
-        time.time.return_value = 0
+
+        def timef():
+            nonlocal current_time
+            return current_time
+
+        def sleepf(delay):
+            nonlocal current_time
+            current_time += delay
+
+        time.time.side_effect = timef
+        time.sleep.side_effect = sleepf
         yield time
 
 

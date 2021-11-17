@@ -34,12 +34,6 @@ def _tacho(tacholimit):
     tacho = '0'*(6-len(tacho))+tacho #pad front with 0s to make 6 chars
     return tacho
 
-def interval(delay, lastrun):
-    now = time.time()
-    if lastrun+delay > now:
-        diff = now - lastrun
-        time.sleep(delay - diff)
-
 class MotCont():
     '''
 This class provides an interface to Linus Atorf's MotorControl NXC
@@ -60,62 +54,103 @@ b.stop_program().
         self.is_ready_lock = Lock()
         self.last_is_ready = time.time()-1
         self.last_cmd = {}
+
+    def _interval_is_ready(self):
+        delay = 0.010
+        diff = time.time() - self.last_is_ready
+        if diff < delay:
+            time.sleep(delay - diff)
+
+    def _interval_motors(self, ports):
+        delay = 0.015
+        now = time.time()
+        diff = delay
+        for port in ports:
+            if port in self.last_cmd:
+                diff = min(diff, now - self.last_cmd[port])
+        if diff < delay:
+            time.sleep(delay - diff)
+
+    def _record_time_motors(self, ports):
+        now = time.time()
+        for port in ports:
+            self.last_cmd[port] = now
+
+    def _decode_ports(self, ports, max_ports):
+        try:
+            ports = frozenset(ports)
+        except TypeError:
+            ports = frozenset((ports, ))
+        mapping = {
+            frozenset((nxt.motor.PORT_A, )): "0",
+            frozenset((nxt.motor.PORT_B, )): "1",
+            frozenset((nxt.motor.PORT_C, )): "2",
+            frozenset((nxt.motor.PORT_A, nxt.motor.PORT_B)): "3",
+            frozenset((nxt.motor.PORT_A, nxt.motor.PORT_C)): "4",
+            frozenset((nxt.motor.PORT_B, nxt.motor.PORT_C)): "5",
+            frozenset((nxt.motor.PORT_A, nxt.motor.PORT_B, nxt.motor.PORT_C)): "6",
+        }
+        if ports not in mapping or len(ports) > max_ports:
+            raise ValueError("invalid combination of ports")
+        return ports, mapping[ports]
     
-    def cmd(self, port, power, tacholimit, speedreg=1, smoothstart=0, brake=0):
+    def cmd(self, ports, power, tacholimit, speedreg=1, smoothstart=0, brake=0):
         '''
 Sends a "CONTROLLED_MOTORCMD" to MotorControl. port is
 nxt.motor.PORT_[A-C], power is -100-100, tacholimit is 0-999999,
 speedreg is whether to try to maintain speeds under load, and brake is
 whether to enable active braking after the motor is in the specified
 place (DIFFERENT from the nxt.motor.turn() function's brake arg).'''
-        interval(0.010, self.last_is_ready)
-        if port in self.last_cmd:
-            interval(0.015, self.last_cmd[port])
+        self._interval_is_ready()
+        ports, strports = self._decode_ports(ports, 2)
+        self._interval_motors(ports)
         mode = str(
             0x01*int(brake)+
             0x02*int(speedreg)+
             0x04*int(smoothstart)
             )
-        command = '1'+str(port)+_power(power)+_tacho(tacholimit)+mode
+        command = '1'+strports+_power(power)+_tacho(tacholimit)+mode
         self.brick.message_write(1, command.encode("ascii"))
-        self.last_cmd[port] = time.time()
+        self._record_time_motors(ports)
     
-    def reset_tacho(self, port):
+    def reset_tacho(self, ports):
         '''
 Sends a "RESET_ERROR_CORRECTION" to MotorControl, which causes it to
 reset the current tacho count for that motor.'''
-        interval(0.010, self.last_is_ready)
-        command = '2'+str(port)
+        self._interval_is_ready()
+        ports, strports = self._decode_ports(ports, 3)
+        command = '2'+strports
         self.brick.message_write(1, command.encode("ascii"))
-        self.last_cmd[port] = time.time()
+        self._record_time_motors(ports)
     
     def is_ready(self, port):
         '''
 Sends an "ISMOTORREADY" to MotorControl and returns the reply.'''
-        interval(0.010, self.last_is_ready)
+        self._interval_is_ready()
+        ports, strports = self._decode_ports(port, 1)
         with self.is_ready_lock:
-            command = '3'+str(port)
+            command = '3'+strports
             self.brick.message_write(1, command.encode("ascii"))
             time.sleep(0.015) #10ms pause from the docs seems to not be adequate
             reply = self.brick.message_read(0, 1, 1)[1]
-            if chr(reply[0]) != str(port):
-                raise MotorConError('Wrong port returned from ISMOTORREADY')
+            if chr(reply[0]) != strports:
+                raise MotorConError('wrong port returned from ISMOTORREADY')
         self.last_is_ready = time.time()
         return bool(int(chr(reply[1])))
 
-    def set_output_state(self, port, power, tacholimit, speedreg=1):
+    def set_output_state(self, ports, power, tacholimit, speedreg=1):
         '''
 Sends a "CLASSIC_MOTORCMD" to MotorControl. Brick is a brick object,
 port is nxt.motor.PORT_[A-C], power is -100-100, tacholimit is 0-999999,
 speedreg is whether to try to maintain speeds under load, and brake is
 whether to enable active braking after the motor is in the specified
 place (DIFFERENT from the nxt.motor.turn() function's brake arg).'''
-        interval(0.010, self.last_is_ready)
-        if port in self.last_cmd:
-            interval(0.015, self.last_cmd[port])
-        command = '4'+str(port)+_power(power)+_tacho(tacholimit)+str(speedreg)
+        self._interval_is_ready()
+        ports, strports = self._decode_ports(ports, 2)
+        self._interval_motors(ports)
+        command = '4'+strports+_power(power)+_tacho(tacholimit)+str(speedreg)
         self.brick.message_write(1, command.encode("ascii"))
-        self.last_cmd[port] = time.time()
+        self._record_time_motors(ports)
 
     def start(self, version=22):
         '''
