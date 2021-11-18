@@ -61,14 +61,14 @@ class MotCont:
     """
 
     def __init__(self, brick):
-        self.brick = brick
-        self.is_ready_lock = Lock()
-        self.last_is_ready = time.time() - 1
-        self.last_cmd = {}
+        self._brick = brick
+        self._is_ready_lock = Lock()
+        self._last_is_ready = time.time() - 1
+        self._last_cmd = {}
 
     def _interval_is_ready(self):
         delay = 0.010
-        diff = time.time() - self.last_is_ready
+        diff = time.time() - self._last_is_ready
         if diff < delay:
             time.sleep(delay - diff)
 
@@ -77,15 +77,15 @@ class MotCont:
         now = time.time()
         diff = delay
         for port in ports:
-            if port in self.last_cmd:
-                diff = min(diff, now - self.last_cmd[port])
+            if port in self._last_cmd:
+                diff = min(diff, now - self._last_cmd[port])
         if diff < delay:
             time.sleep(delay - diff)
 
     def _record_time_motors(self, ports):
         now = time.time()
         for port in ports:
-            self.last_cmd[port] = now
+            self._last_cmd[port] = now
 
     def _decode_ports(self, ports, max_ports):
         try:
@@ -124,7 +124,7 @@ class MotCont:
         self._interval_motors(ports)
         mode = str(0x01 * int(brake) + 0x02 * int(speedreg) + 0x04 * int(smoothstart))
         command = "1" + strports + _power(power) + _tacho(tacholimit) + mode
-        self.brick.message_write(1, command.encode("ascii"))
+        self._brick.message_write(1, command.encode("ascii"))
         self._record_time_motors(ports)
 
     def reset_tacho(self, ports):
@@ -137,7 +137,7 @@ class MotCont:
         self._interval_is_ready()
         ports, strports = self._decode_ports(ports, 3)
         command = "2" + strports
-        self.brick.message_write(1, command.encode("ascii"))
+        self._brick.message_write(1, command.encode("ascii"))
         self._record_time_motors(ports)
 
     def is_ready(self, port):
@@ -150,14 +150,14 @@ class MotCont:
         """
         self._interval_is_ready()
         ports, strports = self._decode_ports(port, 1)
-        with self.is_ready_lock:
+        with self._is_ready_lock:
             command = "3" + strports
-            self.brick.message_write(1, command.encode("ascii"))
+            self._brick.message_write(1, command.encode("ascii"))
             time.sleep(0.015)  # 10ms pause from the docs seems to not be adequate
-            reply = self.brick.message_read(0, 1, 1)[1]
+            reply = self._brick.message_read(0, 1, 1)[1]
             if chr(reply[0]) != strports:
                 raise MotorConError("wrong port returned from ISMOTORREADY")
-        self.last_is_ready = time.time()
+        self._last_is_ready = time.time()
         return bool(int(chr(reply[1])))
 
     def set_output_state(self, ports, power, tacholimit, speedreg=True):
@@ -174,7 +174,7 @@ class MotCont:
         ports, strports = self._decode_ports(ports, 2)
         self._interval_motors(ports)
         command = "4" + strports + _power(power) + _tacho(tacholimit) + str(speedreg)
-        self.brick.message_write(1, command.encode("ascii"))
+        self._brick.message_write(1, command.encode("ascii"))
         self._record_time_motors(ports)
 
     def start(self, version=22):
@@ -187,11 +187,11 @@ class MotCont:
         argument.
         """
         try:
-            self.brick.stop_program()
+            self._brick.stop_program()
             time.sleep(1)
         except nxt.error.DirProtError:
             pass
-        self.brick.start_program("MotorControl%d.rxe" % version)
+        self._brick.start_program("MotorControl%d.rxe" % version)
         time.sleep(0.1)
 
     def stop(self):
@@ -199,4 +199,4 @@ class MotCont:
 
         All this actually does is stop the currently running rxe.
         """
-        self.brick.stop_program()
+        self._brick.stop_program()
