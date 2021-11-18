@@ -11,7 +11,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 import array
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, call, patch
 
 import pytest
 
@@ -60,7 +60,7 @@ def test_usbsock(musb, mdev):
     # Send.
     some_bytes = bytes.fromhex("01020304")
     sock.send(some_bytes)
-    assert epout.write.call_args == ((some_bytes,),)
+    assert epout.write.call_args == call(some_bytes)
     # Recv.
     epin.read.return_value = array.array("B", (1, 2, 3, 4))
     r = sock.recv()

@@ -10,7 +10,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, call, patch
 
 import pytest
 
@@ -55,7 +55,7 @@ def test_bluesock(mbluetooth, msock):
     some_len = bytes.fromhex("0400")
     some_bytes_with_len = some_len + some_bytes
     sock.send(some_bytes)
-    assert msock.send.call_args == ((some_bytes_with_len,),)
+    assert msock.send.call_args == call(some_bytes_with_len)
     # Recv.
     msock.recv.side_effect = [some_len, some_bytes]
     r = sock.recv()
