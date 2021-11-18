@@ -80,5 +80,4 @@ def mbrick(mtime):
     b.find_files = find_files
     b.find_modules = find_modules
     b.open_file = open_file
-    b.mc = nxt.motcont.MotCont(b)
     return b

@@ -19,7 +19,6 @@ import threading
 import time
 
 from nxt.error import FileNotFound, ModuleNotFound
-from nxt.motcont import MotCont
 from nxt.sensor import get_sensor
 from nxt.telegram import OPCODES, Telegram
 
@@ -113,7 +112,6 @@ class Brick(object, metaclass=_Meta):  # TODO: this begs to have explicit method
     def __init__(self, sock):
         self.sock = sock
         self.lock = threading.Lock()
-        self.mc = MotCont(self)
 
     def play_tone_and_wait(self, frequency, duration):
         self.play_tone(frequency, duration)

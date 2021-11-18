@@ -14,7 +14,13 @@ from unittest.mock import call
 
 import pytest
 
+import nxt.motcont
 import nxt.motor
+
+
+@pytest.fixture
+def mc(mbrick):
+    return nxt.motcont.MotCont(mbrick)
 
 
 def msg(x):
@@ -22,10 +28,10 @@ def msg(x):
     return x.replace(" ", "").encode("ascii")
 
 
-def test_cmd(mbrick, mtime):
-    mbrick.mc.cmd(nxt.motor.PORT_B, -100, 1000, speedreg=1, smoothstart=0, brake=0)
+def test_cmd(mbrick, mtime, mc):
+    mc.cmd(nxt.motor.PORT_B, -100, 1000, speedreg=1, smoothstart=0, brake=0)
     # Using the same port yield a delay.
-    mbrick.mc.cmd(nxt.motor.PORT_B, 10, 0, speedreg=0, smoothstart=1, brake=1)
+    mc.cmd(nxt.motor.PORT_B, 10, 0, speedreg=0, smoothstart=1, brake=1)
     assert mbrick.mock_calls == [
         call.message_write(1, msg("1 1 200 001000 2")),
         call.message_write(1, msg("1 1 010 000000 5")),
@@ -35,10 +41,10 @@ def test_cmd(mbrick, mtime):
     ]
 
 
-def test_cmd_nosleep(mbrick, mtime):
-    mbrick.mc.cmd(nxt.motor.PORT_B, -100, 1000, speedreg=1, smoothstart=0, brake=0)
+def test_cmd_nosleep(mbrick, mtime, mc):
+    mc.cmd(nxt.motor.PORT_B, -100, 1000, speedreg=1, smoothstart=0, brake=0)
     # Using a different port yield no delay.
-    mbrick.mc.cmd(nxt.motor.PORT_C, 10, 0, speedreg=0, smoothstart=1, brake=1)
+    mc.cmd(nxt.motor.PORT_C, 10, 0, speedreg=0, smoothstart=1, brake=1)
     assert mbrick.mock_calls == [
         call.message_write(1, msg("1 1 200 001000 2")),
         call.message_write(1, msg("1 2 010 000000 5")),
@@ -46,10 +52,10 @@ def test_cmd_nosleep(mbrick, mtime):
     assert mtime.sleep.mock_calls == []
 
 
-def test_cmd_twomotors(mbrick, mtime):
-    mbrick.mc.cmd(nxt.motor.PORT_B, -100, 1000, speedreg=1, smoothstart=0, brake=0)
+def test_cmd_twomotors(mbrick, mtime, mc):
+    mc.cmd(nxt.motor.PORT_B, -100, 1000, speedreg=1, smoothstart=0, brake=0)
     # When using two motors, there should be a delay as the same motor is used again.
-    mbrick.mc.cmd(
+    mc.cmd(
         (nxt.motor.PORT_B, nxt.motor.PORT_C), 10, 0, speedreg=0, smoothstart=1, brake=1
     )
     assert mbrick.mock_calls == [
@@ -61,9 +67,9 @@ def test_cmd_twomotors(mbrick, mtime):
     ]
 
 
-def test_cmd_threemotors(mbrick, mtime):
+def test_cmd_threemotors(mbrick, mtime, mc):
     with pytest.raises(ValueError):
-        mbrick.mc.cmd(
+        mc.cmd(
             (nxt.motor.PORT_A, nxt.motor.PORT_B, nxt.motor.PORT_C),
             -100,
             1000,
@@ -73,15 +79,15 @@ def test_cmd_threemotors(mbrick, mtime):
         )
 
 
-def test_reset_tacho(mbrick):
-    mbrick.mc.reset_tacho(nxt.motor.PORT_B)
+def test_reset_tacho(mbrick, mc):
+    mc.reset_tacho(nxt.motor.PORT_B)
     assert mbrick.mock_calls == [call.message_write(1, msg("2 1"))]
 
 
-def test_is_ready(mbrick, mtime):
+def test_is_ready(mbrick, mtime, mc):
     mbrick.message_read.side_effect = [(1, msg("1 1")), (1, msg("2 0"))]
-    ready = mbrick.mc.is_ready(nxt.motor.PORT_B)
-    not_ready = mbrick.mc.is_ready(nxt.motor.PORT_C)
+    ready = mc.is_ready(nxt.motor.PORT_B)
+    not_ready = mc.is_ready(nxt.motor.PORT_C)
     assert mtime.sleep.called
     assert mbrick.mock_calls == [
         call.message_write(1, msg("3 1")),
@@ -93,32 +99,32 @@ def test_is_ready(mbrick, mtime):
     assert not_ready is False
 
 
-def test_is_ready_error(mbrick):
+def test_is_ready_error(mbrick, mc):
     mbrick.message_read.return_value = (1, msg("0 1"))
     with pytest.raises(nxt.motcont.MotorConError):
-        mbrick.mc.is_ready(nxt.motor.PORT_B)
+        mc.is_ready(nxt.motor.PORT_B)
 
 
-def test_set_output_state(mbrick):
-    mbrick.mc.set_output_state(nxt.motor.PORT_C, -100, 1000, speedreg=1)
-    mbrick.mc.set_output_state(nxt.motor.PORT_C, 10, 0, speedreg=0)
+def test_set_output_state(mbrick, mc):
+    mc.set_output_state(nxt.motor.PORT_C, -100, 1000, speedreg=1)
+    mc.set_output_state(nxt.motor.PORT_C, 10, 0, speedreg=0)
     assert mbrick.mock_calls == [
         call.message_write(1, msg("4 2 200 001000 1")),
         call.message_write(1, msg("4 2 010 000000 0")),
     ]
 
 
-def test_start(mbrick):
-    mbrick.mc.start()
+def test_start(mbrick, mc):
+    mc.start()
     assert mbrick.mock_calls == [
         call.stop_program(),
         call.start_program("MotorControl22.rxe"),
     ]
 
 
-def test_start_not_running(mbrick):
+def test_start_not_running(mbrick, mc):
     mbrick.stop_program.side_effect = [nxt.error.DirProtError("")]
-    mbrick.mc.start()
+    mc.start()
     assert mbrick.mock_calls == [
         call.stop_program(),
         call.start_program("MotorControl22.rxe"),
@@ -126,7 +132,8 @@ def test_start_not_running(mbrick):
 
 
 def test_stop(mbrick):
-    mbrick.mc.stop()
+    mc = nxt.motcont.MotCont(mbrick)
+    mc.stop()
     assert mbrick.mock_calls == [
         call.stop_program(),
     ]
