@@ -181,11 +181,11 @@ class BaseMotor(object):
         if not emulate:
             state.tacho_limit = tacho_limit
 
-        self._debug_out('Updating motor information...')
+        self._debug_out("Updating motor information...")
         self._set_state(state)
        
         direction = 1 if power > 0 else -1
-        self._debug_out('tachocount: ' + str(tacho))
+        self._debug_out(f"tachocount: {tacho}")
         current_time = time.time()
         tacho_target = tacho.get_target(tacho_limit, direction)
         
@@ -202,7 +202,7 @@ class BaseMotor(object):
                 current_time = time.time()
                 blocked = self._is_blocked(tacho, last_tacho, direction)
                 if blocked:
-                    self._debug_out(('not advancing', last_tacho, tacho))
+                    self._debug_out(f"not advancing: {last_tacho} {tacho}")
                     # the motor can be up to 80+ degrees in either direction from target when using bluetooth
                     if current_time - last_time > timeout:
                         if tacho.is_near(tacho_target, threshold):
@@ -210,7 +210,7 @@ class BaseMotor(object):
                         else:
                             raise BlockedException("Blocked!")
                 else:
-                    self._debug_out(('advancing', last_tacho, tacho))
+                    self._debug_out(f"advancing: {last_tacho} {tacho}")
                 if tacho.is_near(tacho_target, threshold) or tacho.is_greater(tacho_target, direction):
                     break
         finally:
@@ -307,7 +307,7 @@ class Motor(BaseMotor):
         """Tries to turn a motor for the specified distance. This function
         returns immediately, and it's not guaranteed that the motor turns that
         distance. This is an interface to use tacho_limit without
-        REGULATION_MODE_SPEED
+        REGULATION_MOTOR_SPEED
         """
         tacho_limit = tacho_units
         tacho = self.get_tacho()
