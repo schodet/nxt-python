@@ -12,12 +12,9 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-try:
-    import bluetooth
-except ImportError:
-    from . import lightblueglue as bluetooth
-
 import struct
+
+import bluetooth
 
 from nxt.brick import Brick
 
