@@ -10,12 +10,12 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-from unittest.mock import Mock, patch
+import time
+from unittest.mock import Mock
 
 import pytest
 
 import nxt.brick
-import nxt.motcont
 
 
 def pytest_addoption(parser):
@@ -45,21 +45,25 @@ def pytest_collection_modifyitems(config, items):
 
 
 @pytest.fixture
-def mtime():
+def mtime(monkeypatch):
+    """Mock time.time() and time.sleep()."""
     current_time = 0
-    with patch("nxt.motcont.time") as time:
 
-        def timef():
-            nonlocal current_time
-            return current_time
+    def timef():
+        nonlocal current_time
+        return current_time
 
-        def sleepf(delay):
-            nonlocal current_time
-            current_time += delay
+    def sleepf(delay):
+        nonlocal current_time
+        current_time += delay
 
-        time.time.side_effect = timef
-        time.sleep.side_effect = sleepf
-        yield time
+    mtime = Mock(spec_set=("time", "sleep"))
+    mtime.time.side_effect = timef
+    monkeypatch.setattr(time, "time", mtime.time)
+    mtime.sleep.side_effect = sleepf
+    monkeypatch.setattr(time, "sleep", mtime.sleep)
+
+    return mtime
 
 
 @pytest.fixture
@@ -77,6 +81,7 @@ def mbrick(mtime):
         return nxt.brick.Brick.open_file(b, *args, **kwargs)
 
     b.sock.bsize = 60
+    b.sock.type = "usb"
     b.find_files = find_files
     b.find_modules = find_modules
     b.open_file = open_file
