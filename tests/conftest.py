@@ -80,9 +80,13 @@ def mbrick(mtime):
     def open_file(*args, **kwargs):
         return nxt.brick.Brick.open_file(b, *args, **kwargs)
 
+    def get_sensor(*args, **kwargs):
+        return nxt.brick.Brick.get_sensor(b, *args, **kwargs)
+
     b.sock.bsize = 60
     b.sock.type = "usb"
     b.find_files = find_files
     b.find_modules = find_modules
     b.open_file = open_file
+    b.get_sensor = get_sensor
     return b
