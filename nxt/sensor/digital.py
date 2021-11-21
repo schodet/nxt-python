@@ -16,7 +16,7 @@
 from nxt.error import I2CError, I2CPendingError, DirProtError
 
 from .common import *
-from time import sleep, time
+import time
 import struct
 
 
@@ -63,9 +63,9 @@ class BaseDigitalSensor(Sensor):
         """
         super(BaseDigitalSensor, self).__init__(brick, port)
         self.set_input_mode(Type.LOW_SPEED_9V, Mode.RAW)
-        self.last_poll = time()
+        self.last_poll = time.time()
         self.poll_delay = 0.01
-        sleep(0.1)  # Give I2C time to initialize
+        time.sleep(0.1)  # Give I2C time to initialize
         #Don't do type checking if this class has no compatible sensors listed.
         try: self.compatible_sensors
         except AttributeError: check_compatible = False
@@ -96,11 +96,11 @@ suppressed by passing "check_compatible=False" when creating the sensor object."
         """
         value = struct.pack(format, *value)
         msg = bytes((self.I2C_DEV, address)) + value
-        now = time()
+        now = time.time()
         if self.last_poll+self.poll_delay > now:
             diff = now - self.last_poll
-            sleep(self.poll_delay - diff)
-        self.last_poll = time()
+            time.sleep(self.poll_delay - diff)
+        self.last_poll = time.time()
         self.brick.ls_write(self.port, msg, 0)
 
     def _i2c_query(self, address, format):
@@ -110,11 +110,11 @@ suppressed by passing "check_compatible=False" when creating the sensor object."
         """
         size = struct.calcsize(format)
         msg = bytes((self.I2C_DEV, address))
-        now = time()
+        now = time.time()
         if self.last_poll+self.poll_delay > now:
             diff = now - self.last_poll
-            sleep(self.poll_delay - diff)
-        self.last_poll = time()
+            time.sleep(self.poll_delay - diff)
+        self.last_poll = time.time()
         self.brick.ls_write(self.port, msg, size)
         try:
             self._ls_get_status(size)
