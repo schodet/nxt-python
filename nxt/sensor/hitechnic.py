@@ -101,12 +101,12 @@ class Accelerometer(BaseDigitalSensor):
         super(Accelerometer, self).__init__(brick, port, check_compatible)
 
     def get_acceleration(self):
-        """Returns the acceleration along x, y, z axes. Units are unknown to me.
+        """Returns the acceleration along x, y, z axes. 200 => 1g.
         """
         xh, yh, zh, xl, yl, zl = self.read_value('all_data')
-        x = xh << 2 + xl
-        y = yh << 2 + yl
-        z = zh << 2 + yl
+        x = xh << 2 | xl
+        y = yh << 2 | yl
+        z = zh << 2 | zl
         return self.Acceleration(x, y, z)
     
     get_sample = get_acceleration
@@ -193,9 +193,10 @@ but not tested. Please report whether this worked for you or not!
         def get_dir_brightness(self, direction):
             "Gets the brightness of a given direction (1-9)."
             if direction%2 == 1: #if it's an odd number
-                exec("val = self.sensor_%d" % ((direction-1)/2+1))
+                val = getattr(self, "sensor_%d" % ((direction-1)//2+1))
             else:
-                exec("val = (self.sensor_%d+self.sensor_%d)/2" % (direction/2, (direction/2)+1))
+                val = (getattr(self, f"sensor_{direction // 2}")
+                       + getattr(self, f"sensor_{direction // 2 + 1}")) / 2
             return val
     
     class DCData(_data):
@@ -445,10 +446,10 @@ and can be converted into a list of bools or an integer."""
             self.a0, self.a1, self.a2, self.a3, self.a4 = a0, a1, a2, a3, a4
     
     def get_analog(self):
-        return Analog_Data(self.read_value('all_analog'))
+        return self.Analog_Data(*self.read_value('all_analog'))
     
     def get_digital(self):
-        return Digital_Data(self.read_value('digital_in')[0])
+        return self.Digital_Data(self.read_value('digital_in')[0])
     
     def set_digital(self, pins):
         """Can take a Digital_Data() object"""
@@ -471,15 +472,15 @@ the sensor but not tested. Please report whether this worked for you or not!"""
         's1pos': (0x42, 'B'),
         's2pos': (0x43, 'B'),
         's3pos': (0x44, 'B'),
-        'p4pos': (0x45, 'B'),
-        'p5pos': (0x46, 'B'),
-        'p6pos': (0x47, 'B'),
+        's4pos': (0x45, 'B'),
+        's5pos': (0x46, 'B'),
+        's6pos': (0x47, 'B'),
         'pwm': (0x48, 'B'),
     })
     
     class Status:
-        RUNNING = 0x00 #all motors stopped
-        STOPPED = 0x01 #motor(s) moving
+        STOPPED = 0x00 #all motors stopped
+        RUNNING = 0x01 #motor(s) moving
 
     def __init__(self, brick, port, check_compatible=True):
         super(ServoCon, self).__init__(brick, port, check_compatible)
@@ -607,47 +608,35 @@ MotorCon.PID_Data(p, i, d) format.
         data = self.read_value('batteryvoltage')
         high = data[0]
         low = data[1]
-        return high << 2 + low
+        return high << 2 | low
 
 MotorCon.add_compatible_sensor(None, 'HiTechnc', 'MotorCon')
 
 
 class Angle(BaseDigitalSensor):
-#HiTechnic Angle Sensor, Nikola Jovic 2016
+    """HiTechnic Angle Sensor."""
     I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
     I2C_ADDRESS.update({
-        'mode': (0x41, 'B'),
-        'angle': (0x42, 'B'),
-        'angle_inc': (0x43, 'B'),
-        'angle_acc': (0x44, '4B'),
-        'rpm': (0x48, '2B'),
-        'reset_acc': (0x52, 'B'),
-        'write_zero': (0x43, 'B'),
+        'mode': (0x41, 'c'),
+        'angle': (0x42, '2B'),
+        'angle_acc': (0x44, '>l'),
+        'rpm': (0x48, '>h'),
     })
 
-    def __init__(self,brick,port):
-        super(Angle, self).__init__(brick, port)
+    def get_angle(self):
+        v = self.read_value('angle')
+        return v[0] * 2 + v[1]
 
-    def get_angle(self):  #Absoulute angle 0-360 in 2 degree increments. (Returns 0-180)
-        return self.read_value('angle')
-
-    def get_angle_inc(self):
-        return self.read_value('angle_inc')
+    get_sample = get_angle
 
     def get_accumulated_angle(self):
-        if (self.read_value('angle_acc')[0] & 0b10000000):
-            return -0xffffffff + self.read_value('angle_acc')[0] * 0x1000000 + self.read_value('angle_acc')[1] * 0x10000 + self.read_value('angle_acc')[2] * 0x100 + self.read_value('angle_acc')[3]
-        else:
-            return self.read_value('angle_acc')[0] * 0x1000000 + self.read_value('angle_acc')[1] * 0x10000 + self.read_value('angle_acc')[2] * 0x100 + self.read_value('angle_acc')[3]
+        return self.read_value("angle_acc")[0]
 
     def get_rpm(self):
-        if (self.read_value('rpm')[0] & 0b10000000):
-            return -0xffff + self.read_value('rpm')[0] * 0x100 + self.read_value('rpm')[1]
-        else:
-            return self.read_value('rpm')[0] * 0x100 + self.read_value('rpm')[1]
+        return self.read_value("rpm")[0]
 
     def calibrate(self):  #Current angle will be zero degrees written in EEPROM
-        self.write_value('mode', 'write_zero')
+        self.write_value('mode', b'C')
 
     def reset(self):    #Reset accumulated angle
-        self.write_value('mode', 'reset_acc')
+        self.write_value('mode', b'R')

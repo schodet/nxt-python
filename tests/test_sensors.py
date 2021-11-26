@@ -341,3 +341,615 @@ class TestGenericDigital:
             call.read_value("raw_value"),
             call.read_value("raw_value"),
         ]
+
+
+class TestMindsensors:
+    """Test Mindsensors sensors."""
+
+    def test_sumoeyes(self, mbrick):
+        s = nxt.sensor.mindsensors.SumoEyes(mbrick, PORT_1)
+        mbrick.get_input_values.side_effect = [
+            (PORT_1, True, False, Type.LIGHT_ACTIVE, Mode.RAW, 0, 0, 0, 0),
+            (PORT_1, True, False, Type.LIGHT_ACTIVE, Mode.RAW, 0, 350, 0, 0),
+            (PORT_1, True, False, Type.LIGHT_ACTIVE, Mode.RAW, 0, 650, 0, 0),
+            (PORT_1, True, False, Type.LIGHT_ACTIVE, Mode.RAW, 0, 800, 0, 0),
+        ]
+        m = s.get_sample()
+        assert str(m) == "(left: False, right: False)"
+        assert (m.left, m.right) == (False, False)
+        m = s.get_sample()
+        assert (m.left, m.right) == (True, False)
+        m = s.get_sample()
+        assert (m.left, m.right) == (False, True)
+        m = s.get_sample()
+        assert (m.left, m.right) == (True, True)
+        s.set_long_range(True)
+        assert mbrick.mock_calls == [
+            call.set_input_mode(PORT_1, Type.LIGHT_ACTIVE, Mode.RAW),
+            call.get_input_values(PORT_1),
+            call.get_input_values(PORT_1),
+            call.get_input_values(PORT_1),
+            call.get_input_values(PORT_1),
+            call.set_input_mode(PORT_1, Type.LIGHT_INACTIVE, Mode.RAW),
+        ]
+
+    def test_compassv2(self, mbrick, mdigital):
+        assert (
+            nxt.sensor.mindsensors.Compassv2.get_sample
+            is nxt.sensor.mindsensors.Compassv2.get_heading
+        )
+        s = nxt.sensor.mindsensors.Compassv2(mbrick, PORT_1, False)
+        mdigital.read_value.return_value = (300,)
+        # TODO: should return degrees (divide by 10).
+        assert s.get_heading() == 300
+        s.command(s.Commands.BEGIN_CALIBRATION)
+        # TODO: get rid of ord, adapt format.
+        assert mdigital.mock_calls == [
+            call.write_value("command", (ord("I"),)),
+            call.read_value("heading"),
+            call.write_value("command", (ord("C"),)),
+        ]
+
+    def test_dist(self, mbrick, mdigital):
+        assert (
+            nxt.sensor.mindsensors.DIST.get_sample
+            is nxt.sensor.mindsensors.DIST.get_distance
+        )
+        s = nxt.sensor.mindsensors.DIST(mbrick, PORT_1, False)
+        # TODO: get rid of ord, adapt format.
+        mdigital.read_value.side_effect = [(100,), (ord("2"),), (42,), (43,), (44,)]
+        assert s.get_distance() == 100
+        assert s.get_type() == ord(s.Commands.TYPE_GP2D120)
+        s.command(s.Commands.POWER_OFF)
+        assert s.get_voltage() == 42
+        assert s.get_min_distance() == 43
+        assert s.get_max_distance() == 44
+        assert mdigital.mock_calls == [
+            call.read_value("distance"),
+            call.read_value("type"),
+            call.write_value("command", (ord("D"),)),
+            call.read_value("voltage"),
+            call.read_value("min_distance"),
+            call.read_value("max_distance"),
+        ]
+
+    def test_rtc(self, mbrick, mdigital):
+        s = nxt.sensor.mindsensors.RTC(mbrick, PORT_1)
+        # TODO: this one is completely broken:
+        #  - Return str instead of int.
+        #  - Bad handling of hour format.
+        #  - Fields are read one by one (what happen if you read minutes at 11:59 and
+        #    hours at 12:00?
+        #  - Pretty sure struct_time is not right too.
+        mdigital.read_value.side_effect = [(0x32,)]
+        assert s.get_seconds() == "32"
+
+    def test_accl(self, mbrick, mdigital):
+        assert (
+            nxt.sensor.mindsensors.ACCL.get_sample
+            is nxt.sensor.mindsensors.ACCL.get_all_accel
+        )
+        s = nxt.sensor.mindsensors.ACCL(mbrick, PORT_1, False)
+        # TODO: get rid of ord, adapt format.
+        mdigital.read_value.side_effect = [
+            (ord("2"),),
+            (42,),
+            (1, 2, 3),
+            (43,),
+            (1, 2, 3),
+            (44,),
+            (45,),
+        ]
+        s.command(s.Commands.SENS_2G)
+        assert s.get_sensitivity() == s.Commands.SENS_2G
+        assert s.get_tilt("x") == 42
+        assert s.get_all_tilt() == (1, 2, 3)
+        assert s.get_accel("z") == 43
+        assert s.get_all_accel() == (1, 2, 3)
+        assert s.get_offset("x") == 44
+        assert s.get_range("x") == 45
+        s.set_offset("x", 46)
+        s.set_range("x", 47)
+        assert mdigital.mock_calls == [
+            call.write_value("command", (ord("2"),)),
+            call.read_value("sensitivity"),
+            call.read_value("x_tilt"),
+            call.read_value("all_tilt"),
+            call.read_value("z_accel"),
+            call.read_value("all_accel"),
+            call.read_value("x_offset"),
+            call.read_value("x_range"),
+            call.write_value("x_offset", (46,)),
+            call.write_value("x_range", (47,)),
+        ]
+
+    def test_mtrmux(self, mbrick, mdigital):
+        assert not hasattr(nxt.sensor.mindsensors.MTRMUX, "get_sample")
+        s = nxt.sensor.mindsensors.MTRMUX(mbrick, PORT_1, False)
+        mdigital.read_value.side_effect = [(1,), (2,)]
+        s.command(s.Commands.FLOAT)
+        s.set_direction(1, 1)
+        s.set_speed(2, 2)
+        assert s.get_direction(3) == 1
+        assert s.get_speed(4) == 2
+        assert mdigital.mock_calls == [
+            call.write_value("command", (0,)),
+            call.write_value("direction_m1", (1,)),
+            call.write_value("speed_m2", (2,)),
+            call.read_value("direction_m3"),
+            call.read_value("speed_m4"),
+        ]
+
+    def test_lineleader(self, mbrick, mdigital):
+        assert (
+            nxt.sensor.mindsensors.LineLeader.get_sample
+            is nxt.sensor.mindsensors.LineLeader.get_reading_all
+        )
+        s = nxt.sensor.mindsensors.LineLeader(mbrick, PORT_1, False)
+        mdigital.read_value.side_effect = [
+            (-10,),
+            (50,),
+            (0x5A,),
+            (50,),
+            (1, 2, 3, 4, 5, 6, 7, 8),
+            (60,),
+            (11, 12, 13, 14, 15, 16, 17, 18),
+        ]
+        s.command(s.Commands.CALIBRATE_WHITE)
+        assert s.get_steering() == -10
+        assert s.get_average() == 50
+        assert s.get_result() == 0x5A
+        s.set_set_point(50)
+        s.set_pid("p", 35)
+        s.set_pid_divisor("i", 10)
+        assert s.get_reading(1) == 50
+        assert s.get_reading_all() == (1, 2, 3, 4, 5, 6, 7, 8)
+        assert s.get_uncal_reading(2) == 60
+        assert s.get_uncal_all() == (11, 12, 13, 14, 15, 16, 17, 18)
+        assert mdigital.mock_calls == [
+            # TODO: get rid of ord, adapt format.
+            call.write_value("command", (ord("W"),)),
+            call.read_value("steering"),
+            call.read_value("average"),
+            call.read_value("result"),
+            call.write_value("set_point", (50,)),
+            call.write_value("kp", (35,)),
+            call.write_value("ki_divisor", (10,)),
+            call.read_value("calibrated_reading_byte1"),
+            call.read_value("all_calibrated_readings"),
+            call.read_value("uncal_sensor2_voltage_byte1"),
+            call.read_value("all_uncal_readings"),
+        ]
+
+    def test_servo(self, mbrick, mdigital):
+        assert not hasattr(nxt.sensor.mindsensors.Servo, "get_sample")
+        s = nxt.sensor.mindsensors.Servo(mbrick, PORT_1, False)
+        # TODO: command can not work, can not fit two bytes in one byte.
+        mdigital.read_value.side_effect = [(1,), (42,), (43,)]
+        assert s.get_bat_level() == 1
+        s.set_position(1, 42)
+        assert s.get_position(1) == 42
+        s.set_speed(2, 43)
+        assert s.get_speed(2) == 43
+        s.set_quick(3, 44)
+        assert mdigital.mock_calls == [
+            call.read_value("command"),
+            call.write_value("servo_1_pos", (42,)),
+            call.read_value("servo_1_pos"),
+            call.write_value("servo_2_speed", (43,)),
+            call.read_value("servo_2_speed"),
+            call.write_value("servo_3_quick", (44,)),
+        ]
+
+    def test_mmx(self, mbrick, mdigital):
+        assert not hasattr(nxt.sensor.mindsensors.MMX, "get_sample")
+        s = nxt.sensor.mindsensors.MMX(mbrick, PORT_1, False)
+        mdigital.read_value.side_effect = [
+            (1,),
+            (0xAA,),
+            (0x55,),
+            (12345,),
+            (0x55,),
+            (42,),
+        ]
+        # TODO: get rid of ord, adapt format.
+        s.command(s.Commands.RESET_PARAMS_ENCODERS)
+        assert s.get_bat_level() == 1
+        s.set_encoder_target(1, 12345)
+        s.set_speed(2, 50)
+        s.set_time_run(1, 60)
+        s.command_b(1, 42)
+        s.command_a(2, 2, 1)
+        s.command_a(2, 2, 0)
+        assert s.get_encoder_pos(1) == 12345
+        # TODO: should be bool.
+        assert s.get_motor_status(1, 2) == 1
+        assert s.get_tasks(1) == 42
+        s.set_pid("p", "speed", 3)
+        s.set_pass_count(43)
+        s.set_tolerance(44)
+        assert mdigital.mock_calls == [
+            call.write_value("command", (ord("R"),)),
+            call.read_value("command"),
+            call.write_value("encoder_1_target", (12345,)),
+            call.write_value("speed_2", (50,)),
+            call.write_value("seconds_to_run_1", (60,)),
+            call.write_value("command_b_1", (42,)),
+            call.read_value("command_a_2"),
+            call.write_value("command_a_2", (0xAE,)),
+            call.read_value("command_a_2"),
+            call.write_value("command_a_2", (0x51,)),
+            call.read_value("encoder_1_pos"),
+            call.read_value("status_m1"),
+            call.read_value("tasks_running_m1"),
+            call.write_value("p_speed", (3,)),
+            call.write_value("pass_count", (43,)),
+            call.write_value("tolerance", (44,)),
+        ]
+
+    def test_hid(self, mbrick, mdigital):
+        assert not hasattr(nxt.sensor.mindsensors.HID, "get_sample")
+        s = nxt.sensor.mindsensors.HID(mbrick, PORT_1, False)
+        s.command(s.Commands.ASCII_MODE)
+        s.set_modifier(42)
+        s.write_data("a")
+        assert mdigital.mock_calls == [
+            call.write_value("command", (ord("A"),)),
+            call.write_value("modifier", (42,)),
+            call.write_value("keyboard_data", (ord("a"),)),
+        ]
+
+    def test_ps2(self, mbrick, mdigital):
+        s = nxt.sensor.mindsensors.PS2(mbrick, PORT_1, False)
+        mdigital.read_value.side_effect = [
+            (42,),
+            (0x55,),
+            # TODO: read everything in one read.
+            (0x55,),
+            (0x55,),
+            (42,),
+            (43,),
+            (44,),
+            (45,),
+        ]
+        s.command(s.Commands.POWER_ON)
+        assert s.get_joystick("x", "left") == 42
+        assert s.get_buttons(1) == 0x55
+        st = s.get_sample()
+        assert st.leftstick == (42, 43)
+        assert st.rightstick == (44, 45)
+        assert st.buttons.left is True
+        assert st.buttons.down is False
+        assert st.buttons.right is True
+        assert st.buttons.up is False
+        assert st.buttons.square is True
+        assert st.buttons.cross is False
+        assert st.buttons.circle is True
+        assert st.buttons.triangle is False
+        assert st.buttons.r1 is True
+        assert st.buttons.r2 is True
+        assert st.buttons.r3 is False
+        assert st.buttons.l1 is False
+        assert st.buttons.l2 is False
+        assert st.buttons.l3 is True
+        assert mdigital.mock_calls == [
+            call.write_value("command", (ord("E"),)),
+            call.read_value("x_left_joystick"),
+            call.read_value("button_set_1"),
+            call.read_value("button_set_1"),
+            call.read_value("button_set_2"),
+            call.read_value("x_left_joystick"),
+            call.read_value("y_left_joystick"),
+            call.read_value("x_right_joystick"),
+            call.read_value("y_right_joystick"),
+        ]
+
+
+class TestHitechnic:
+    """Test HiTechnic sensors."""
+
+    def test_compass(self, mbrick, mdigital):
+        assert (
+            nxt.sensor.hitechnic.Compass.get_sample
+            is nxt.sensor.hitechnic.Compass.get_heading
+        )
+        s = nxt.sensor.hitechnic.Compass(mbrick, PORT_1, False)
+        mdigital.read_value.return_value = (10,)
+        assert s.get_heading() == 30
+        assert s.get_relative_heading(0) == 30
+        assert s.get_relative_heading(-170) == -160
+        mdigital.read_value.return_value = (-10,)
+        assert s.get_relative_heading(170) == 160
+        assert s.is_in_range(-40, -20) is True
+        assert s.is_in_range(-20, -40) is False
+        mdigital.read_value.return_value = (0x02,)
+        assert s.get_mode() == s.Modes.CALIBRATION_FAILED
+        s.set_mode(s.Modes.CALIBRATION)
+        with pytest.raises(ValueError):
+            s.set_mode(s.Modes.CALIBRATION_FAILED)
+        assert mdigital.mock_calls == [
+            call.read_value("heading"),
+            call.read_value("adder"),
+        ] * 6 + [
+            call.read_value("mode"),
+            call.write_value("mode", (0x43,)),
+        ]
+
+    def test_accelerometer(self, mbrick, mdigital):
+        assert (
+            nxt.sensor.hitechnic.Accelerometer.get_sample
+            is nxt.sensor.hitechnic.Accelerometer.get_acceleration
+        )
+        s = nxt.sensor.hitechnic.Accelerometer(mbrick, PORT_1, False)
+        mdigital.read_value.return_value = (0x12, 0x23, -0x32, 0x3, 0x0, 0x2)
+        v = s.get_acceleration()
+        assert (v.x, v.y, v.z) == (75, 140, -198)
+        assert mdigital.mock_calls == [
+            call.read_value("all_data"),
+        ]
+
+    def test_irreceiver(self, mbrick, mdigital):
+        assert (
+            nxt.sensor.hitechnic.IRReceiver.get_sample
+            is nxt.sensor.hitechnic.IRReceiver.get_speeds
+        )
+        s = nxt.sensor.hitechnic.IRReceiver(mbrick, PORT_1, False)
+        mdigital.read_value.return_value = (0, -16, 30, -44, 58, -72, 100, -128)
+        v = s.get_speeds()
+        assert (v.m1A, v.m1B) == (0, -16)
+        assert v.channel_1 == (0, -16)
+        assert (v.m2A, v.m2B) == (30, -44)
+        assert v.channel_2 == (30, -44)
+        assert (v.m3A, v.m3B) == (58, -72)
+        assert v.channel_3 == (58, -72)
+        # TODO: handle -128 specially.
+        assert (v.m4A, v.m4B) == (100, -128)
+        assert v.channel_4 == (100, -128)
+        assert mdigital.mock_calls == [
+            call.read_value("all_data"),
+        ]
+
+    def test_irseekerv2(self, mbrick, mdigital):
+        assert (
+            nxt.sensor.hitechnic.IRSeekerv2.get_sample
+            is nxt.sensor.hitechnic.IRSeekerv2.get_ac_values
+        )
+        s = nxt.sensor.hitechnic.IRSeekerv2(mbrick, PORT_1, False)
+        mdigital.read_value.side_effect = [
+            (5, 42, 43, 44, 45, 46, 44),
+            (5, 42, 43, 44, 45, 46),
+            (0,),
+        ]
+        v = s.get_dc_values()
+        assert v.direction == 5
+        # TODO: use a tuple.
+        assert v.sensor_1 == 42
+        assert v.sensor_2 == 43
+        assert v.sensor_3 == 44
+        assert v.sensor_4 == 45
+        assert v.sensor_5 == 46
+        assert v.sensor_mean == 44
+        assert v.get_dir_brightness(5) == 44
+        assert v.get_dir_brightness(4) == 43.5
+        v = s.get_ac_values()
+        assert v.direction == 5
+        assert v.sensor_1 == 42
+        assert v.sensor_2 == 43
+        assert v.sensor_3 == 44
+        assert v.sensor_4 == 45
+        assert v.sensor_5 == 46
+        assert v.get_dir_brightness(5) == 44
+        assert v.get_dir_brightness(4) == 43.5
+        assert s.get_dsp_mode() == s.DSPModes.AC_DSP_1200Hz
+        s.set_dsp_mode(s.DSPModes.AC_DSP_600Hz)
+        assert mdigital.mock_calls == [
+            call.read_value("all_DC"),
+            call.read_value("all_AC"),
+            call.read_value("dspmode"),
+            call.write_value("dspmode", (1,)),
+        ]
+
+    def test_eopd(self, mbrick):
+        assert (
+            nxt.sensor.hitechnic.EOPD.get_sample
+            is nxt.sensor.hitechnic.EOPD.get_scaled_value
+        )
+        s = nxt.sensor.hitechnic.EOPD(mbrick, PORT_1)
+        mbrick.get_input_values.side_effect = [
+            (PORT_1, True, False, Type.LIGHT_INACTIVE, Mode.RAW, 523, 0, 0, 0),
+            (PORT_1, True, False, Type.LIGHT_INACTIVE, Mode.RAW, 398, 0, 0, 0),
+            (PORT_1, True, False, Type.LIGHT_INACTIVE, Mode.RAW, 398, 0, 0, 0),
+            (PORT_1, True, False, Type.LIGHT_INACTIVE, Mode.RAW, 1023, 0, 0, 0),
+        ]
+        # TODO: choose a mode in constructor, or raise error if no mode chosen.
+        s.set_range_long()
+        s.set_range_short()
+        assert s.get_raw_value() == 500
+        assert s.get_processed_value() == 25
+        assert s.get_scaled_value() == 10
+        assert s.get_scaled_value() == 250
+        assert mbrick.mock_calls == [
+            call.set_input_mode(PORT_1, Type.LIGHT_ACTIVE, Mode.RAW),
+            call.set_input_mode(PORT_1, Type.LIGHT_INACTIVE, Mode.RAW),
+            call.get_input_values(PORT_1),
+            call.get_input_values(PORT_1),
+            call.get_input_values(PORT_1),
+            call.get_input_values(PORT_1),
+        ]
+
+    def test_colorv2(self, mbrick, mdigital):
+        assert (
+            nxt.sensor.hitechnic.Colorv2.get_sample
+            is nxt.sensor.hitechnic.Colorv2.get_active_color
+        )
+        s = nxt.sensor.hitechnic.Colorv2(mbrick, PORT_1, False)
+        mdigital.read_value.side_effect = [
+            (8, 100, 50, 0, 75, 42, 66, 33, 0),
+            (100, 50, 0, 75),
+            (0,),
+        ]
+        v = s.get_active_color()
+        assert v.number == 8
+        assert v.red == 100
+        assert v.green == 50
+        assert v.blue == 0
+        assert v.white == 75
+        assert v.index == 42
+        assert v.normred == 66
+        assert v.normgreen == 33
+        assert v.normblue == 0
+        v = s.get_passive_color()
+        assert v.red == 100
+        assert v.green == 50
+        assert v.blue == 0
+        assert v.white == 75
+        assert s.get_mode() == s.Modes.ACTIVE
+        s.set_mode(s.Modes.PASSIVE)
+        assert mdigital.mock_calls == [
+            call.read_value("all_data"),
+            call.read_value("all_raw_data"),
+            call.read_value("mode"),
+            call.write_value("mode", (1,)),
+        ]
+
+    def test_giro(self, mbrick):
+        assert (
+            nxt.sensor.hitechnic.Gyro.get_sample
+            is nxt.sensor.hitechnic.Gyro.get_rotation_speed
+        )
+        s = nxt.sensor.hitechnic.Gyro(mbrick, PORT_1)
+        mbrick.get_input_values.side_effect = [
+            (PORT_1, True, False, Type.ANGLE, Mode.RAW, 0, 0, 42, 0),
+            (PORT_1, True, False, Type.ANGLE, Mode.RAW, 0, 0, 42, 0),
+            (PORT_1, True, False, Type.ANGLE, Mode.RAW, 0, 0, 54, 0),
+            (PORT_1, True, False, Type.ANGLE, Mode.RAW, 0, 0, 54, 0),
+        ]
+        assert s.get_rotation_speed() == 42
+        s.calibrate()
+        assert s.get_rotation_speed() == 12
+        s.set_zero(0)
+        assert s.get_rotation_speed() == 54
+        assert mbrick.mock_calls == [
+            call.set_input_mode(PORT_1, Type.ANGLE, Mode.RAW),
+            call.get_input_values(PORT_1),
+            call.get_input_values(PORT_1),
+            call.get_input_values(PORT_1),
+            call.get_input_values(PORT_1),
+        ]
+
+    def test_prototype(self, mbrick, mdigital):
+        assert not hasattr(nxt.sensor.hitechnic.Prototype, "get_sample")
+        s = nxt.sensor.hitechnic.Prototype(mbrick, PORT_1, False)
+        mdigital.read_value.side_effect = [
+            (42, 43, 44, 45, 46),
+            (0x2A,),
+        ]
+        v = s.get_analog()
+        assert v.a0 == 42
+        assert v.a1 == 43
+        assert v.a2 == 44
+        assert v.a3 == 45
+        assert v.a4 == 46
+        v = s.get_digital()
+        assert v.dataint == 0x2A
+        assert v.datalst == [False, True, False, True, False, True]
+        assert list(v) == [False, True, False, True, False, True]
+        assert v[0] is False
+        assert v.d0 is False
+        assert v.d1 is True
+        assert v.d2 is False
+        assert v.d3 is True
+        assert v.d4 is False
+        assert v.d5 is True
+        s.set_digital(s.Digital_Data(0x15))
+        s.set_digital_modes(s.Digital_Data((False, True, False, True, False, True)))
+        assert mdigital.mock_calls == [
+            call.read_value("all_analog"),
+            call.read_value("digital_in"),
+            call.write_value("digital_out", (0x15,)),
+            call.write_value("digital_cont", (0x2A,)),
+        ]
+
+    def test_servocon(self, mbrick, mdigital):
+        assert not hasattr(nxt.sensor.hitechnic.ServoCon, "get_sample")
+        s = nxt.sensor.hitechnic.ServoCon(mbrick, PORT_1, False)
+        mdigital.read_value.side_effect = [
+            (1,),
+            (43,),
+        ]
+        assert s.get_status() == s.Status.RUNNING
+        s.set_step_time(5)
+        s.set_pos(1, 42)
+        assert s.get_pwm() == 43
+        s.set_pwm(44)
+        assert mdigital.mock_calls == [
+            call.read_value("status"),
+            call.write_value("steptime", (5,)),
+            call.write_value("s1pos", (42,)),
+            call.read_value("pwm"),
+            call.write_value("pwm", (44,)),
+        ]
+
+    def test_motorcon(self, mbrick, mdigital):
+        assert not hasattr(nxt.sensor.hitechnic.MotorCon, "get_sample")
+        s = nxt.sensor.hitechnic.MotorCon(mbrick, PORT_1, False)
+        mdigital.read_value.side_effect = [
+            (123456,),
+            (654321,),
+            (0x55,),
+            (43,),
+            (1,),
+            (3, 2, 1),
+            (0x70, 0x2),
+        ]
+        s.set_enc_target(1, 123456)
+        assert s.get_enc_target(1) == 123456
+        assert s.get_enc_current(2) == 654321
+        s.set_mode(1, 0x55)
+        assert s.get_mode(2) == 0x55
+        s.set_power(1, 42)
+        assert s.get_power(2) == 43
+        s.set_gear_ratio(1, 2)
+        assert s.get_gear_ratio(2) == 1
+        s.set_pid(1, s.PID_Data(3, 2, 1))
+        v = s.get_pid(2)
+        assert (v.p, v.i, v.d) == (3, 2, 1)
+        assert s.get_battery_voltage() == 450
+        assert mdigital.mock_calls == [
+            call.write_value("m1enctarget", (123456,)),
+            call.read_value("m1enctarget"),
+            call.read_value("m2enccurrent"),
+            call.write_value("m1mode", (0x55,)),
+            call.read_value("m2mode"),
+            call.write_value("m1power", (42,)),
+            call.read_value("m2power"),
+            call.write_value("m1gearratio", (2,)),
+            call.read_value("m2gearratio"),
+            call.write_value("m1pid", (3, 2, 1)),
+            call.read_value("m2pid"),
+            call.read_value("batteryvoltage"),
+        ]
+
+    def test_angle(self, mbrick, mdigital):
+        assert (
+            nxt.sensor.hitechnic.Angle.get_sample
+            is nxt.sensor.hitechnic.Angle.get_angle
+        )
+        s = nxt.sensor.hitechnic.Angle(mbrick, PORT_1, False)
+        mdigital.read_value.side_effect = [
+            (21, 1),
+            (123456789,),
+            (16,),
+        ]
+        assert s.get_angle() == 43
+        assert s.get_accumulated_angle() == 123456789
+        assert s.get_rpm() == 16
+        s.calibrate()
+        s.reset()
+        assert mdigital.mock_calls == [
+            call.read_value("angle"),
+            call.read_value("angle_acc"),
+            call.read_value("rpm"),
+            call.write_value("mode", b"C"),
+            call.write_value("mode", b"R"),
+        ]

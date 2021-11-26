@@ -152,9 +152,9 @@ DIST.add_compatible_sensor(None, 'mndsnsrs', 'DIST')
 
 
 class RTC(BaseDigitalSensor):
-    """Class for the RealTime Clock sensor"""
+    """Class for the RealTime Clock sensor (DS1307)"""
     #TODO: Create a function to set the clock
-    #Has no indentification
+    #Has no identification
     I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
     I2C_ADDRESS.update({'seconds': (0x00, '<B'),
                         'minutes': (0x01, '<B'),
@@ -166,8 +166,8 @@ class RTC(BaseDigitalSensor):
                       })
     I2C_DEV = 0xD0
 
-    def __init__(self, brick, port, check_compatible=False): #check_compatible must remain false due to no identification!
-        super(RTC, self).__init__(brick, port, check_compatible)
+    def __init__(self, brick, port):
+        super(RTC, self).__init__(brick, port, check_compatible=False)
 
     def get_seconds(self):  
         gs = self.read_value('seconds')[0]
@@ -229,8 +229,6 @@ class RTC(BaseDigitalSensor):
             elif mode == 24 and hm2 == 1:  #24_HOUR = 0
                 hm3 = hm - 64
                 self.write_value('hours', (hm3, ))
-            else:
-                print('That mode is already selected!')
         else:
             raise ValueError('Must be 12 or 24!')
 
@@ -383,11 +381,11 @@ class MTRMUX(BaseDigitalSensor):
 
     def get_direction(self, number):
         addressname = 'direction_m' + str(number)
-        self.read_value(addressname)
+        return self.read_value(addressname)[0]
 
     def get_speed(self, number):
         addressname = 'speed_m' + str(number)
-        self.read_value(addressname)
+        return self.read_value(addressname)[0]
 
 MTRMUX.add_compatible_sensor(None, 'mndsnsrs', 'MTRMUX') #Tested with version 'V2.11'
 
@@ -805,11 +803,11 @@ class PS2(BaseDigitalSensor):
     
     def get_sample(self):
         return self.ControllerState(
-            get_buttons(0),
-            get_buttons(1),
-            get_joystick('x', 'l'),
-            get_joystick('y', 'l'),
-            get_joystick('x', 'r'),
-            get_joystick('y', 'r'))
+            self.get_buttons(1),
+            self.get_buttons(2),
+            self.get_joystick('x', 'left'),
+            self.get_joystick('y', 'left'),
+            self.get_joystick('x', 'right'),
+            self.get_joystick('y', 'right'))
 
 PS2.add_compatible_sensor(None, 'mndsnsrs', 'PSPNX') #Tested with version 'V2.00'
