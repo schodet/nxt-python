@@ -94,7 +94,6 @@ class Ultrasonic(BaseDigitalSensor):
 
     def __init__(self, brick, port, check_compatible=True):
         super(Ultrasonic, self).__init__(brick, port, check_compatible)
-        self.set_input_mode(Type.LOW_SPEED_9V, Mode.RAW)
 
     def get_distance(self):
         'Function to get data from the ultrasonic sensor'
