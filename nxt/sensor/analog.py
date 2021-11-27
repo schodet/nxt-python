@@ -37,5 +37,5 @@ class BaseAnalogSensor(Sensor):
         return RawReading(self.brick.get_input_values(self.port))
 
     def reset_input_scaled_value(self):
-        self.brick.reset_input_scaled_value()
+        self.brick.reset_input_scaled_value(self.port)
 
