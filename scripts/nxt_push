@@ -14,14 +14,12 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-import sys
+import argparse
 import nxt.locator
 from nxt.error import FileNotFound
-from nxt.utils import parse_command_line_arguments
 
 def _write_file(b, fname, data):
-    print('Pushing %s (%d bytes) ...' % (fname, len(data)), end=' ')
-    sys.stdout.flush()
+    print('Pushing %s (%d bytes) ...' % (fname, len(data)), end=' ', flush=True)
     with b.open_file(fname, 'wb', len(data)) as w:
         w.write(data)
     print('wrote %d bytes' % len(data))
@@ -37,14 +35,13 @@ def write_file(b, fname):
     _write_file(b, fname, data)
 
 if __name__ == '__main__':
-    arguments, keyword_arguments = parse_command_line_arguments(sys.argv)
+    p = argparse.ArgumentParser(
+        description="Push files to a LEGO Mindstorms NXT brick")
+    p.add_argument("--host", metavar="ADDR", help="brick address")
+    p.add_argument("file", nargs="+", help="file to transfer")
+    options = p.parse_args()
 
-    if '--help' in arguments:
-        print('''nxt_push -- Push a file to a LEGO Mindstorms NXT brick
-Usage:  nxt_push [--host <macaddress>] <file>''')
-        exit(0)
-    
-    brick = nxt.locator.find_one_brick(keyword_arguments.get('host',None))
-    for filename in arguments:
+    brick = nxt.locator.find_one_brick(options.host)
+    for filename in options.file:
         write_file(brick, filename)
     brick.sock.close()

@@ -53,7 +53,6 @@ import shutil
 import sys
 
 import nxt.locator
-from nxt.utils import parse_command_line_arguments
 
 from usb.core import USBError
 from nxt.locator import BrickNotFoundError

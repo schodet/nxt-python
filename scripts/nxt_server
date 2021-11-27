@@ -13,9 +13,9 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+import argparse
 import nxt
-import socket, sys, traceback
-from nxt.utils import parse_command_line_arguments
+import socket, traceback
 
 def serve(brick, channel, details):
     'handles serving the client'
@@ -44,20 +44,19 @@ def serve(brick, channel, details):
         print("Connection Finished")
 
 if __name__ == "__main__":
-    arguments, keyword_arguments = parse_command_line_arguments(sys.argv)
-    if '--help' in arguments:
-        print(
-"""nxt_server -- command server for NXT brick
-Usage: nxt_server.py [--host <macaddress>][--name <name>]
-[--iphost <server ip>][--ipport <server port>]""")
-        exit(0)
+    p = argparse.ArgumentParser(description="Command server for NXT brick")
+    p.add_argument("--host", metavar="ADDR", help="brick address")
+    p.add_argument("--name", help="brick name")
+    p.add_argument("-p", "--port", type=int, default=2727, help="bind port")
+    options = p.parse_args()
+
     print("Connecting to NXT...")
-    brick = nxt.find_one_brick(keyword_arguments.get('host',None),keyword_arguments.get('name',None))
+    brick = nxt.find_one_brick(options.host, options.name)
     print("Brick found.")
 
     print("Starting server...")
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.bind((keyword_arguments.get('iphost',''), int(keyword_arguments.get('ipport','2727'))))
+    server.bind(("", options.port))
     server.listen(1)
     # Have the server serve "forever":
     while True:
