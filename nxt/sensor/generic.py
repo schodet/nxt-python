@@ -79,6 +79,13 @@ class Ultrasonic(BaseDigitalSensor):
         'continuous_measurement_interval': (0x40, 'B'),
         'command': (0x41, 'B'),
         'measurement_byte_0': (0x42, 'B'),
+        'measurement_byte_1': (0x43, 'B'),
+        'measurement_byte_2': (0x44, 'B'),
+        'measurement_byte_3': (0x45, 'B'),
+        'measurement_byte_4': (0x46, 'B'),
+        'measurement_byte_5': (0x47, 'B'),
+        'measurement_byte_6': (0x48, 'B'),
+        'measurement_byte_7': (0x49, 'B'),
         'measurements': (0x42, '8B'),
         'actual_scale_factor': (0x51, 'B'),
         'actual_scale_divisor': (0x52, 'B'),
@@ -109,22 +116,19 @@ class Ultrasonic(BaseDigitalSensor):
 
     def get_measurement_no(self, number):
         "Returns measurement_byte_number"
-        if not 0 <= number < 8:
-            raise ValueError('Measurements are numbered 0 to 7, not ' + str(number))
-        base_address, format = self.I2C_ADDRESS['measurement_byte_0']
-        return self._i2c_query(base_address + number, format)[0]
+        return self.read_value(f'measurement_byte_{number}')[0]
 
     def command(self, command):
         self.write_value('command', (command, ))
 
     def get_interval(self):
         'Get the sample interval for continuous measurement mode -- Unknown units'
-        return self.read_value('continuous_measurement_interval')
+        return self.read_value('continuous_measurement_interval')[0]
 
     def set_interval(self, interval):
         """Set the sample interval for continuous measurement mode.
 Unknown units; default is 1"""
-        self.write_value('continuous_measurement_interval', interval)
+        self.write_value('continuous_measurement_interval', (interval,))
 
 Ultrasonic.add_compatible_sensor(None, 'LEGO', 'Sonar') #Tested with version 'V1.0'
 
