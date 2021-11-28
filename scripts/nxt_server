@@ -2,6 +2,7 @@
 #
 # nxt_server program -- Serve an interface to the NXT brick
 # Copyright (C) 2011  zonedabone, Marcus Wanner
+# Copyright (C) 2021  Nicolas Schodet
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,11 +15,11 @@
 # GNU General Public License for more details.
 
 import argparse
-import nxt
+import nxt.locator
 import socket, traceback
 
 def serve(brick, channel, details):
-    'handles serving the client'
+    """Handles serving the client."""
     print("Connection started (" + details[0] + ')')
     run = True
     try:
@@ -26,17 +27,19 @@ def serve(brick, channel, details):
             data = channel.recv(1024)
             if not data:
                 break
-            code =  data[0]
-            if code == '\x00' or code == '\x01' or code == '\x02':
+            code = data[0]
+            if code == 0x00 or code == 0x01 or code == 0x02:
                 brick.sock.send(data)
                 reply = brick.sock.recv()
                 channel.send(reply)
-            elif code == '\x80' or code == '\x81':
+            elif code == 0x80 or code == 0x81:
                 brick.sock.send(data)
-            elif code == '\x98':
-                channel.send(brick.sock.type)
-            elif code == '\x99':
+            elif code == 0x98:
+                channel.send(brick.sock.type.encode("ascii"))
+            elif code == 0x99:
                 run = False
+            else:
+                raise RuntimeError("Bad protocol")
     except:
         traceback.print_exc()
     finally:
@@ -51,7 +54,7 @@ if __name__ == "__main__":
     options = p.parse_args()
 
     print("Connecting to NXT...")
-    brick = nxt.find_one_brick(options.host, options.name)
+    brick = nxt.locator.find_one_brick(options.host, options.name)
     print("Brick found.")
 
     print("Starting server...")
@@ -61,5 +64,4 @@ if __name__ == "__main__":
     # Have the server serve "forever":
     while True:
         channel, details = server.accept()
-        #TODO: sasl authentication here?
         serve(brick, channel, details)
