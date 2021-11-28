@@ -1,5 +1,6 @@
-# nxt.locator module -- Locate LEGO Minstorms NXT bricks via USB or Bluetooth
+# nxt.devsock module -- Bluetooth communication using a device file
 # Copyright (C) 2013  Dave Churchill, Marcus Wanner
+# Copyright (C) 2021  Nicolas Schodet
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -11,45 +12,54 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+import glob
+import struct
+
 from nxt.brick import Brick
-from glob import glob
+
 
 class DeviceSocket:
-    
-    type = 'bluetooth'
+    """Device file socket connected to a NXT brick."""
 
-    def __init__(self, filename=None):
+    bsize = 118
+
+    type = "bluetooth"
+
+    def __init__(self, filename):
         self._filename = filename
 
+    def __str__(self):
+        return f"DevFile ({self._filename})"
+
     def connect(self):
-        self._device = open(self._filename, 'r+b', buffering=0)
+        """Connect to NXT brick, return a Brick instance."""
+        self._device = open(self._filename, "r+b", buffering=0)
         return Brick(self)
-    
+
     def close(self):
+        """Close the connection."""
         self._device.close()
 
     def send(self, data):
-        l0 = len(data) & 0xFF
-        l1 = (len(data) >> 8) & 0xFF
-        d = bytes((l0, l1)) + data
-        self._device.write(d)
+        """Send raw data."""
+        data = struct.pack("<H", len(data)) + data
+        self._device.write(data)
 
     def recv(self):
+        """Receive raw data."""
         data = self._device.read(2)
-        l0 = data[0]
-        l1 = data[1]
-        plen = l0 + (l1 << 8)
+        (plen,) = struct.unpack("<H", data)
         return self._device.read(plen)
 
+
 def find_bricks(host=None, name=None, filename=None):
-    """Supply either name=brickname (path will be guessed),
-filename=absolute path to brick file, or neither. host is ignored."""
+    """Find all bricks connected using Bluetooth matching given host and name."""
     if name:
-        matches = glob('/dev/*%s*' % name)
+        matches = glob.glob("/dev/*%s*" % name)
     elif filename:
-        matches = glob(filename)
+        matches = glob.glob(filename)
     else:
-        #based on observed behavior of OSX 10.8, see issue 49
-        matches = glob('/dev/*-DevB')
+        # Based on observed behavior of OSX 10.8, see issue 49.
+        matches = glob.glob("/dev/*-DevB")
     for match in matches:
         yield DeviceSocket(match)
