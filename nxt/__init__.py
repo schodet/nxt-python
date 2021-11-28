@@ -11,7 +11,3 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-
-from nxt.locator import find_one_brick, Method
-from nxt.motor import *
-from nxt.sensor import *
