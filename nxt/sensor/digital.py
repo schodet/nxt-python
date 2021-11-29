@@ -13,11 +13,15 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+import logging
+import struct
+import time
+
 from nxt.error import I2CError, I2CPendingError, DirProtError
 
 from .common import *
-import time
-import struct
+
+logger = logging.getLogger(__name__)
 
 
 class SensorInfo:
@@ -72,13 +76,20 @@ class BaseDigitalSensor(Sensor):
         if check_compatible:
             sensor = self.get_sensor_info()
             if not sensor in self.compatible_sensors:
-                print(('WARNING: Wrong sensor class chosen for sensor ' +
-                          str(sensor.product_id) + ' on port ' + str(port + 1) + '. ' + """
-You may be using the wrong type of sensor or may have connected the cable
-incorrectly. If you are sure you're using the correct sensor class for the
-sensor, this message is likely in error and you should disregard it and file a
-bug report, including the output of get_sensor_info(). This message can be
-suppressed by passing "check_compatible=False" when creating the sensor object."""))
+                logger.warning(
+                    "wrong sensor class chosen for sensor %s on port %d",
+                    sensor.product_id,
+                    port + 1,
+                )
+                logger.warning(
+                    "   You may be using the wrong type of sensor or may have "
+                    "connected the cable incorrectly. If you are sure you're using the "
+                    "correct sensor class for the sensor, this message is likely in "
+                    "error and you should disregard it and file a bug report, "
+                    "including the output of get_sensor_info(). This message can be "
+                    "suppressed by passing check_compatible=False when creating the "
+                    "sensor object."
+                )
 
     def _ls_get_status(self, size):
         for n in range(30): #https://code.google.com/p/nxt-python/issues/detail?id=35

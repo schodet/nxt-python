@@ -60,22 +60,14 @@ from nxt.error import FileExistsError, SysProtError
 from nxt.telegram import OPCODES, Telegram
 
 
-DEBUG = False
-
 def play_soundfile(b, fname):
-    if DEBUG:
-        print("Playing soundfile %s" % fname)
     b.play_sound_file(0,fname)
 
 def run_program(b, fname):
-    if DEBUG:
-        print("Running %s" % fname)
     b.start_program(fname)
 
 def delete_file(b, fname):
     b.delete(fname)
-    if DEBUG:
-        print("Deleted %s" % fname)
 
 def read_file(b, fname):
     with b.open_file(fname, 'rb') as r:
@@ -89,8 +81,6 @@ def file_exists_dialog(win, fname):
     dialog.format_secondary_text(fileexists_str)
     dialog.run()
     dialog.destroy()
-    if DEBUG:
-        print("File Exists box closed.")
 
 def system_error_dialog(win):
     dialog = Gtk.MessageDialog(win, 0, Gtk.MessageType.INFO,
@@ -98,8 +88,6 @@ def system_error_dialog(win):
     dialog.format_secondary_text("Insufficient Contiguous Space!\n\nPlease delete files to create contiguous space.")
     dialog.run()
     dialog.destroy()
-    if DEBUG:
-        print("System Error box closed.")
 
 def usb_error_dialog(win):
     dialog = Gtk.MessageDialog(win, 0, Gtk.MessageType.INFO,
@@ -107,17 +95,11 @@ def usb_error_dialog(win):
     dialog.format_secondary_text("Can't connect to NXT!\n\nIs the NXT powered off?")
     dialog.run()
     dialog.destroy()
-    if DEBUG:
-        print("USB Error box closed.")
 
 def write_file(win, b, fname, data):
     try:
-        if DEBUG:
-            print("Pushing %s (%d bytes) ..." % (fname, len(data)))
         with b.open_file(fname, 'wb', len(data)) as w:
             w.write(data)
-        if DEBUG:
-            print("wrote %d bytes" % len(data))
     except FileExistsError:
         file_exists_dialog(win, fname)
     except SysProtError:
@@ -128,16 +110,12 @@ def write_file(win, b, fname, data):
 def write_files(win, b, names):
     for fname in names.split('\r\n'):
         if fname:
-            if DEBUG:
-                print("File:", fname)
             bname = os.path.basename(fname)
             url = urllib.request.urlopen(fname)
             try:
                 data = url.read()
             finally:
                 url.close()
-            if DEBUG:
-                print("name %s, size: %d " % (bname, len(data)))
             write_file(win, b, bname, data)
 
 class NXTListing(Gtk.ListStore):
@@ -250,13 +228,10 @@ class ApplicationWindow(Gtk.ApplicationWindow):
         self.selected_file = None
 
     def reload_filelist(self, widget):
-        if DEBUG:
-            print("Reloading filelist...")
         if self.brick:
             self.do_housekeeping()
         try:
-            # FIXME: use --host command line option here instead of None
-            self.brick = nxt.locator.find_one_brick(None)
+            self.brick = nxt.locator.find_one_brick()
         except BrickNotFoundError:
             print("Brick not found!")
             sys.stdout.flush()
@@ -284,10 +259,6 @@ class ApplicationWindow(Gtk.ApplicationWindow):
             if prot_version == PROTOCOL_VER:
                 brick_name, brick_hostid, brick_signal_strengths, brick_user_flash = self.brick.get_device_info()
                 connection_type = str(self.brick.sock)
-
-                if DEBUG:
-                    print("Brick Info: ", connection_type, brick_name, brick_hostid, brick_signal_strengths, fw_version, brick_user_flash)
-
                 self.brick_info_str = "Connected via %s to %s [%s]\tFirmware: v%s.%s\tFree space: %s" % (
                     connection_type, brick_name, brick_hostid, fw_version[0], fw_version[1], brick_user_flash)
             else:
@@ -306,24 +277,17 @@ class ApplicationWindow(Gtk.ApplicationWindow):
         if res == Gtk.ResponseType.ACCEPT:
             # Handle single file download for now
             uri = dialog.get_uri()
-            if DEBUG:
-                print("You selected", uri)
             try:
                 write_files(self, self.brick, uri)
             except USBError:
                 # Cannot recover, close connection
                 usb_error_dialog(self)
                 self.do_housekeeping()
-        else:
-            if DEBUG:
-                print("Add File Cancelled")
         dialog.destroy()
 
     def on_tree_selection_changed(self, selection):
         model, treeiter = selection.get_selected()
         if treeiter:
-            if DEBUG:
-                print("You selected %s (%s bytes)" % (model[treeiter][0], model[treeiter][1]))
             self.selected_file = model[treeiter][0]
         else:
             self.selected_file = None
@@ -350,8 +314,6 @@ class ApplicationWindow(Gtk.ApplicationWindow):
         if self.selected_file:
             name = ''
             ext = ''
-            if DEBUG:
-                print("Attempting to execute file...%s" % self.selected_file)
             try:
                 name, ext = self.selected_file.split('.')
                 if ext == 'rso':
@@ -373,16 +335,12 @@ class ApplicationWindow(Gtk.ApplicationWindow):
     def remove_file(self, widget):
         if self.selected_file:
             warning_str = "Do you really want to remove %s?" % self.selected_file
-            if DEBUG:
-                print("Removing file...%s" % self.selected_file)
             dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING,
                 Gtk.ButtonsType.OK_CANCEL, "Remove File")
             dialog.format_secondary_text(warning_str)
             response = dialog.run()
             dialog.destroy()
             if response == Gtk.ResponseType.OK:
-                if DEBUG:
-                    print("Proceed to Delete File")
                 try:
                     delete_file(self.brick,self.selected_file)
                 except USBError:
@@ -391,14 +349,9 @@ class ApplicationWindow(Gtk.ApplicationWindow):
                     self.do_housekeeping()
                 self.selected_file = None
                 self.update_view()
-            elif response == Gtk.ResponseType.CANCEL:
-                if DEBUG:
-                    print("CANCEL Delete File")
 
     def add_file(self, widget):
         if self.brick:
-            if DEBUG:
-                print("Adding file...")
             self.choose_files()
             self.selected_file = None
             self.update_view()
@@ -437,11 +390,6 @@ class Application(Gtk.Application):
 
         self.set_option_context_summary(
                 "Simple GUI to manage files on a LEGO MINDSTORMS NXT")
-        self.add_main_option("host", ord("h"), GLib.OptionFlags.NONE,
-                             GLib.OptionArg.STRING, "Bluetooth address",
-                             "<bdaddr>")
-        self.add_main_option("verbose", ord("v"), GLib.OptionFlags.NONE,
-                             GLib.OptionArg.NONE, "Enable verbose mode", None)
 
     def do_startup(self):
         Gtk.Application.do_startup(self)
@@ -473,16 +421,6 @@ class Application(Gtk.Application):
         if not self.window:
             self.window = ApplicationWindow(application=self)
         self.window.present()
-
-    def do_command_line(self, command_line):
-        options = command_line.get_options_dict()
-
-        if options.contains("verbose"):
-            print("Verbose mode enabled")
-            DEBUG = True
-
-        self.activate()
-        return 0
 
     def on_about(self, action, param):
         about_dialog = AboutDialog(transient_for=self.window, modal=True)

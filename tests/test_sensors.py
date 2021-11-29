@@ -166,7 +166,7 @@ class TestDigital:
             call.ls_read(PORT_1),
         ]
 
-    def test_check_compatible(self, mbrick, capsys):
+    def test_check_compatible(self, mbrick, caplog):
         class DummySensor(nxt.sensor.BaseDigitalSensor):
             pass
 
@@ -181,9 +181,9 @@ class TestDigital:
             b"Plop\0\0\0\0",
         ]
         DummySensor(mbrick, PORT_1)
-        assert "WARNING" not in capsys.readouterr()[0]
+        assert "WARNING" not in caplog.text
         DummySensor(mbrick, PORT_2)
-        assert "WARNING" in capsys.readouterr()[0]
+        assert "WARNING" in caplog.text
 
     def test_write_value(self, mbrick):
         s = nxt.sensor.BaseDigitalSensor(mbrick, PORT_1, False)

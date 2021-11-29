@@ -10,8 +10,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-import time
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pytest
 
@@ -45,7 +44,7 @@ def pytest_collection_modifyitems(config, items):
 
 
 @pytest.fixture
-def mtime(monkeypatch):
+def mtime():
     """Mock time.time() and time.sleep()."""
     current_time = 0
 
@@ -59,11 +58,12 @@ def mtime(monkeypatch):
 
     mtime = Mock(spec_set=("time", "sleep"))
     mtime.time.side_effect = timef
-    monkeypatch.setattr(time, "time", mtime.time)
     mtime.sleep.side_effect = sleepf
-    monkeypatch.setattr(time, "sleep", mtime.sleep)
 
-    return mtime
+    with patch("nxt.brick.time", new=mtime), patch(
+        "nxt.motcont.time", new=mtime
+    ), patch("nxt.motor.time", new=mtime), patch("nxt.sensor.digital.time", new=mtime):
+        yield mtime
 
 
 @pytest.fixture

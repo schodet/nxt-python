@@ -13,11 +13,13 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+import logging
 
 from .common import *
 from .digital import BaseDigitalSensor, SensorInfo
 from .analog import BaseAnalogSensor
 
+logger = logging.getLogger(__name__)
 
 class SumoEyes(BaseAnalogSensor):   
     """The class to control Mindsensors Sumo sensor. Warning: long range not
@@ -241,7 +243,7 @@ class RTC(BaseDigitalSensor):
             mer3 = mer3 >> 0x10
             return mer3
         else:
-            print('Cannot get mer! In 24-hour mode!')
+            logger.error('cannot get mer in 24-hour mode')
     
     def get_sample(self):
         """Returns a struct_time() tuple which can be processed by the time module."""

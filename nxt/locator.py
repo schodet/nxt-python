@@ -15,7 +15,11 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-import traceback, configparser, os
+import configparser
+import logging
+import os
+
+logger = logging.getLogger(__name__)
 
 class BrickNotFoundError(Exception):
     pass
@@ -35,7 +39,7 @@ find_one_brick. Any or all can be selected."""
         self.device = device
 
 
-def find_bricks(host=None, name=None, silent=False, method=Method()):
+def find_bricks(host=None, name=None, method=Method()):
     """Used by find_one_brick to look for bricks ***ADVANCED USERS ONLY***"""
     methods_available = 0
 
@@ -48,8 +52,7 @@ def find_bricks(host=None, name=None, silent=False, method=Method()):
             for s in socks:
                 yield s
         except ImportError:
-            import sys
-            if not silent: print("USB module unavailable, not searching there", file=sys.stderr)
+            logging.warning("usb module unavailable, not searching there")
 
     if method.bluetooth:
         try:
@@ -65,8 +68,7 @@ def find_bricks(host=None, name=None, silent=False, method=Method()):
                 except (backend._bluetooth.BluetoothError, IOError):
                     pass
         except ImportError:
-            import sys
-            if not silent: print("Bluetooth module unavailable, not searching there", file=sys.stderr)
+            logging.warning("bluetooth module unavailable, not searching there")
 
     if method.device:
         try:
@@ -83,10 +85,9 @@ def find_bricks(host=None, name=None, silent=False, method=Method()):
         raise NoBackendError("No selected backends are available! Did you install the comm modules?")
 
 
-def find_one_brick(host=None, name=None, silent=False, strict=None, debug=False, method=None, confpath=None):
+def find_one_brick(host=None, name=None, strict=None, method=None, confpath=None):
     """Use to find one brick. The host and name args limit the search to
-a given MAC or brick name. Set silent to True to stop nxt-python from
-printing anything during the search. This function by default
+a given MAC or brick name. This function by default
 automatically checks to see if the brick found has the correct host/name
 (if either are provided) and will not return a brick which doesn't
 match. This can be disabled (so the function returns any brick which can
@@ -96,11 +97,7 @@ to only look for devices which match the args provided. The confpath arg
 specifies the location of the configuration file which brick location
 information will be read from if no brick location directives (host,
 name, strict, or method) are provided."""
-    if debug and silent:
-        silent = False
-        print("silent and debug can't both be set; giving debug priority")
-
-    conf = read_config(confpath, debug)
+    conf = read_config(confpath)
     if not (host or name or strict or method):
         host	= conf.get('Brick', 'host')
         name	= conf.get('Brick', 'name')
@@ -114,52 +111,39 @@ name, strict, or method) are provided."""
     if not strict: strict = True
     if not method: method = Method()
 
-    if debug:
-        print("Host: %s Name: %s Strict: %s" % (host, name, str(strict)))
-        print("USB: {} BT: {}".format(method.usb, method.bluetooth))
+    logger.debug("host: %s name: %s strict: %s", host, name, strict)
+    logger.debug("usb: %s bt: %s", method.usb, method.bluetooth)
 
-    for s in find_bricks(host, name, silent, method):
+    for s in find_bricks(host, name, method):
         try:
-            if host and 'host' in dir(s) and s.host != host:
-                if debug:
-                    print("Warning: the brick found does not match the host provided (s.host).")
-                if strict: continue
             b = s.connect()
             info = b.get_device_info()
-            if debug:
-                print("info: " + str(info))
+            logger.debug("info: %s", info)
 
             strict = False
 
             if host and info[1] != host:
-                if debug:
-                    print("Warning: the brick found does not match the host provided (get_device_info).")
-                    print("  host:" + str(host))
-                    print("  info[1]:" + info[1])
+                logger.warning("the brick found does not match the host provided (get_device_info)")
+                logger.warning("  host: %s", host)
+                logger.warning("  info[1]: %s", info[1])
                 if strict:
                     s.close()
                     continue
 
-            if info[0] != name:
-                if debug:
-                    print("Warning; the brick found does not match the name provided.")
-                    print("  host:" + str(host))
-                    print("  info[0]:" + info[0])
-                    print("  name:" + str(name))
+            if name and info[0] != name:
+                logger.warning("the brick found does not match the name provided")
+                logger.warning("  host: %s", host)
+                logger.warning("  info[0]: %s", info[0])
+                logger.warning("  name: %s", name)
                 if strict:
                     s.close()
                     continue
 
             return b
         except:
-            if debug:
-                traceback.print_exc()
-                print("Failed to connect to possible brick")
+            logger.debug("failed to connect to possible brick", exc_info=True)
 
-    print("""No brick was found.
-    Is the brick turned on?
-    For more diagnosing use the debug=True argument or
-    try the 'nxt_test' script located in /bin or ~/.local/bin""")
+    logger.warning("no brick was found, is the brick turned on?")
     raise BrickNotFoundError
 
 
@@ -176,11 +160,11 @@ def device_brick(filename):
         return sock.connect()
 
 
-def read_config(confpath=None, debug=False):
+def read_config(confpath=None):
     conf = configparser.RawConfigParser({'host': None, 'name': None, 'strict': True, 'method': ''})
     if not confpath: confpath = os.path.expanduser('~/.nxt-python')
-    if conf.read([confpath]) == [] and debug:
-        print("Warning: Config file (should be at %s) was not read. Use nxt.locator.make_config() to create a config file." % confpath)
+    if conf.read([confpath]) == []:
+        logger.debug("config file (should be at %s) was not read", confpath)
     if conf.has_section('Brick') == False:
         conf.add_section('Brick')
     return conf

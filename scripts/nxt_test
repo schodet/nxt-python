@@ -2,13 +2,18 @@
 
 import argparse
 import nxt.locator
+import logging
 
 p = argparse.ArgumentParser(description="Test the nxt-python setup")
-p.add_argument("--debug", action="store_true", default=False, help="enable debugging")
+levels = ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL')
+p.add_argument("--log-level", choices=levels, help="set log level")
 options = p.parse_args()
 
+if options.log_level:
+    logging.basicConfig(level=options.log_level)
+
 print('Find brick...', flush=True)
-b = nxt.locator.find_one_brick(debug=options.debug)
+b = nxt.locator.find_one_brick()
 name, host, signal_strengths, user_flash = b.get_device_info()
 print('NXT brick name: %s' % name)
 print('Host address: %s' % host)

@@ -15,7 +15,10 @@
 
 """Use for motor control"""
 
+import logging
 import time
+
+logger = logging.getLogger(__name__)
 
 PORT_A = 0x00
 PORT_B = 0x01
@@ -134,10 +137,6 @@ def get_tacho_and_state(values):
 
 class BaseMotor(object):
     """Base class for motors"""
-    debug = 0
-    def _debug_out(self, message):
-        if self.debug:
-            print(message)
 
     def turn(self, power, tacho_units, brake=True, timeout=1, emulate=True):
         """Use this to turn a motor. The motor will not stop until it turns the
@@ -181,11 +180,11 @@ class BaseMotor(object):
         if not emulate:
             state.tacho_limit = tacho_limit
 
-        self._debug_out("Updating motor information...")
+        logger.debug("updating motor information")
         self._set_state(state)
        
         direction = 1 if power > 0 else -1
-        self._debug_out(f"tachocount: {tacho}")
+        logger.debug("tachocount: %s", tacho)
         current_time = time.time()
         tacho_target = tacho.get_target(tacho_limit, direction)
         
@@ -202,7 +201,7 @@ class BaseMotor(object):
                 current_time = time.time()
                 blocked = self._is_blocked(tacho, last_tacho, direction)
                 if blocked:
-                    self._debug_out(f"not advancing: {last_tacho} {tacho}")
+                    logger.debug("not advancing: %s %s", last_tacho, tacho)
                     # the motor can be up to 80+ degrees in either direction from target when using bluetooth
                     if current_time - last_time > timeout:
                         if tacho.is_near(tacho_target, threshold):
@@ -210,7 +209,7 @@ class BaseMotor(object):
                         else:
                             raise BlockedException("Blocked!")
                 else:
-                    self._debug_out(f"advancing: {last_tacho} {tacho}")
+                    logger.debug("advancing: %s %s", last_tacho, tacho)
                 if tacho.is_near(tacho_target, threshold) or tacho.is_greater(tacho_target, direction):
                     break
         finally:
@@ -227,27 +226,17 @@ class Motor(BaseMotor):
         self._read_state()
         self.sync = 0
         self.turn_ratio = 0
-        try:
-            self.method = brick.sock.type
-        except:
-            print("Warning: Socket did not report a type!")
-            print("Please report this problem to the developers!")
-            print("For now, turn() accuracy will not be optimal.")
-            print("Continuing happily...")
-            self.method = None
+        self.method = brick.sock.type
 
     def _set_state(self, state):
-        self._debug_out('Setting brick output state...')
+        logger.debug("setting brick output state: %s", state)
         list_state = [self.port] + state.to_list()
         self.brick.set_output_state(*list_state)
-        self._debug_out(state)
         self._state = state
-        self._debug_out('State set.')
 
     def _read_state(self):
-        self._debug_out('Getting brick output state...')
+        logger.debug("getting brick output state")
         values = self.brick.get_output_state(self.port)
-        self._debug_out('State got.')
         self._state, tacho = get_tacho_and_state(values)
         return self._state, tacho
     
@@ -319,7 +308,7 @@ class Motor(BaseMotor):
         state.power = power
         state.tacho_limit = tacho_limit
 
-        self._debug_out('Updating motor information...')
+        logger.debug("updating motor information")
         self._set_state(state)
     
     def _eta(self, current, target, power):
@@ -356,7 +345,7 @@ class SynchronizedMotors(BaseMotor):
         elif self.leader.port > self.follower.port:
             self.turn_ratio = turn_ratio
         else:
-            self._debug_out('reversed')
+            logger.debug("reversed")
             self.turn_ratio = -turn_ratio
 
     def _get_new_state(self):

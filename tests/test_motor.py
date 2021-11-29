@@ -37,7 +37,6 @@ def mmotor_factory(mbrick):
         m = nxt.motor.Motor(mbrick, port)
         assert mbrick.mock_calls == [call.get_output_state(port)]
         mbrick.reset_mock()
-        m.debug = True
         return m
 
     return factory
@@ -56,7 +55,6 @@ def mmotorb(mmotor_factory):
 @pytest.fixture
 def msyncmotor(mmotor, mmotorb):
     m = nxt.motor.SynchronizedMotors(mmotor, mmotorb, 50)
-    m.debug = True
     return m
 
 
