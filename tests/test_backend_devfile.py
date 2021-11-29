@@ -75,6 +75,8 @@ def test_devfile(mglob, mopen, mdev):
     # python calls the destructor.
     sock.close()
     assert mdev.close.called
+    # Duplicated close.
+    sock.close()
     del brick
 
 

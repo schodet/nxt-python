@@ -61,9 +61,10 @@ class USBSock:
 
     def close(self):
         """Close the connection."""
-        logger.info("closing %s connection", self)
-        self._epout = None
-        self._epin = None
+        if self._epout is not None:
+            logger.info("closing %s connection", self)
+            self._epout = None
+            self._epin = None
 
     def send(self, data):
         """Send raw data.

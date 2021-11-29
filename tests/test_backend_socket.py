@@ -68,6 +68,8 @@ def test_socket(msocket, mdev):
     sock.close()
     assert mdev.send.call_args == call(b"\x99")
     assert mdev.close.called
+    # Duplicated close.
+    sock.close()
     del brick
 
 

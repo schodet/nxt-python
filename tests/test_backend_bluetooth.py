@@ -71,6 +71,8 @@ def test_bluetooth(mbluetooth, msock):
     # python calls the destructor.
     sock.close()
     assert msock.close.called
+    # Duplicated close.
+    sock.close()
     del brick
 
 

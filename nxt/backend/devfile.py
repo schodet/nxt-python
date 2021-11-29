@@ -48,8 +48,10 @@ class DevFileSock:
 
     def close(self):
         """Close the connection."""
-        logger.info("closing %s connection", self._filename)
-        self._device.close()
+        if self._device is not None:
+            logger.info("closing %s connection", self._filename)
+            self._device.close()
+            self._device = None
 
     def send(self, data):
         """Send raw data.

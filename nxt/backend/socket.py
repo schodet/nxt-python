@@ -52,11 +52,12 @@ class SocketSock:
 
     def close(self):
         """Close the connection."""
-        logger.info("closing connection to %s:%d", self._host, self._port)
-        self._sock.send(bytes((0x99,)))
-        self._sock.close()
-        self._sock = None
-        self.type = None
+        if self._sock is not None:
+            logger.info("closing connection to %s:%d", self._host, self._port)
+            self._sock.send(bytes((0x99,)))
+            self._sock.close()
+            self._sock = None
+            self.type = None
 
     def send(self, data):
         """Send raw data.

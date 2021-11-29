@@ -71,6 +71,8 @@ def test_usb(musb, mdev):
     # TODO: brick.__del__ should close the socket, but nobody knows when
     # python calls the destructor.
     sock.close()
+    # Duplicated close.
+    sock.close()
     del brick
 
 

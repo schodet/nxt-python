@@ -56,9 +56,10 @@ class BluetoothSock:
 
     def close(self):
         """Close the connection."""
-        logger.info("closing %s connection", self)
-        self._sock.close()
-        self._sock = None
+        if self._sock is not None:
+            logger.info("closing %s connection", self)
+            self._sock.close()
+            self._sock = None
 
     def send(self, data):
         """Send raw data.
