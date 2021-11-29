@@ -1,4 +1,4 @@
-# test_usbsock -- Test nxt.usbsock module
+# test_backend_usb -- Test nxt.backend.usb module
 # Copyright (C) 2021  Nicolas Schodet
 #
 # This program is free software: you can redistribute it and/or modify
@@ -15,7 +15,7 @@ from unittest.mock import Mock, call, patch
 
 import pytest
 
-import nxt.usbsock
+import nxt.backend.usb
 
 
 @pytest.fixture
@@ -36,17 +36,18 @@ def mdev():
 
 @pytest.fixture
 def musb(mdev):
-    with patch("nxt.usbsock.usb.core") as usb_core:
+    with patch("nxt.backend.usb.usb.core") as usb_core:
         usb_core.find.return_value = [mdev]
         yield usb_core
 
 
-def test_usbsock(musb, mdev):
+def test_usb(musb, mdev):
+    # Instantiate backend.
+    backend = nxt.backend.usb.get_backend()
     # Find brick.
-    socks = list(nxt.usbsock.find_bricks())
+    socks = list(backend.find(blah="blah"))
     assert len(socks) == 1
     sock = socks[0]
-    sock.debug = True
     # str.
     assert str(sock).startswith("USB (Bus")
     # Connect.
@@ -74,12 +75,13 @@ def test_usbsock(musb, mdev):
 
 
 @pytest.mark.nxt("usb")
-def test_usbsock_real():
+def test_usb_real():
+    # Instantiate backend.
+    backend = nxt.backend.usb.get_backend()
     # Find brick.
-    socks = list(nxt.usbsock.find_bricks())
+    socks = list(backend.find())
     assert len(socks) > 0, "no NXT found"
     sock = socks[0]
-    sock.debug = True
     # str.
     assert str(sock).startswith("USB (Bus")
     # Connect.

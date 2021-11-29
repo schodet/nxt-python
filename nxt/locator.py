@@ -1,8 +1,9 @@
-# nxt.locator module -- Locate LEGO Minstorms NXT bricks via USB or Bluetooth
+# nxt.locator module -- Locate LEGO Mindstorms NXT bricks
 # Copyright (C) 2006, 2007  Douglas P Lau
 # Copyright (C) 2009  Marcus Wanner
 # Copyright (C) 2013  Dave Churchill, Marcus Wanner
 # Copyright (C) 2015, 2016, 2017, 2018 Multiple Authors
+# Copyright (C) 2021  Nicolas Schodet
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -40,9 +41,10 @@ def find_bricks(host=None, name=None, silent=False, method=Method()):
 
     if method.usb:
         try:
-            from . import usbsock
+            import nxt.backend.usb
+            backend = nxt.backend.usb.get_backend()
             methods_available += 1
-            socks = usbsock.find_bricks()
+            socks = backend.find()
             for s in socks:
                 yield s
         except ImportError:
@@ -51,13 +53,14 @@ def find_bricks(host=None, name=None, silent=False, method=Method()):
 
     if method.bluetooth:
         try:
-            from . import bluesock
+            import nxt.backend.bluetooth
+            backend = nxt.backend.bluetooth.get_backend()
             methods_available += 1
             try:
-                socks = bluesock.find_bricks(host, name)
+                socks = backend.find(host=host, name=name)
                 for s in socks:
                     yield s
-            except (bluesock.bluetooth.BluetoothError, IOError): #for cases such as no adapter, bluetooth throws IOError, not BluetoothError
+            except (nxt.backend.bluetooth.bluetooth.BluetoothError, IOError): #for cases such as no adapter, bluetooth throws IOError, not BluetoothError
                 pass
         except ImportError:
             import sys
@@ -65,9 +68,10 @@ def find_bricks(host=None, name=None, silent=False, method=Method()):
 
     if method.device:
         try:
-            from . import devsock
+            import nxt.backend.devfile
+            backend = nxt.backend.devfile.get_backend()
             methods_available += 1
-            socks = devsock.find_bricks(name=name)
+            socks = backend.find(name=name)
             for s in socks:
                 yield s
         except IOError:
@@ -157,16 +161,17 @@ name, strict, or method) are provided."""
     raise BrickNotFoundError
 
 
-def server_brick(host, port = 2727):
-    from . import ipsock
-    sock = ipsock.IpSock(host, port)
+def server_brick(host, port=2727):
+    import nxt.backend.socket
+    sock = nxt.backend.socket.SocketSock(host, port)
     return sock.connect()
 
 
 def device_brick(filename):
-    from . import devsock
-    sock = devsock.find_bricks(filename=filename)
-    return sock.connect()
+    import nxt.backend.devfile
+    backend = nxt.backend.devfile.get_backend()
+    for sock in backend.find(filename=filename):
+        return sock.connect()
 
 
 def read_config(confpath=None, debug=False):

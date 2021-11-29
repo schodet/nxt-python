@@ -1,4 +1,4 @@
-# test_ipsock -- Test nxt.ipsock module
+# test_backend_socket -- Test nxt.backend.socket module
 # Copyright (C) 2021  Nicolas Schodet
 #
 # This program is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@ from unittest.mock import Mock, call, patch
 
 import pytest
 
-import nxt.ipsock
+import nxt.backend.socket
 
 
 @pytest.fixture
@@ -32,15 +32,18 @@ def mdev():
 
 @pytest.fixture
 def msocket(mdev):
-    with patch("nxt.ipsock.socket") as socket:
+    with patch("nxt.backend.socket.socket") as socket:
         socket.socket.return_value = mdev
         yield socket
 
 
-def test_ipsock(msocket, mdev):
+def test_socket(msocket, mdev):
+    # Instantiate backend.
+    backend = nxt.backend.socket.get_backend()
     # Find brick.
-    sock = nxt.ipsock.IpSock("localhost", 2727)
-    sock.debug = True
+    socks = list(backend.find(blah="blah"))
+    assert len(socks) == 1
+    sock = socks[0]
     # str.
     assert str(sock) == "Socket (localhost:2727)"
     # Connect.
@@ -69,10 +72,13 @@ def test_ipsock(msocket, mdev):
 
 
 @pytest.mark.nxt("socket")
-def test_ipsock_real():
+def test_socket_real():
+    # Instantiate backend.
+    backend = nxt.backend.socket.get_backend()
     # Find brick.
-    sock = nxt.ipsock.IpSock("localhost", 2727)
-    sock.debug = True
+    socks = list(backend.find())
+    assert len(socks) > 0, "no NXT found"
+    sock = socks[0]
     # str.
     assert str(sock) == "Socket (localhost:2727)"
     # Connect.

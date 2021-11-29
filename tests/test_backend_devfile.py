@@ -1,4 +1,4 @@
-# test_devsock -- Test nxt.devsock module
+# test_backend_devfile -- Test nxt.backend.devfile module
 # Copyright (C) 2021  Nicolas Schodet
 #
 # This program is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@ from unittest.mock import Mock, call, patch
 
 import pytest
 
-import nxt.devsock
+import nxt.backend.devfile
 
 
 @pytest.fixture
@@ -31,24 +31,29 @@ def mdev():
 
 @pytest.fixture
 def mopen(mdev):
-    with patch("nxt.devsock.open") as fopen:
+    with patch("nxt.backend.devfile.open") as fopen:
         fopen.return_value = mdev
         yield fopen
 
 
 @pytest.fixture
 def mglob():
-    with patch("nxt.devsock.glob") as glob:
+    with patch("nxt.backend.devfile.glob") as glob:
         glob.glob.return_value = ["/dev/nxt"]
         yield glob
 
 
-def test_devsock(mglob, mopen, mdev):
+def test_devfile(mglob, mopen, mdev):
+    # Instantiate backend.
+    backend = nxt.backend.devfile.get_backend()
     # Find brick.
-    socks = list(nxt.devsock.find_bricks())
+    socks = list(backend.find(name="NXT", blah="blah"))
+    assert len(socks) == 1
+    socks = list(backend.find(filename="/dev/nxt", blah="blah"))
+    assert len(socks) == 1
+    socks = list(backend.find(blah="blah"))
     assert len(socks) == 1
     sock = socks[0]
-    sock.debug = True
     # str.
     assert str(sock).startswith("DevFile (/dev")
     # Connect.
@@ -74,12 +79,13 @@ def test_devsock(mglob, mopen, mdev):
 
 
 @pytest.mark.nxt("devfile")
-def test_devsock_real():
+def test_devfile_real():
+    # Instantiate backend.
+    backend = nxt.backend.devfile.get_backend()
     # Find brick.
-    socks = list(nxt.devsock.find_bricks())
+    socks = list(backend.find())
     assert len(socks) > 0, "no NXT found"
     sock = socks[0]
-    sock.debug = True
     # str.
     assert str(sock).startswith("DevFile (/dev")
     # Connect.

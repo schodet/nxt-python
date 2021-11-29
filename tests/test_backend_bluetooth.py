@@ -1,4 +1,4 @@
-# test_bluesock -- Test nxt.bluesock module
+# test_backend_bluetooth -- Test nxt.backend.bluetooth module
 # Copyright (C) 2021  Nicolas Schodet
 #
 # This program is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@ from unittest.mock import Mock, call, patch
 
 import pytest
 
-import nxt.bluesock
+import nxt.backend.bluetooth
 
 
 @pytest.fixture
@@ -32,18 +32,23 @@ def msock():
 
 @pytest.fixture
 def mbluetooth(msock):
-    with patch("nxt.bluesock.bluetooth") as bluetooth:
-        bluetooth.discover_devices.return_value = [("00:01:02:03:04:05", "NXT")]
+    with patch("nxt.backend.bluetooth.bluetooth") as bluetooth:
+        bluetooth.discover_devices.return_value = [
+            ("00:01:02:03:04:05", "NXT"),
+            ("00:01:02:03:04:06", "NXT"),
+            ("00:01:02:03:04:05", "NXT2"),
+        ]
         bluetooth.BluetoothSocket.return_value = msock
         yield bluetooth
 
 
-def test_bluesock(mbluetooth, msock):
+def test_bluetooth(mbluetooth, msock):
+    # Instantiate backend.
+    backend = nxt.backend.bluetooth.get_backend()
     # Find brick.
-    socks = list(nxt.bluesock.find_bricks())
+    socks = list(backend.find(host="00:01:02:03:04:05", name="NXT", blah="blah"))
     assert len(socks) == 1
     sock = socks[0]
-    sock.debug = True
     # str.
     assert str(sock) == "Bluetooth (00:01:02:03:04:05)"
     # Connect.
@@ -70,12 +75,13 @@ def test_bluesock(mbluetooth, msock):
 
 
 @pytest.mark.nxt("bluetooth")
-def test_bluesock_real():
+def test_bluetooth_real():
+    # Instantiate backend.
+    backend = nxt.backend.bluetooth.get_backend()
     # Find brick.
-    socks = list(nxt.bluesock.find_bricks())
+    socks = list(backend.find())
     assert len(socks) > 0, "no NXT found"
     sock = socks[0]
-    sock.debug = True
     # str.
     assert str(sock).startswith("Bluetooth (")
     # Connect.
