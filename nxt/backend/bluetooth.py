@@ -16,8 +16,6 @@
 import logging
 import struct
 
-import bluetooth
-
 import nxt.brick
 
 logger = logging.getLogger(__name__)
@@ -35,7 +33,8 @@ class BluetoothSock:
     #: Connection type, used to evaluate latency.
     type = "bluetooth"
 
-    def __init__(self, host):
+    def __init__(self, bluetooth, host):
+        self._bluetooth = bluetooth
         self._host = host
         self._sock = None
 
@@ -49,7 +48,7 @@ class BluetoothSock:
         :rtype: Brick
         """
         logger.info("connecting via %s", self)
-        sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
+        sock = self._bluetooth.BluetoothSocket(self._bluetooth.RFCOMM)
         sock.connect((self._host, PORT))
         self._sock = sock
         return nxt.brick.Brick(self)
@@ -87,6 +86,9 @@ class BluetoothSock:
 class Backend:
     """Bluetooth backend."""
 
+    def __init__(self, bluetooth):
+        self._bluetooth = bluetooth
+
     def find(self, host=None, name=None, **kwargs):
         """Find bricks connected using Bluetooth.
 
@@ -98,15 +100,22 @@ class Backend:
         :return: Iterator over all found bricks.
         :rtype: Iterator[BluetoothSock]
         """
-        for h, n in bluetooth.discover_devices(lookup_names=True):
+        for h, n in self._bluetooth.discover_devices(lookup_names=True):
             if (host is None or h == host) and (name is None or n == name):
-                yield BluetoothSock(h)
+                yield BluetoothSock(self._bluetooth, h)
 
 
 def get_backend():
-    """Get an instance of the Bluetooth backend.
+    """Get an instance of the Bluetooth backend if available.
 
     :return: Bluetooth backend.
-    :rtype: Backend
+    :rtype: Backend or None
     """
-    return Backend()
+    try:
+        import bluetooth
+    except ImportError:
+        return None
+    except Exception:
+        # Raised when platform is not supported.
+        return None
+    return Backend(bluetooth)

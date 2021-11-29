@@ -55,13 +55,15 @@ def find_bricks(host=None, name=None, silent=False, method=Method()):
         try:
             import nxt.backend.bluetooth
             backend = nxt.backend.bluetooth.get_backend()
-            methods_available += 1
-            try:
-                socks = backend.find(host=host, name=name)
-                for s in socks:
-                    yield s
-            except (nxt.backend.bluetooth.bluetooth.BluetoothError, IOError): #for cases such as no adapter, bluetooth throws IOError, not BluetoothError
-                pass
+            if backend is not None:
+                methods_available += 1
+                try:
+                    socks = backend.find(host=host, name=name)
+                    for s in socks:
+                        yield s
+                # For cases such as no adapter, bluetooth throws IOError, not BluetoothError.
+                except (backend._bluetooth.BluetoothError, IOError):
+                    pass
         except ImportError:
             import sys
             if not silent: print("Bluetooth module unavailable, not searching there", file=sys.stderr)

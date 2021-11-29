@@ -32,17 +32,56 @@ def msock():
 
 @pytest.fixture
 def mbluetooth(msock):
-    with patch("nxt.backend.bluetooth.bluetooth") as bluetooth:
-        bluetooth.discover_devices.return_value = [
-            ("00:01:02:03:04:05", "NXT"),
-            ("00:01:02:03:04:06", "NXT"),
-            ("00:01:02:03:04:05", "NXT2"),
-        ]
-        bluetooth.BluetoothSocket.return_value = msock
-        yield bluetooth
+    bluetooth = Mock()
+    bluetooth.discover_devices.return_value = [
+        ("00:01:02:03:04:05", "NXT"),
+        ("00:01:02:03:04:06", "NXT"),
+        ("00:01:02:03:04:05", "NXT2"),
+    ]
+    bluetooth.BluetoothSocket.return_value = msock
+    return bluetooth
 
 
-def test_bluetooth(mbluetooth, msock):
+@pytest.fixture
+def mbluetooth_import(mbluetooth):
+    orig_import = __import__
+
+    def mocked_import(name, *args):
+        if name == "bluetooth":
+            return mbluetooth
+        return orig_import(name, *args)
+
+    with patch("builtins.__import__", new=mocked_import):
+        yield mocked_import
+
+
+@pytest.fixture
+def mbluetooth_import_error():
+    orig_import = __import__
+
+    def mocked_import(name, *args):
+        if name == "bluetooth":
+            raise ImportError("mocked")
+        return orig_import(name, *args)
+
+    with patch("builtins.__import__", new=mocked_import):
+        yield mocked_import
+
+
+@pytest.fixture
+def mbluetooth_import_not_supported():
+    orig_import = __import__
+
+    def mocked_import(name, *args):
+        if name == "bluetooth":
+            raise Exception("mocked")
+        return orig_import(name, *args)
+
+    with patch("builtins.__import__", new=mocked_import):
+        yield mocked_import
+
+
+def test_bluetooth(mbluetooth, mbluetooth_import, msock):
     # Instantiate backend.
     backend = nxt.backend.bluetooth.get_backend()
     # Find brick.
@@ -74,6 +113,14 @@ def test_bluetooth(mbluetooth, msock):
     # Duplicated close.
     sock.close()
     del brick
+
+
+def test_bluetooth_not_present(mbluetooth_import_error):
+    assert nxt.backend.bluetooth.get_backend() is None
+
+
+def test_bluetooth_not_supported(mbluetooth_import_not_supported):
+    assert nxt.backend.bluetooth.get_backend() is None
 
 
 @pytest.mark.nxt("bluetooth")
