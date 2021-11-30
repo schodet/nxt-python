@@ -1,0 +1,27 @@
+image: debian/stable
+oauth: pages.sr.ht/PAGES:RW
+environment:
+  site: ni.srht.site
+packages:
+  - python3-usb
+  - python3-bluetooth
+  - python3-sphinx
+  - python3-sphinx-rtd-theme
+  - python3-pytest
+  - python3-setuptools
+sources:
+  - https://git.sr.ht/~ni/nxt-python
+tasks:
+  - test: |
+      cd nxt-python
+      python3 -m pytest
+  - doc: |
+      cd nxt-python/docs
+      make html
+      mv _build/html latest
+      tar czf ../../nxt-python.tar.gz latest
+  - install: |
+      cd nxt-python
+      python3 setup.py install --user
+  - upload: |
+      acurl -f https://pages.sr.ht/publish/$site/nxt-python -Fcontent=@nxt-python.tar.gz
