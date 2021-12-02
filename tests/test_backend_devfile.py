@@ -39,19 +39,26 @@ def mopen(mdev):
 @pytest.fixture
 def mglob():
     with patch("nxt.backend.devfile.glob") as glob:
-        glob.glob.return_value = ["/dev/nxt"]
         yield glob
 
 
-def test_devfile(mglob, mopen, mdev):
+@pytest.fixture
+def mtty():
+    with patch("nxt.backend.devfile.tty") as tty:
+        yield tty
+
+
+@pytest.fixture
+def mplatform():
+    with patch("nxt.backend.devfile.platform") as platform:
+        yield platform
+
+
+def test_devfile(mopen, mtty, mdev):
     # Instantiate backend.
     backend = nxt.backend.devfile.get_backend()
     # Find brick.
-    socks = list(backend.find(name="NXT", blah="blah"))
-    assert len(socks) == 1
     socks = list(backend.find(filename="/dev/nxt", blah="blah"))
-    assert len(socks) == 1
-    socks = list(backend.find(blah="blah"))
     assert len(socks) == 1
     sock = socks[0]
     # str.
@@ -59,6 +66,7 @@ def test_devfile(mglob, mopen, mdev):
     # Connect.
     brick = sock.connect()
     assert mopen.called
+    assert mtty.setraw.called
     # Send.
     some_bytes = bytes.fromhex("01020304")
     some_len = bytes.fromhex("0400")
@@ -78,6 +86,36 @@ def test_devfile(mglob, mopen, mdev):
     # Duplicated close.
     sock.close()
     del brick
+
+
+def test_devfile_linux(mglob, mplatform):
+    mplatform.system.return_value = "Linux"
+    mglob.glob.return_value = ["/dev/rfcomm0"]
+    backend = nxt.backend.devfile.get_backend()
+    socks = list(backend.find(blah="blah"))
+    assert len(socks) == 1
+    assert mglob.mock_calls == [call.glob("/dev/rfcomm*")]
+
+
+def test_devfile_darwin(mglob, mplatform):
+    mplatform.system.return_value = "Darwin"
+    mglob.glob.return_value = ["/dev/tty.NXT-DevB-1"]
+    backend = nxt.backend.devfile.get_backend()
+    socks = list(backend.find(name="NXT", blah="blah"))
+    assert len(socks) == 1
+    socks = list(backend.find(blah="blah"))
+    assert len(socks) == 1
+    assert mglob.mock_calls == [
+        call.glob("/dev/*NXT*"),
+        call.glob("/dev/*-DevB*"),
+    ]
+
+
+def test_devfile_other(mplatform):
+    mplatform.system.return_value = "MSDos"
+    backend = nxt.backend.devfile.get_backend()
+    socks = list(backend.find(blah="blah"))
+    assert len(socks) == 0
 
 
 @pytest.mark.nxt("devfile")

@@ -14,7 +14,9 @@
 
 import glob
 import logging
+import platform
 import struct
+import tty
 
 import nxt.brick
 
@@ -44,6 +46,7 @@ class DevFileSock:
         """
         logger.info("connecting via %s", self._filename)
         self._device = open(self._filename, "r+b", buffering=0)
+        tty.setraw(self._device)
         return nxt.brick.Brick(self)
 
     def close(self):
@@ -79,7 +82,30 @@ class DevFileSock:
 class Backend:
     """Device file backend.
 
-    This uses a device file present on mac OS /dev file system.
+    This uses a device file present on Linux or macOS /dev file system, which allows to
+    connect to the NXT brick without needing a Bluetooth python package.
+
+    You only need to use this backend if the :mod:`~nxt.backend.bluetooth` backend is
+    not working for you.
+
+    On Linux, you need to pair the NXT brick, then you can use the rfcomm tool::
+
+        sudo rfcomm bind 0 00:16:53:01:02:03
+
+    Where ``00:16:53:01:02:03`` is the Bluetooth address of your NXT brick. This will
+    create a ``/dev/rfcomm0`` device file which can be used to communicate with the NXT
+    brick.
+
+    On macOS, you need to pair the NXT brick, then open Bluetooth preferences, select
+    the NXT brick, click “Edit serial ports”. It should show “NXT-DevB-1”. If not, add
+    a serial port using:
+
+    - Port name: NXT-DevB-1
+    - Device service: Dev B
+    - Port type: RS-232
+
+    This should create a ``/dev/tty.NXT-DevB-1`` device file which can be used to
+    communicate with the NXT brick.
     """
 
     def find(self, name=None, filename=None, **kwargs):
@@ -87,20 +113,25 @@ class Backend:
 
         :param name: Brick name (example: ``"NXT"``).
         :type name: str or None
-        :param filename: Device file name.
+        :param filename: Device file name (example: ``"/dev/rfcomm0"``).
         :type filename: str or None
         :param kwargs: Other parameters are ignored.
         :return: Iterator over all found bricks.
         :rtype: Iterator[DevFileSock]
         """
-        matches = []
-        if name:
-            matches.extend(glob.glob("/dev/*%s*" % name))
         if filename:
-            matches.append(filename)
-        if not matches:
-            # Based on observed behavior of OSX 10.8, see issue 49.
-            matches = glob.glob("/dev/*-DevB")
+            matches = [filename]
+        else:
+            system = platform.system()
+            if system == "Linux":
+                matches = glob.glob("/dev/rfcomm*")
+            elif system == "Darwin":
+                if name:
+                    matches = glob.glob("/dev/*%s*" % name)
+                else:
+                    matches = glob.glob("/dev/*-DevB*")
+            else:
+                matches = []
         for match in matches:
             yield DevFileSock(match)
 
