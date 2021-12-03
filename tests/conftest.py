@@ -66,9 +66,7 @@ def mtime():
         yield mtime
 
 
-@pytest.fixture
-def mbrick(mtime):
-    """A brick with mocked low level functions."""
+def make_brick_mock():
     b = Mock()
 
     def find_files(pattern):
@@ -90,3 +88,15 @@ def mbrick(mtime):
     b.open_file = open_file
     b.get_sensor = get_sensor
     return b
+
+
+@pytest.fixture
+def mbrick(mtime):
+    """A brick with mocked low level functions."""
+    return make_brick_mock()
+
+
+@pytest.fixture
+def mbrick2(mtime):
+    """A second brick with mocked low level functions."""
+    return make_brick_mock()

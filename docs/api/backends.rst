@@ -2,8 +2,10 @@
 Connection Backends
 ===================
 
-Backends are used by :func:`nxt.locator.find_one_brick`. You will usually not
-use them directly.
+.. module:: nxt.backend
+
+Backends are used by :func:`nxt.locator.find`. You will usually not use them
+directly.
 
 USB
 ===

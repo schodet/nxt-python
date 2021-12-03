@@ -22,6 +22,8 @@ from nxt.error import FileNotFound, ModuleNotFound
 from nxt.sensor import get_sensor
 from nxt.telegram import OPCODES, Telegram
 
+__all__ = ["Brick"]
+
 
 def _make_poller(opcode, poll_func, parse_func):
     def poll(self, *args, **kwargs):

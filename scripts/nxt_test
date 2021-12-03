@@ -1,21 +1,24 @@
 #!/usr/bin/env python3
 
 import argparse
-import nxt.locator
 import logging
+import sys
+
+import nxt.locator
 
 p = argparse.ArgumentParser(description="Test the nxt-python setup")
-levels = ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL')
-p.add_argument("--log-level", choices=levels, help="set log level")
 p.add_argument("--sound", action=argparse.BooleanOptionalAction, default=True,
                help="enable or disable sound test")
+nxt.locator.add_arguments(p)
+levels = ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL')
+p.add_argument("--log-level", type=str.upper, choices=levels, help="set log level")
 options = p.parse_args()
 
 if options.log_level:
     logging.basicConfig(level=options.log_level)
 
 print('Find brick...', flush=True)
-b = nxt.locator.find_one_brick()
+b = nxt.locator.find_with_options(options)
 name, host, signal_strengths, user_flash = b.get_device_info()
 print('NXT brick name: %s' % name)
 print('Host address: %s' % host)

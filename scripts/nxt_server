@@ -15,8 +15,13 @@
 # GNU General Public License for more details.
 
 import argparse
+import logging
+import socket
+import sys
+import traceback
+
 import nxt.locator
-import socket, traceback
+
 
 def serve(brick, channel, details):
     """Handles serving the client."""
@@ -48,13 +53,17 @@ def serve(brick, channel, details):
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser(description="Command server for NXT brick")
-    p.add_argument("--host", metavar="ADDR", help="brick address")
-    p.add_argument("--name", help="brick name")
     p.add_argument("-p", "--port", type=int, default=2727, help="bind port")
+    nxt.locator.add_arguments(p)
+    levels = ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL')
+    p.add_argument("--log-level", type=str.upper, choices=levels, help="set log level")
     options = p.parse_args()
 
+    if options.log_level:
+        logging.basicConfig(level=options.log_level)
+
     print("Connecting to NXT...")
-    brick = nxt.locator.find_one_brick(options.host, options.name)
+    brick = nxt.locator.find_with_options(options)
     print("Brick found.")
 
     print("Starting server...")

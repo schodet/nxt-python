@@ -231,10 +231,9 @@ class ApplicationWindow(Gtk.ApplicationWindow):
         if self.brick:
             self.do_housekeeping()
         try:
-            self.brick = nxt.locator.find_one_brick()
+            self.brick = nxt.locator.find()
         except BrickNotFoundError:
             print("Brick not found!")
-            sys.stdout.flush()
         except USBError:
             usb_error_dialog(self)
             self.do_housekeeping()

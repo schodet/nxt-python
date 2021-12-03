@@ -16,6 +16,7 @@
 
 import argparse
 import nxt.locator
+import logging
 from nxt.error import FileNotFound
 
 def _write_file(b, fname, data):
@@ -37,11 +38,16 @@ def write_file(b, fname):
 if __name__ == '__main__':
     p = argparse.ArgumentParser(
         description="Push files to a LEGO Mindstorms NXT brick")
-    p.add_argument("--host", metavar="ADDR", help="brick address")
+    nxt.locator.add_arguments(p)
+    levels = ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL')
+    p.add_argument("--log-level", type=str.upper, choices=levels, help="set log level")
     p.add_argument("file", nargs="+", help="file to transfer")
     options = p.parse_args()
 
-    brick = nxt.locator.find_one_brick(options.host)
+    if options.log_level:
+        logging.basicConfig(level=options.log_level)
+
+    brick = nxt.locator.find_with_options(options)
     for filename in options.file:
         write_file(brick, filename)
     brick.sock.close()
