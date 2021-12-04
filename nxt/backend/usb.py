@@ -93,12 +93,14 @@ class Backend:
 
         :param kwargs: Parameters are ignored.
         :return: Iterator over all found bricks.
-        :rtype: Iterator[USBSock]
+        :rtype: Iterator[Brick]
         """
         for dev in usb.core.find(
             find_all=True, idVendor=ID_VENDOR_LEGO, idProduct=ID_PRODUCT_NXT
         ):
-            yield USBSock(dev)
+            sock = USBSock(dev)
+            brick = sock.connect()
+            yield brick
 
 
 def get_backend():

@@ -92,9 +92,15 @@ class Backend:
         :type server_port: str or int
         :param kwargs: Other parameters are ignored.
         :return: Iterator over all found bricks.
-        :rtype: Iterator[SocketSock]
+        :rtype: Iterator[Brick]
         """
-        yield SocketSock(server_host, int(server_port))
+        sock = SocketSock(server_host, int(server_port))
+        try:
+            brick = sock.connect()
+        except ConnectionRefusedError:
+            logger.exception("failed to connect to device %s", sock)
+        else:
+            yield brick
 
 
 def get_backend():

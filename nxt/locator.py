@@ -48,9 +48,9 @@ def find_bricks(host=None, name=None, method=Method()):
             import nxt.backend.usb
             backend = nxt.backend.usb.get_backend()
             methods_available += 1
-            socks = backend.find()
-            for s in socks:
-                yield s
+            bricks = backend.find()
+            for b in bricks:
+                yield b
         except ImportError:
             logging.warning("usb module unavailable, not searching there")
 
@@ -60,13 +60,9 @@ def find_bricks(host=None, name=None, method=Method()):
             backend = nxt.backend.bluetooth.get_backend()
             if backend is not None:
                 methods_available += 1
-                try:
-                    socks = backend.find(host=host, name=name)
-                    for s in socks:
-                        yield s
-                # For cases such as no adapter, bluetooth throws IOError, not BluetoothError.
-                except (backend._bluetooth.BluetoothError, IOError):
-                    pass
+                bricks = backend.find(host=host, name=name)
+                for b in bricks:
+                    yield b
         except ImportError:
             logging.warning("bluetooth module unavailable, not searching there")
 
@@ -75,9 +71,9 @@ def find_bricks(host=None, name=None, method=Method()):
             import nxt.backend.devfile
             backend = nxt.backend.devfile.get_backend()
             methods_available += 1
-            socks = backend.find(name=name)
-            for s in socks:
-                yield s
+            bricks = backend.find(name=name)
+            for b in bricks:
+                yield b
         except IOError:
             pass
 
@@ -114,9 +110,8 @@ name, strict, or method) are provided."""
     logger.debug("host: %s name: %s strict: %s", host, name, strict)
     logger.debug("usb: %s bt: %s", method.usb, method.bluetooth)
 
-    for s in find_bricks(host, name, method):
+    for b in find_bricks(host, name, method):
         try:
-            b = s.connect()
             info = b.get_device_info()
             logger.debug("info: %s", info)
 

@@ -117,7 +117,7 @@ class Backend:
         :type filename: str or None
         :param kwargs: Other parameters are ignored.
         :return: Iterator over all found bricks.
-        :rtype: Iterator[DevFileSock]
+        :rtype: Iterator[Brick]
         """
         if filename:
             matches = [filename]
@@ -133,7 +133,13 @@ class Backend:
             else:
                 matches = []
         for match in matches:
-            yield DevFileSock(match)
+            sock = DevFileSock(match)
+            try:
+                brick = sock.connect()
+            except OSError:
+                logger.exception("failed to connect to device %s", sock)
+            else:
+                yield brick
 
 
 def get_backend():

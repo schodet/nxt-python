@@ -45,19 +45,18 @@ def test_usb(musb, mdev):
     # Instantiate backend.
     backend = nxt.backend.usb.get_backend()
     # Find brick.
-    socks = list(backend.find(blah="blah"))
-    assert len(socks) == 1
-    sock = socks[0]
-    # str.
-    assert str(sock).startswith("USB (Bus")
-    # Connect.
     epout = Mock(spec_set=("write",))
     epin = Mock(spec_set=("read",))
     mdev.get_active_configuration.return_value = {(0, 0): (epout, epin)}
-    brick = sock.connect()
+    bricks = list(backend.find(blah="blah"))
+    assert len(bricks) == 1
+    brick = bricks[0]
     assert mdev.reset.called
     assert mdev.set_configuration.called
     assert mdev.get_active_configuration.called
+    sock = brick.sock
+    # str.
+    assert str(sock).startswith("USB (Bus")
     # Send.
     some_bytes = bytes.fromhex("01020304")
     sock.send(some_bytes)
@@ -81,13 +80,12 @@ def test_usb_real():
     # Instantiate backend.
     backend = nxt.backend.usb.get_backend()
     # Find brick.
-    socks = list(backend.find())
-    assert len(socks) > 0, "no NXT found"
-    sock = socks[0]
+    bricks = list(backend.find())
+    assert len(bricks) > 0, "no NXT found"
+    brick = bricks[0]
+    sock = brick.sock
     # str.
     assert str(sock).startswith("USB (Bus")
-    # Connect.
-    brick = sock.connect()
     # Send.
     sock.send(bytes.fromhex("019b"))
     # Recv.

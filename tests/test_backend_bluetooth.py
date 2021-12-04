@@ -33,12 +33,8 @@ def msock():
 @pytest.fixture
 def mbluetooth(msock):
     bluetooth = Mock()
-    bluetooth.discover_devices.return_value = [
-        ("00:01:02:03:04:05", "NXT"),
-        ("00:01:02:03:04:06", "NXT"),
-        ("00:01:02:03:04:05", "NXT2"),
-    ]
     bluetooth.BluetoothSocket.return_value = msock
+    bluetooth.BluetoothError = Exception
     return bluetooth
 
 
@@ -85,15 +81,17 @@ def test_bluetooth(mbluetooth, mbluetooth_import, msock):
     # Instantiate backend.
     backend = nxt.backend.bluetooth.get_backend()
     # Find brick.
-    socks = list(backend.find(host="00:01:02:03:04:05", name="NXT", blah="blah"))
-    assert len(socks) == 1
-    sock = socks[0]
-    # str.
-    assert str(sock) == "Bluetooth (00:01:02:03:04:05)"
-    # Connect.
-    brick = sock.connect()
+    mbluetooth.discover_devices.return_value = [
+        "00:01:02:03:04:05",
+    ]
+    bricks = list(backend.find(blah="blah"))
+    assert len(bricks) == 1
+    brick = bricks[0]
     assert mbluetooth.BluetoothSocket.called
     assert msock.connect.called
+    sock = brick.sock
+    # str.
+    assert str(sock) == "Bluetooth (00:01:02:03:04:05)"
     # Send.
     some_bytes = bytes.fromhex("01020304")
     some_len = bytes.fromhex("0400")
@@ -115,6 +113,50 @@ def test_bluetooth(mbluetooth, mbluetooth_import, msock):
     del brick
 
 
+def test_bluetooth_by_name(mbluetooth, mbluetooth_import, msock):
+    # Instantiate backend.
+    backend = nxt.backend.bluetooth.get_backend()
+    # Find brick.
+    mbluetooth.discover_devices.return_value = [
+        ("00:01:02:03:04:05", "NXT"),
+        ("00:01:02:03:04:06", "NXT"),
+        ("00:01:02:03:04:07", "NXT2"),
+    ]
+    bricks = list(backend.find(name="NXT2", blah="blah"))
+    assert len(bricks) == 1
+    brick = bricks[0]
+    assert mbluetooth.BluetoothSocket.called
+    assert msock.connect.called
+    sock = brick.sock
+    # str.
+    assert str(sock) == "Bluetooth (00:01:02:03:04:07)"
+    # Close.
+    sock.close()
+    del brick
+
+
+def test_bluetooth_by_host(mbluetooth, mbluetooth_import, msock):
+    # Instantiate backend.
+    backend = nxt.backend.bluetooth.get_backend()
+    # Find brick.
+    mbluetooth.discover_devices.return_value = [
+        "00:01:02:03:04:05",
+        "00:01:02:03:04:06",
+        "00:01:02:03:04:07",
+    ]
+    bricks = list(backend.find(host="00:01:02:03:04:05", blah="blah"))
+    assert len(bricks) == 1
+    brick = bricks[0]
+    assert mbluetooth.BluetoothSocket.called
+    assert msock.connect.called
+    sock = brick.sock
+    # str.
+    assert str(sock) == "Bluetooth (00:01:02:03:04:05)"
+    # Close.
+    sock.close()
+    del brick
+
+
 def test_bluetooth_not_present(mbluetooth_import_error):
     assert nxt.backend.bluetooth.get_backend() is None
 
@@ -123,18 +165,27 @@ def test_bluetooth_not_supported(mbluetooth_import_not_supported):
     assert nxt.backend.bluetooth.get_backend() is None
 
 
+def test_bluetooth_cant_connect(mbluetooth, mbluetooth_import, msock):
+    backend = nxt.backend.bluetooth.get_backend()
+    mbluetooth.discover_devices.return_value = [
+        "00:01:02:03:04:05",
+    ]
+    msock.connect.side_effect = [mbluetooth.BluetoothError]
+    bricks = list(backend.find(blah="blah"))
+    assert len(bricks) == 0
+
+
 @pytest.mark.nxt("bluetooth")
 def test_bluetooth_real():
     # Instantiate backend.
     backend = nxt.backend.bluetooth.get_backend()
     # Find brick.
-    socks = list(backend.find())
-    assert len(socks) > 0, "no NXT found"
-    sock = socks[0]
+    bricks = list(backend.find())
+    assert len(bricks) > 0, "no NXT found"
+    brick = bricks[0]
+    sock = brick.sock
     # str.
     assert str(sock).startswith("Bluetooth (")
-    # Connect.
-    brick = sock.connect()
     # Send.
     sock.send(bytes.fromhex("019b"))
     # Recv.

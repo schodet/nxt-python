@@ -58,15 +58,14 @@ def test_devfile(mopen, mtty, mdev):
     # Instantiate backend.
     backend = nxt.backend.devfile.get_backend()
     # Find brick.
-    socks = list(backend.find(filename="/dev/nxt", blah="blah"))
-    assert len(socks) == 1
-    sock = socks[0]
-    # str.
-    assert str(sock).startswith("DevFile (/dev")
-    # Connect.
-    brick = sock.connect()
+    bricks = list(backend.find(filename="/dev/nxt", blah="blah"))
+    assert len(bricks) == 1
+    brick = bricks[0]
     assert mopen.called
     assert mtty.setraw.called
+    sock = brick.sock
+    # str.
+    assert str(sock).startswith("DevFile (/dev")
     # Send.
     some_bytes = bytes.fromhex("01020304")
     some_len = bytes.fromhex("0400")
@@ -88,23 +87,23 @@ def test_devfile(mopen, mtty, mdev):
     del brick
 
 
-def test_devfile_linux(mglob, mplatform):
+def test_devfile_linux(mopen, mtty, mglob, mplatform):
     mplatform.system.return_value = "Linux"
     mglob.glob.return_value = ["/dev/rfcomm0"]
     backend = nxt.backend.devfile.get_backend()
-    socks = list(backend.find(blah="blah"))
-    assert len(socks) == 1
+    bricks = list(backend.find(blah="blah"))
+    assert len(bricks) == 1
     assert mglob.mock_calls == [call.glob("/dev/rfcomm*")]
 
 
-def test_devfile_darwin(mglob, mplatform):
+def test_devfile_darwin(mopen, mtty, mglob, mplatform):
     mplatform.system.return_value = "Darwin"
     mglob.glob.return_value = ["/dev/tty.NXT-DevB-1"]
     backend = nxt.backend.devfile.get_backend()
-    socks = list(backend.find(name="NXT", blah="blah"))
-    assert len(socks) == 1
-    socks = list(backend.find(blah="blah"))
-    assert len(socks) == 1
+    bricks = list(backend.find(name="NXT", blah="blah"))
+    assert len(bricks) == 1
+    bricks = list(backend.find(blah="blah"))
+    assert len(bricks) == 1
     assert mglob.mock_calls == [
         call.glob("/dev/*NXT*"),
         call.glob("/dev/*-DevB*"),
@@ -114,8 +113,15 @@ def test_devfile_darwin(mglob, mplatform):
 def test_devfile_other(mplatform):
     mplatform.system.return_value = "MSDos"
     backend = nxt.backend.devfile.get_backend()
-    socks = list(backend.find(blah="blah"))
-    assert len(socks) == 0
+    bricks = list(backend.find(blah="blah"))
+    assert len(bricks) == 0
+
+
+def test_devfile_cant_connect(mopen, mtty, mdev):
+    backend = nxt.backend.devfile.get_backend()
+    mopen.side_effect = [OSError]
+    bricks = list(backend.find(filename="/dev/nxt", blah="blah"))
+    assert len(bricks) == 0
 
 
 @pytest.mark.nxt("devfile")
@@ -123,13 +129,12 @@ def test_devfile_real():
     # Instantiate backend.
     backend = nxt.backend.devfile.get_backend()
     # Find brick.
-    socks = list(backend.find())
-    assert len(socks) > 0, "no NXT found"
-    sock = socks[0]
+    bricks = list(backend.find())
+    assert len(bricks) > 0, "no NXT found"
+    brick = bricks[0]
+    sock = brick.sock
     # str.
     assert str(sock).startswith("DevFile (/dev")
-    # Connect.
-    brick = sock.connect()
     # Send.
     sock.send(bytes.fromhex("019b"))
     # Recv.

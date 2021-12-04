@@ -98,11 +98,22 @@ class Backend:
         :type name: str or None
         :param kwargs: Other parameters are ignored.
         :return: Iterator over all found bricks.
-        :rtype: Iterator[BluetoothSock]
+        :rtype: Iterator[Brick]
         """
-        for h, n in self._bluetooth.discover_devices(lookup_names=True):
-            if (host is None or h == host) and (name is None or n == name):
-                yield BluetoothSock(self._bluetooth, h)
+        lookup_names = name is not None
+        for dev in self._bluetooth.discover_devices(lookup_names=lookup_names):
+            if lookup_names:
+                devhost, devname = dev
+            else:
+                devhost, devname = dev, None
+            if (host is None or devhost == host) and (name is None or devname == name):
+                sock = BluetoothSock(self._bluetooth, devhost)
+                try:
+                    brick = sock.connect()
+                except self._bluetooth.BluetoothError:
+                    logger.exception("failed to connect to device %s", sock)
+                else:
+                    yield brick
 
 
 def get_backend():

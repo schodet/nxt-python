@@ -41,18 +41,17 @@ def test_socket(msocket, mdev):
     # Instantiate backend.
     backend = nxt.backend.socket.get_backend()
     # Find brick.
-    socks = list(backend.find(blah="blah"))
-    assert len(socks) == 1
-    sock = socks[0]
-    # str.
-    assert str(sock) == "Socket (localhost:2727)"
-    # Connect.
     mdev.recv.return_value = b"usb"
-    brick = sock.connect()
-    assert sock.type == "ipusb"
+    bricks = list(backend.find(blah="blah"))
+    assert len(bricks) == 1
+    brick = bricks[0]
+    assert brick.sock.type == "ipusb"
     assert msocket.socket.called
     assert mdev.connect.called
     assert mdev.send.call_args == call(b"\x98")
+    sock = brick.sock
+    # str.
+    assert str(sock) == "Socket (localhost:2727)"
     # Send.
     some_bytes = bytes.fromhex("01020304")
     sock.send(some_bytes)
@@ -73,18 +72,24 @@ def test_socket(msocket, mdev):
     del brick
 
 
+def test_socket_cant_connect(msocket, mdev):
+    backend = nxt.backend.socket.get_backend()
+    mdev.connect.side_effect = [ConnectionRefusedError]
+    bricks = list(backend.find(blah="blah"))
+    assert len(bricks) == 0
+
+
 @pytest.mark.nxt("socket")
 def test_socket_real():
     # Instantiate backend.
     backend = nxt.backend.socket.get_backend()
     # Find brick.
-    socks = list(backend.find())
-    assert len(socks) > 0, "no NXT found"
-    sock = socks[0]
+    bricks = list(backend.find())
+    assert len(bricks) > 0, "no NXT found"
+    brick = bricks[0]
+    sock = brick.sock
     # str.
     assert str(sock) == "Socket (localhost:2727)"
-    # Connect.
-    brick = sock.connect()
     # Send.
     sock.send(bytes.fromhex("019b"))
     # Recv.
