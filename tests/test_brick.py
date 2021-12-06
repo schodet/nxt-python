@@ -46,31 +46,31 @@ loader_bin = b"Loader\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
 class TestSystem:
     """Test system commands."""
 
-    def test_open_read(self, sock, brick):
+    def test_file_open_read(self, sock, brick):
         sock.recv.return_value = bytes.fromhex("028000 42 01020304")
-        handle, size = brick.open_read("test.rxe")
+        handle, size = brick.file_open_read("test.rxe")
         assert sock.mock_calls == sent_recved(bytes.fromhex("0180") + test_rxe_bin)
         assert handle == 0x42
         assert size == 0x04030201
 
-    def test_open_read_fail(self, sock, brick):
+    def test_file_open_read_fail(self, sock, brick):
         """Test command failure reported in status code."""
         sock.recv.return_value = bytes.fromhex("028087 00 00000000")
         with pytest.raises(nxt.error.FileNotFound):
-            brick.open_read("unknown.rxe")
+            brick.file_open_read("unknown.rxe")
 
-    def test_open_write(self, sock, brick):
+    def test_file_open_write(self, sock, brick):
         sock.recv.return_value = bytes.fromhex("028100 42")
-        handle = brick.open_write("test.rxe", 0x04030201)
+        handle = brick.file_open_write("test.rxe", 0x04030201)
         assert sock.mock_calls == sent_recved(
             bytes.fromhex("0181") + test_rxe_bin + bytes.fromhex("01020304")
         )
         assert handle == 0x42
 
-    def test_read(self, sock, brick):
+    def test_file_read(self, sock, brick):
         sock.recv.return_value = bytes.fromhex("028200 42 0700 21222324252627")
-        handle, data = brick.read(0x42, 7)
-        # TODO: The read command will return a EOF error if end of file is reached
+        handle, data = brick.file_read(0x42, 7)
+        # TODO: The file_read command will return a EOF error if end of file is reached
         # before the read can be finished, and size will still contain the requested
         # data length instead of the actual read length. This is not the classic
         # semantic of a Unix read. Avoid reading past the end of file.
@@ -78,44 +78,44 @@ class TestSystem:
         assert handle == 0x42
         assert data == bytes.fromhex("21222324252627")
 
-    def test_write(self, sock, brick):
+    def test_file_write(self, sock, brick):
         sock.recv.return_value = bytes.fromhex("028300 42 0700")
-        handle, size = brick.write(0x42, bytes.fromhex("21222324252627"))
+        handle, size = brick.file_write(0x42, bytes.fromhex("21222324252627"))
         assert sock.mock_calls == sent_recved(bytes.fromhex("0183 42 21222324252627"))
         assert handle == 0x42
         assert size == 7
 
-    def test_close(self, sock, brick):
+    def test_file_close(self, sock, brick):
         sock.recv.return_value = bytes.fromhex("028400 42")
-        handle = brick.close(0x42)
+        handle = brick.file_close(0x42)
         assert sock.mock_calls == sent_recved(bytes.fromhex("0184 42"))
         assert handle == 0x42
 
-    def test_delete(self, sock, brick):
+    def test_file_delete(self, sock, brick):
         sock.recv.return_value = (
             bytes.fromhex("028500") + b"test.rxe\0\0\0\0\0\0\0\0\0\0\0\0"
         )
-        fname = brick.delete("test.rxe")
+        fname = brick.file_delete("test.rxe")
         assert sock.mock_calls == sent_recved(
             bytes.fromhex("0185") + b"test.rxe\0\0\0\0\0\0\0\0\0\0\0\0"
         )
         assert fname == "test.rxe"
 
-    def test_find_first(self, sock, brick):
+    def test_file_find_first(self, sock, brick):
         sock.recv.return_value = (
             bytes.fromhex("028600 42") + test_rxe_bin + bytes.fromhex("01020304")
         )
-        handle, fname, size = brick.find_first("*.*")
+        handle, fname, size = brick.file_find_first("*.*")
         assert sock.mock_calls == sent_recved(bytes.fromhex("0186") + star_star_bin)
         assert handle == 0x42
         assert fname == "test.rxe"
         assert size == 0x04030201
 
-    def test_find_next(self, sock, brick):
+    def test_file_find_next(self, sock, brick):
         sock.recv.return_value = (
             bytes.fromhex("028700 42") + test_rxe_bin + bytes.fromhex("01020304")
         )
-        handle, fname, size = brick.find_next(0x42)
+        handle, fname, size = brick.file_find_next(0x42)
         assert sock.mock_calls == sent_recved(bytes.fromhex("0187 42"))
         assert handle == 0x42
         assert fname == "test.rxe"
@@ -128,38 +128,36 @@ class TestSystem:
         assert prot_version == (2, 1)
         assert fw_version == (4, 3)
 
-    def test_open_write_linear(self, sock, brick):
+    def test_file_open_write_linear(self, sock, brick):
         sock.recv.return_value = bytes.fromhex("028900 42")
-        handle = brick.open_write_linear("test.rxe", 0x04030201)
+        handle = brick.file_open_write_linear("test.rxe", 0x04030201)
         assert sock.mock_calls == sent_recved(
             bytes.fromhex("0189") + test_rxe_bin + bytes.fromhex("01020304")
         )
         assert handle == 0x42
 
-    def test_open_write_data(self, sock, brick):
+    def test_file_open_write_data(self, sock, brick):
         sock.recv.return_value = bytes.fromhex("028b00 42")
-        handle = brick.open_write_data("test.rxe", 0x04030201)
+        handle = brick.file_open_write_data("test.rxe", 0x04030201)
         assert sock.mock_calls == sent_recved(
             bytes.fromhex("018b") + test_rxe_bin + bytes.fromhex("01020304")
         )
         assert handle == 0x42
 
-    def test_open_append_data(self, sock, brick):
+    def test_file_open_append_data(self, sock, brick):
         sock.recv.return_value = bytes.fromhex("028c00 42 01020304")
-        handle, available_size = brick.open_append_data("test.rxe")
+        handle, available_size = brick.file_open_append_data("test.rxe")
         assert sock.mock_calls == sent_recved(bytes.fromhex("018c") + test_rxe_bin)
         assert handle == 0x42
         assert available_size == 0x04030201
 
-    def test_request_first_module(self, sock, brick):
+    def test_module_find_first(self, sock, brick):
         sock.recv.return_value = (
             bytes.fromhex("029000 42")
             + loader_bin
             + bytes.fromhex("01000900 00000000 0800")
         )
-        handle, mname, mod_id, mod_size, mod_iomap_size = brick.request_first_module(
-            "*.*"
-        )
+        handle, mname, mod_id, mod_size, mod_iomap_size = brick.module_find_first("*.*")
         assert sock.mock_calls == sent_recved(bytes.fromhex("0190") + star_star_bin)
         assert handle == 0x42
         assert mname == "Loader"
@@ -167,15 +165,13 @@ class TestSystem:
         assert mod_size == 0
         assert mod_iomap_size == 8
 
-    def test_request_next_module(self, sock, brick):
+    def test_module_find_next(self, sock, brick):
         sock.recv.return_value = (
             bytes.fromhex("029100 42")
             + loader_bin
             + bytes.fromhex("01000900 00000000 0800")
         )
-        handle, mname, mod_id, mod_size, mod_iomap_size = brick.request_next_module(
-            0x42
-        )
+        handle, mname, mod_id, mod_size, mod_iomap_size = brick.module_find_next(0x42)
         assert sock.mock_calls == sent_recved(bytes.fromhex("0191 42"))
         assert handle == 0x42
         assert mname == "Loader"
@@ -183,9 +179,9 @@ class TestSystem:
         assert mod_size == 0
         assert mod_iomap_size == 8
 
-    def test_close_module_handle(self, sock, brick):
+    def test_module_close(self, sock, brick):
         sock.recv.return_value = bytes.fromhex("029200 42")
-        handle = brick.close_module_handle(0x42)
+        handle = brick.module_close(0x42)
         assert sock.mock_calls == sent_recved(bytes.fromhex("0192 42"))
         assert handle == 0x42
 
@@ -440,81 +436,81 @@ class TestFilesModules:
     """Test nxt.brick files & modules access."""
 
     def test_find_files_none(self, mbrick):
-        mbrick.find_first.side_effect = [nxt.error.FileNotFound()]
+        mbrick.file_find_first.side_effect = [nxt.error.FileNotFound()]
         results = list(mbrick.find_files("*.*"))
         assert results == []
         assert mbrick.mock_calls == [
-            call.find_first("*.*"),
+            call.file_find_first("*.*"),
         ]
 
     def test_find_files_one(self, mbrick):
-        mbrick.find_first.return_value = (0x42, "test.rxe", 0x04030201)
-        mbrick.find_next.side_effect = [nxt.error.FileNotFound()]
+        mbrick.file_find_first.return_value = (0x42, "test.rxe", 0x04030201)
+        mbrick.file_find_next.side_effect = [nxt.error.FileNotFound()]
         results = list(mbrick.find_files("*.*"))
         assert results == [("test.rxe", 0x04030201)]
         assert mbrick.mock_calls == [
-            call.find_first("*.*"),
-            call.find_next(0x42),
-            call.close(0x42),
+            call.file_find_first("*.*"),
+            call.file_find_next(0x42),
+            call.file_close(0x42),
         ]
 
     def test_find_files_two(self, mbrick):
-        mbrick.find_first.return_value = (0x42, "test.rxe", 0x04030201)
-        mbrick.find_next.side_effect = [
+        mbrick.file_find_first.return_value = (0x42, "test.rxe", 0x04030201)
+        mbrick.file_find_next.side_effect = [
             (0x42, "test.rso", 7),
             nxt.error.FileNotFound(),
         ]
         results = list(mbrick.find_files("*.*"))
         assert results == [("test.rxe", 0x04030201), ("test.rso", 7)]
         assert mbrick.mock_calls == [
-            call.find_first("*.*"),
-            call.find_next(0x42),
-            call.find_next(0x42),
-            call.close(0x42),
+            call.file_find_first("*.*"),
+            call.file_find_next(0x42),
+            call.file_find_next(0x42),
+            call.file_close(0x42),
         ]
 
     def test_find_files_interrupted(self, mbrick):
-        mbrick.find_first.return_value = (0x42, "test.rxe", 0x04030201)
-        mbrick.find_next.side_effect = [nxt.error.FileNotFound()]
+        mbrick.file_find_first.return_value = (0x42, "test.rxe", 0x04030201)
+        mbrick.file_find_next.side_effect = [nxt.error.FileNotFound()]
         g = mbrick.find_files("*.*")
         assert next(g) == ("test.rxe", 0x04030201)
         g.close()
         assert mbrick.mock_calls == [
-            call.find_first("*.*"),
-            call.close(0x42),
+            call.file_find_first("*.*"),
+            call.file_close(0x42),
         ]
 
     def test_find_modules_none(self, mbrick):
-        mbrick.request_first_module.side_effect = [nxt.error.ModuleNotFound()]
+        mbrick.module_find_first.side_effect = [nxt.error.ModuleNotFound()]
         results = list(mbrick.find_modules("*.*"))
         assert results == []
         assert mbrick.mock_calls == [
-            call.request_first_module("*.*"),
+            call.module_find_first("*.*"),
         ]
 
     def test_find_modules_one(self, mbrick):
-        mbrick.request_first_module.return_value = (0x42, "Loader", 0x00090001, 0, 8)
-        mbrick.request_next_module.side_effect = [nxt.error.ModuleNotFound()]
+        mbrick.module_find_first.return_value = (0x42, "Loader", 0x00090001, 0, 8)
+        mbrick.module_find_next.side_effect = [nxt.error.ModuleNotFound()]
         results = list(mbrick.find_modules("*.*"))
         assert mbrick.mock_calls == [
-            call.request_first_module("*.*"),
-            call.request_next_module(0x42),
-            call.close_module_handle(0x42),
+            call.module_find_first("*.*"),
+            call.module_find_next(0x42),
+            call.module_close(0x42),
         ]
         assert results == [("Loader", 0x00090001, 0, 8)]
 
     def test_find_modules_two(self, mbrick):
-        mbrick.request_first_module.return_value = (0x42, "Loader", 0x00090001, 0, 8)
-        mbrick.request_next_module.side_effect = [
+        mbrick.module_find_first.return_value = (0x42, "Loader", 0x00090001, 0, 8)
+        mbrick.module_find_next.side_effect = [
             (0x42, "Dummy", 0x01020304, 0, 12),
             nxt.error.ModuleNotFound(),
         ]
         results = list(mbrick.find_modules("*.*"))
         assert mbrick.mock_calls == [
-            call.request_first_module("*.*"),
-            call.request_next_module(0x42),
-            call.request_next_module(0x42),
-            call.close_module_handle(0x42),
+            call.module_find_first("*.*"),
+            call.module_find_next(0x42),
+            call.module_find_next(0x42),
+            call.module_close(0x42),
         ]
         assert results == [
             ("Loader", 0x00090001, 0, 8),
@@ -522,91 +518,91 @@ class TestFilesModules:
         ]
 
     def test_file_read_text(self, mbrick):
-        mbrick.open_read.return_value = (0x42, 12)
-        mbrick.read.return_value = (0x42, b"hello\nworld\n")
+        mbrick.file_open_read.return_value = (0x42, 12)
+        mbrick.file_read.return_value = (0x42, b"hello\nworld\n")
         with mbrick.open_file("test.txt") as f:
             results = list(f)
         assert results == ["hello\n", "world\n"]
         assert mbrick.mock_calls == [
-            call.open_read("test.txt"),
-            call.read(0x42, 12),
-            call.close(0x42),
+            call.file_open_read("test.txt"),
+            call.file_read(0x42, 12),
+            call.file_close(0x42),
         ]
 
     def test_file_read_bin(self, mbrick):
-        mbrick.open_read.return_value = (0x42, 7)
-        mbrick.read.return_value = (0x42, bytes.fromhex("21222324252627"))
+        mbrick.file_open_read.return_value = (0x42, 7)
+        mbrick.file_read.return_value = (0x42, bytes.fromhex("21222324252627"))
         with mbrick.open_file("test.bin", "rb") as f:
             assert f.read() == bytes.fromhex("21222324252627")
         assert mbrick.mock_calls == [
-            call.open_read("test.bin"),
-            call.read(0x42, 7),
-            call.close(0x42),
+            call.file_open_read("test.bin"),
+            call.file_read(0x42, 7),
+            call.file_close(0x42),
         ]
 
     def test_file_read_raw(self, mbrick):
-        mbrick.open_read.return_value = (0x42, 7)
-        mbrick.read.return_value = (0x42, bytes.fromhex("21222324252627"))
+        mbrick.file_open_read.return_value = (0x42, 7)
+        mbrick.file_read.return_value = (0x42, bytes.fromhex("21222324252627"))
         with mbrick.open_file("test.bin", "rb", buffering=0) as f:
             assert f.read() == bytes.fromhex("21222324252627")
         assert mbrick.mock_calls == [
-            call.open_read("test.bin"),
-            call.read(0x42, 7),
-            call.close(0x42),
+            call.file_open_read("test.bin"),
+            call.file_read(0x42, 7),
+            call.file_close(0x42),
         ]
 
     def test_file_write_text(self, mbrick):
-        mbrick.open_write.return_value = 0x42
-        mbrick.write.return_value = (0x42, 12)
+        mbrick.file_open_write.return_value = 0x42
+        mbrick.file_write.return_value = (0x42, 12)
         f = mbrick.open_file("test.txt", "wt", 12)
         f.write("hello\n")
         f.write("world\n")
         f.close()
         assert mbrick.mock_calls == [
-            call.open_write("test.txt", 12),
-            call.write(0x42, b"hello\nworld\n"),
-            call.close(0x42),
+            call.file_open_write("test.txt", 12),
+            call.file_write(0x42, b"hello\nworld\n"),
+            call.file_close(0x42),
         ]
 
     def test_file_write_text_encoding(self, mbrick):
-        mbrick.open_write.return_value = 0x42
-        mbrick.write.return_value = (0x42, 16)
+        mbrick.file_open_write.return_value = 0x42
+        mbrick.file_write.return_value = (0x42, 16)
         f = mbrick.open_file("test.txt", "wt", 16, errors="replace")
         f.write("un petit café ?\n")
         f.close()
         assert mbrick.mock_calls == [
-            call.open_write("test.txt", 16),
-            call.write(0x42, b"un petit caf? ?\n"),
-            call.close(0x42),
+            call.file_open_write("test.txt", 16),
+            call.file_write(0x42, b"un petit caf? ?\n"),
+            call.file_close(0x42),
         ]
 
     def test_file_write_bin(self, mbrick):
-        mbrick.open_write.return_value = 0x42
-        mbrick.write.return_value = (0x42, 7)
+        mbrick.file_open_write.return_value = 0x42
+        mbrick.file_write.return_value = (0x42, 7)
         f = mbrick.open_file("test.bin", "wb", 7)
         f.write(bytes.fromhex("21222324252627"))
         f.close()
         assert mbrick.mock_calls == [
-            call.open_write("test.bin", 7),
-            call.write(0x42, bytes.fromhex("21222324252627")),
-            call.close(0x42),
+            call.file_open_write("test.bin", 7),
+            call.file_write(0x42, bytes.fromhex("21222324252627")),
+            call.file_close(0x42),
         ]
 
     def test_file_write_raw(self, mbrick):
-        mbrick.open_write.return_value = 0x42
-        mbrick.write.return_value = (0x42, 7)
+        mbrick.file_open_write.return_value = 0x42
+        mbrick.file_write.return_value = (0x42, 7)
         f = mbrick.open_file("test.bin", "wb", 7, buffering=0)
         f.write(bytes.fromhex("21222324252627"))
         f.close()
         assert mbrick.mock_calls == [
-            call.open_write("test.bin", 7),
-            call.write(0x42, bytes.fromhex("21222324252627")),
-            call.close(0x42),
+            call.file_open_write("test.bin", 7),
+            call.file_write(0x42, bytes.fromhex("21222324252627")),
+            call.file_close(0x42),
         ]
 
     def test_file_write_too_much(self, mbrick):
-        mbrick.open_write.return_value = 0x42
-        mbrick.write.return_value = (0x42, 7)
+        mbrick.file_open_write.return_value = 0x42
+        mbrick.file_write.return_value = (0x42, 7)
         f = mbrick.open_file("test.bin", "wb", 7)
         f.write(bytes.fromhex("2122232425262728"))
         with pytest.raises(ValueError):
@@ -614,14 +610,14 @@ class TestFilesModules:
             f.close()
         assert f.closed
         assert mbrick.mock_calls == [
-            call.open_write("test.bin", 7),
-            call.write(0x42, bytes.fromhex("21222324252627")),
-            call.close(0x42),
+            call.file_open_write("test.bin", 7),
+            call.file_write(0x42, bytes.fromhex("21222324252627")),
+            call.file_close(0x42),
         ]
 
     def test_file_write_closed(self, mbrick):
-        mbrick.open_write.return_value = 0x42
-        mbrick.write.return_value = (0x42, 7)
+        mbrick.file_open_write.return_value = 0x42
+        mbrick.file_write.return_value = (0x42, 7)
         # Write directly to raw file to bypass error check in buffered file.
         f = mbrick.open_file("test.bin", "wb", 7, buffering=0)
         f.close()
@@ -629,8 +625,8 @@ class TestFilesModules:
         with pytest.raises(ValueError):
             f.write(bytes.fromhex("28"))
         assert mbrick.mock_calls == [
-            call.open_write("test.bin", 7),
-            call.close(0x42),
+            call.file_open_write("test.bin", 7),
+            call.file_close(0x42),
         ]
 
     def test_file_invalid_params(self, mbrick):

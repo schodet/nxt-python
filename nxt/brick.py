@@ -60,12 +60,12 @@ class RawFileReader(io.RawIOBase):
 
     def __init__(self, brick, name):
         self._brick = brick
-        self._handle, self._remaining = brick.open_read(name)
+        self._handle, self._remaining = brick.file_open_read(name)
 
     def close(self):
         if not self.closed:
             super().close()
-            self._brick.close(self._handle)
+            self._brick.file_close(self._handle)
 
     def readable(self):
         return True
@@ -74,7 +74,7 @@ class RawFileReader(io.RawIOBase):
         rsize = min(self._brick.sock.bsize, self._remaining, len(b))
         if rsize == 0:
             return 0
-        _, data = self._brick.read(self._handle, rsize)
+        _, data = self._brick.file_read(self._handle, rsize)
         size = len(data)
         self._remaining -= size
         b[0:size] = data
@@ -86,13 +86,13 @@ class RawFileWriter(io.RawIOBase):
 
     def __init__(self, brick, name, size):
         self._brick = brick
-        self._handle = brick.open_write(name, size)
+        self._handle = brick.file_open_write(name, size)
         self._remaining = size
 
     def close(self):
         if not self.closed:
             super().close()
-            self._brick.close(self._handle)
+            self._brick.file_close(self._handle)
 
     def writable(self):
         return True
@@ -103,7 +103,7 @@ class RawFileWriter(io.RawIOBase):
         if self._remaining == 0:
             raise ValueError("write to a full file")
         wsize = min(self._brick.sock.bsize, self._remaining, len(b))
-        _, size = self._brick.write(self._handle, bytes(b[:wsize]))
+        _, size = self._brick.file_write(self._handle, bytes(b[:wsize]))
         self._remaining -= size
         return size
 
@@ -232,19 +232,19 @@ class Brick(object, metaclass=_Meta):  # TODO: this begs to have explicit method
         - ``<name>.<extension>``: to match using full name.
         """
         try:
-            handle, name, size = self.find_first(pattern)
+            handle, name, size = self.file_find_first(pattern)
         except FileNotFound:
             return None
         try:
             yield name, size
             while True:
                 try:
-                    _, name, size = self.find_next(handle)
+                    _, name, size = self.file_find_next(handle)
                 except FileNotFound:
                     break
                 yield name, size
         finally:
-            self.close(handle)
+            self.file_close(handle)
 
     def find_modules(self, pattern="*.*"):
         """Find all modules matching a pattern.
@@ -256,18 +256,18 @@ class Brick(object, metaclass=_Meta):  # TODO: this begs to have explicit method
         :rtype: Iterator[str, int, int, int]
         """
         try:
-            handle, mname, mid, msize, miomap_size = self.request_first_module(pattern)
+            handle, mname, mid, msize, miomap_size = self.module_find_first(pattern)
         except ModuleNotFound:
             return None
         try:
             yield mname, mid, msize, miomap_size
             while True:
                 try:
-                    _, mname, mid, msize, miomap_size = self.request_next_module(handle)
+                    _, mname, mid, msize, miomap_size = self.module_find_next(handle)
                 except ModuleNotFound:
                     break
                 yield mname, mid, msize, miomap_size
         finally:
-            self.close_module_handle(handle)
+            self.module_close(handle)
 
     get_sensor = get_sensor

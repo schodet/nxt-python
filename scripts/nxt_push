@@ -29,7 +29,7 @@ def write_file(b, fname):
     with open(fname, 'rb') as f:
         data = f.read()
     try:
-        b.delete(fname)
+        b.file_delete(fname)
         print('Overwriting %s on NXT' % fname)
     except FileNotFound:
         pass

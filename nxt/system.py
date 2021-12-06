@@ -30,75 +30,75 @@ def _create_with_handle(opcode, handle):
     tgram.add_u8(handle)
     return tgram
 
-def open_read(opcode, fname):
+def file_open_read(opcode, fname):
     return _create_with_file(opcode, fname)
 
-def _parse_open_read(tgram):
+def _parse_file_open_read(tgram):
     tgram.check_status()
     handle = tgram.parse_u8()
     size = tgram.parse_u32()
     return (handle, size)
 
-def open_write(opcode, fname, size):
+def file_open_write(opcode, fname, size):
     tgram = _create_with_file(opcode, fname)
     tgram.add_u32(size)
     return tgram
 
-def _parse_open_write(tgram):
+def _parse_file_open_write(tgram):
     tgram.check_status()
     handle = tgram.parse_u8()
     return handle
 
-def read(opcode, handle, size):
+def file_read(opcode, handle, size):
     tgram = _create_with_handle(opcode, handle)
     tgram.add_u16(size)
     return tgram
 
-def _parse_read(tgram):
+def _parse_file_read(tgram):
     tgram.check_status()
     handle = tgram.parse_u8()
     size = tgram.parse_u16()
     data = tgram.parse_bytes(size)
     return (handle, data)
 
-def write(opcode, handle, data):
+def file_write(opcode, handle, data):
     tgram = _create_with_handle(opcode, handle)
     tgram.add_bytes(data)
     return tgram
 
-def _parse_write(tgram):
+def _parse_file_write(tgram):
     tgram.check_status()
     handle = tgram.parse_u8()
     size = tgram.parse_u16()
     return (handle, size)
 
-def close(opcode, handle):
+def file_close(opcode, handle):
     return _create_with_handle(opcode, handle)
 
-def _parse_close(tgram):
+def _parse_file_close(tgram):
     tgram.check_status()
     handle = tgram.parse_u8()
     return handle
 
-def delete(opcode, fname):
+def file_delete(opcode, fname):
     return _create_with_file(opcode, fname)
 
-def _parse_delete(tgram):
+def _parse_file_delete(tgram):
     tgram.check_status()
     fname = tgram.parse_filename()
     return fname
 
-def find_first(opcode, fname):
+def file_find_first(opcode, fname):
     return _create_with_file(opcode, fname)
 
-def _parse_find(tgram):
+def _parse_file_find(tgram):
     tgram.check_status()
     handle = tgram.parse_u8()
     fname = tgram.parse_filename()
     size = tgram.parse_u32()
     return (handle, fname, size)
 
-def find_next(opcode, handle):
+def file_find_next(opcode, handle):
     return _create_with_handle(opcode, handle)
 
 def get_firmware_version(opcode):
@@ -114,29 +114,29 @@ def _parse_get_firmware_version(tgram):
     fw_version = (fw_major, fw_minor)
     return (prot_version, fw_version)
 
-def open_write_linear(opcode, fname, size):
+def file_open_write_linear(opcode, fname, size):
     tgram = _create_with_file(opcode, fname)
     tgram.add_u32(size)
     return tgram
 
-def open_write_data(opcode, fname, size):
+def file_open_write_data(opcode, fname, size):
     tgram = _create_with_file(opcode, fname)
     tgram.add_u32(size)
     return tgram
 
-def open_append_data(opcode, fname):
+def file_open_append_data(opcode, fname):
     return _create_with_file(opcode, fname)
 
-def _parse_open_append_data(tgram):
+def _parse_file_open_append_data(tgram):
     tgram.check_status()
     handle = tgram.parse_u8()
     available_size = tgram.parse_u32()
     return (handle, available_size)
 
-def request_first_module(opcode, mname):
+def module_find_first(opcode, mname):
     return _create_with_file(opcode, mname)
 
-def _parse_request_module(tgram):
+def _parse_module_find(tgram):
     tgram.check_status()
     handle = tgram.parse_u8()
     mname = tgram.parse_filename()
@@ -145,11 +145,16 @@ def _parse_request_module(tgram):
     mod_iomap_size = tgram.parse_u16()
     return (handle, mname, mod_id, mod_size, mod_iomap_size)
 
-def request_next_module(opcode, handle):
+def module_find_next(opcode, handle):
     return _create_with_handle(opcode, handle)
 
-def close_module_handle(opcode, handle):
+def module_close(opcode, handle):
     return _create_with_handle(opcode, handle)
+
+def _parse_module_close(tgram):
+    tgram.check_status()
+    handle = tgram.parse_u8()
+    return handle
 
 def read_io_map(opcode, mod_id, offset, size):
     tgram = _create(opcode)
@@ -263,21 +268,21 @@ def _parse_bluetooth_factory_reset(tgram):
 #TODO Add docstrings to all methods
 
 OPCODES = {
-    0x80: (open_read, _parse_open_read),
-    0x81: (open_write, _parse_open_write),
-    0x82: (read, _parse_read),
-    0x83: (write, _parse_write),
-    0x84: (close, _parse_close),
-    0x85: (delete, _parse_delete),
-    0x86: (find_first, _parse_find),
-    0x87: (find_next, _parse_find),
+    0x80: (file_open_read, _parse_file_open_read),
+    0x81: (file_open_write, _parse_file_open_write),
+    0x82: (file_read, _parse_file_read),
+    0x83: (file_write, _parse_file_write),
+    0x84: (file_close, _parse_file_close),
+    0x85: (file_delete, _parse_file_delete),
+    0x86: (file_find_first, _parse_file_find),
+    0x87: (file_find_next, _parse_file_find),
     0x88: (get_firmware_version, _parse_get_firmware_version),
-    0x89: (open_write_linear, _parse_open_write),
-    0x8B: (open_write_data, _parse_open_write),
-    0x8C: (open_append_data, _parse_open_append_data),
-    0x90: (request_first_module, _parse_request_module),
-    0x91: (request_next_module, _parse_request_module),
-    0x92: (close_module_handle, _parse_close),
+    0x89: (file_open_write_linear, _parse_file_open_write),
+    0x8B: (file_open_write_data, _parse_file_open_write),
+    0x8C: (file_open_append_data, _parse_file_open_append_data),
+    0x90: (module_find_first, _parse_module_find),
+    0x91: (module_find_next, _parse_module_find),
+    0x92: (module_close, _parse_module_close),
     0x94: (read_io_map, _parse_read_io_map),
     0x95: (write_io_map, _parse_write_io_map),
     0x97: (boot, _parse_boot),

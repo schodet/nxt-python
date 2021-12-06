@@ -67,7 +67,7 @@ def run_program(b, fname):
     b.start_program(fname)
 
 def delete_file(b, fname):
-    b.delete(fname)
+    b.file_delete(fname)
 
 def read_file(b, fname):
     with b.open_file(fname, 'rb') as r:
