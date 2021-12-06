@@ -104,13 +104,10 @@ def test_bluetooth(mbluetooth, mbluetooth_import, msock):
     assert r == some_bytes
     assert msock.recv.called
     # Close.
-    # TODO: brick.__del__ should close the socket, but nobody knows when
-    # python calls the destructor.
-    sock.close()
+    brick.close()
     assert msock.close.called
     # Duplicated close.
     sock.close()
-    del brick
 
 
 def test_bluetooth_by_name(mbluetooth, mbluetooth_import, msock):
@@ -131,8 +128,7 @@ def test_bluetooth_by_name(mbluetooth, mbluetooth_import, msock):
     # str.
     assert str(sock) == "Bluetooth (00:01:02:03:04:07)"
     # Close.
-    sock.close()
-    del brick
+    brick.close()
 
 
 def test_bluetooth_by_host(mbluetooth, mbluetooth_import, msock):
@@ -153,8 +149,7 @@ def test_bluetooth_by_host(mbluetooth, mbluetooth_import, msock):
     # str.
     assert str(sock) == "Bluetooth (00:01:02:03:04:05)"
     # Close.
-    sock.close()
-    del brick
+    brick.close()
 
 
 def test_bluetooth_not_present(mbluetooth_import_error):
@@ -192,5 +187,4 @@ def test_bluetooth_real():
     r = sock.recv()
     assert r.startswith(bytes.fromhex("029b00"))
     # Close.
-    sock.close()
-    del brick
+    brick.close()

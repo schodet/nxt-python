@@ -119,8 +119,20 @@ class Brick(object, metaclass=_Meta):  # TODO: this begs to have explicit method
         self.play_tone(frequency, duration)
         time.sleep(duration / 1000.0)
 
+    def close(self):
+        """Disconnect from the NXT brick."""
+        if self.sock is not None:
+            self.sock.close()
+            self.sock = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
+
     def __del__(self):
-        self.sock.close()
+        self.close()
 
     def open_file(
         self,

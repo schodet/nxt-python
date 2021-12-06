@@ -43,6 +43,17 @@ star_star_bin = b"*.*\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
 loader_bin = b"Loader\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
 
 
+def test_close(sock, brick):
+    brick.close()
+    assert sock.mock_calls == [call.close()]
+
+
+def test_with(sock, brick):
+    with brick:
+        pass
+    assert sock.mock_calls == [call.close()]
+
+
 class TestSystem:
     """Test system commands."""
 

@@ -223,7 +223,7 @@ class ApplicationWindow(Gtk.ApplicationWindow):
         return vb
 
     def do_housekeeping(self):
-        self.brick.sock.close()
+        self.brick.close()
         self.brick = None
         self.selected_file = None
 

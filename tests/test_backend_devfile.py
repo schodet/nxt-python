@@ -78,13 +78,10 @@ def test_devfile(mopen, mtty, mdev):
     assert r == some_bytes
     assert mdev.read.called
     # Close.
-    # TODO: brick.__del__ should close the socket, but nobody knows when
-    # python calls the destructor.
-    sock.close()
+    brick.close()
     assert mdev.close.called
     # Duplicated close.
     sock.close()
-    del brick
 
 
 def test_devfile_linux(mopen, mtty, mglob, mplatform):
@@ -141,5 +138,4 @@ def test_devfile_real():
     r = sock.recv()
     assert r.startswith(bytes.fromhex("029b00"))
     # Close.
-    sock.close()
-    del brick
+    brick.close()

@@ -67,12 +67,9 @@ def test_usb(musb, mdev):
     assert r == some_bytes
     assert epin.read.called
     # Close.
-    # TODO: brick.__del__ should close the socket, but nobody knows when
-    # python calls the destructor.
-    sock.close()
+    brick.close()
     # Duplicated close.
     sock.close()
-    del brick
 
 
 @pytest.mark.nxt("usb")
@@ -92,5 +89,4 @@ def test_usb_real():
     r = sock.recv()
     assert r.startswith(bytes.fromhex("029b00"))
     # Close.
-    sock.close()
-    del brick
+    brick.close()

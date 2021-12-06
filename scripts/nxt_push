@@ -47,7 +47,6 @@ if __name__ == '__main__':
     if options.log_level:
         logging.basicConfig(level=options.log_level)
 
-    brick = nxt.locator.find_with_options(options)
-    for filename in options.file:
-        write_file(brick, filename)
-    brick.sock.close()
+    with nxt.locator.find_with_options(options) as brick:
+        for filename in options.file:
+            write_file(brick, filename)

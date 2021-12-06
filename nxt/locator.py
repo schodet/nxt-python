@@ -185,12 +185,15 @@ def find(
                     logger.debug("found brick with name=%s and host=%s", bname, bhost)
                     if name is not None and name != bname:
                         logger.debug("brick name mismatch, %s != %s", bname, name)
+                        brick.close()
                         continue
                     if host is not None and host != bhost:
                         logger.debug("brick host mismatch, %s != %s", bhost, host)
+                        brick.close()
                         continue
                 if custom_match is not None and not custom_match(brick):
                     logger.debug("brick rejected by custom_match")
+                    brick.close()
                     continue
                 yield brick
 

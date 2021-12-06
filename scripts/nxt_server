@@ -63,14 +63,14 @@ if __name__ == "__main__":
         logging.basicConfig(level=options.log_level)
 
     print("Connecting to NXT...")
-    brick = nxt.locator.find_with_options(options)
-    print("Brick found.")
+    with nxt.locator.find_with_options(options) as brick:
+        print("Brick found.")
 
-    print("Starting server...")
-    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.bind(("", options.port))
-    server.listen(1)
-    # Have the server serve "forever":
-    while True:
-        channel, details = server.accept()
-        serve(brick, channel, details)
+        print("Starting server...")
+        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server.bind(("", options.port))
+        server.listen(1)
+        # Have the server serve "forever":
+        while True:
+            channel, details = server.accept()
+            serve(brick, channel, details)

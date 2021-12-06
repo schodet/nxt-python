@@ -62,14 +62,11 @@ def test_socket(msocket, mdev):
     assert r == some_bytes
     assert mdev.recv.called
     # Close.
-    # TODO: brick.__del__ should close the socket, but nobody knows when
-    # python calls the destructor.
-    sock.close()
+    brick.close()
     assert mdev.send.call_args == call(b"\x99")
     assert mdev.close.called
     # Duplicated close.
     sock.close()
-    del brick
 
 
 def test_socket_cant_connect(msocket, mdev):
@@ -96,5 +93,4 @@ def test_socket_real():
     r = sock.recv()
     assert r.startswith(bytes.fromhex("029b00"))
     # Close.
-    sock.close()
-    del brick
+    brick.close()
