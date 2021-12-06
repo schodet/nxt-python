@@ -189,7 +189,7 @@ class MotCont:
         try:
             self._brick.stop_program()
             time.sleep(1)
-        except nxt.error.DirProtError:
+        except nxt.error.DirectProtocolError:
             pass
         self._brick.start_program("MotorControl%d.rxe" % version)
         time.sleep(0.1)

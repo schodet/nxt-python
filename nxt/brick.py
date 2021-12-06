@@ -18,8 +18,8 @@ import io
 import threading
 import time
 
-from nxt.error import FileNotFound, ModuleNotFound
-from nxt.sensor import get_sensor
+import nxt.error
+import nxt.sensor
 from nxt.telegram import OPCODES, Telegram
 
 __all__ = ["Brick"]
@@ -245,14 +245,14 @@ class Brick(object, metaclass=_Meta):  # TODO: this begs to have explicit method
         """
         try:
             handle, name, size = self.file_find_first(pattern)
-        except FileNotFound:
+        except nxt.error.FileNotFoundError:
             return None
         try:
             yield name, size
             while True:
                 try:
                     _, name, size = self.file_find_next(handle)
-                except FileNotFound:
+                except nxt.error.FileNotFoundError:
                     break
                 yield name, size
         finally:
@@ -269,17 +269,17 @@ class Brick(object, metaclass=_Meta):  # TODO: this begs to have explicit method
         """
         try:
             handle, mname, mid, msize, miomap_size = self.module_find_first(pattern)
-        except ModuleNotFound:
+        except nxt.error.ModuleNotFoundError:
             return None
         try:
             yield mname, mid, msize, miomap_size
             while True:
                 try:
                     _, mname, mid, msize, miomap_size = self.module_find_next(handle)
-                except ModuleNotFound:
+                except nxt.error.ModuleNotFoundError:
                     break
                 yield mname, mid, msize, miomap_size
         finally:
             self.module_close(handle)
 
-    get_sensor = get_sensor
+    get_sensor = nxt.sensor.get_sensor

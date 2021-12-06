@@ -17,7 +17,7 @@
 import argparse
 import nxt.locator
 import logging
-from nxt.error import FileNotFound
+from nxt.error import FileNotFoundError
 
 def _write_file(b, fname, data):
     print('Pushing %s (%d bytes) ...' % (fname, len(data)), end=' ', flush=True)
@@ -31,7 +31,7 @@ def write_file(b, fname):
     try:
         b.file_delete(fname)
         print('Overwriting %s on NXT' % fname)
-    except FileNotFound:
+    except FileNotFoundError:
         pass
     _write_file(b, fname, data)
 

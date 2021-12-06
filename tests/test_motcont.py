@@ -123,7 +123,7 @@ def test_start(mbrick, mc):
 
 
 def test_start_not_running(mbrick, mc):
-    mbrick.stop_program.side_effect = [nxt.error.DirProtError("")]
+    mbrick.stop_program.side_effect = [nxt.error.DirectProtocolError("")]
     mc.start()
     assert mbrick.mock_calls == [
         call.stop_program(),

@@ -1,4 +1,4 @@
-# nxt.telegram module -- LEGO Mindstorms NXT telegram formatting and parsing
+# nxt.telegram module -- NXT brick telegram formatting and parsing
 # Copyright (C) 2006  Douglas P Lau
 # Copyright (C) 2009  Marcus Wanner
 # Copyright (C) 2021  Nicolas Schodet
@@ -12,20 +12,57 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-
-'Used by nxt.system for sending telegrams to the NXT'
-
 from io import BytesIO
 from struct import pack, unpack
+
 import nxt.error
 
-class InvalidReplyError(Exception):
-    pass
+CODES = {
+    0x00: None,
+    0x20: nxt.error.I2CPendingError("pending communication transaction in progress"),
+    0x40: nxt.error.DirectProtocolError("specified mailbox queue is empty"),
+    0x81: nxt.error.SystemProtocolError("no more handles"),
+    0x82: nxt.error.SystemProtocolError("no space"),
+    0x83: nxt.error.SystemProtocolError("no more files"),
+    0x84: nxt.error.SystemProtocolError("end of file expected"),
+    0x85: nxt.error.SystemProtocolError("end of file"),
+    0x86: nxt.error.SystemProtocolError("not a linear file"),
+    0x87: nxt.error.FileNotFoundError("file not found"),
+    0x88: nxt.error.SystemProtocolError("handle already closed"),
+    0x89: nxt.error.SystemProtocolError("no linear space"),
+    0x8A: nxt.error.SystemProtocolError("undefined error"),
+    0x8B: nxt.error.SystemProtocolError("file is busy"),
+    0x8C: nxt.error.SystemProtocolError("no write buffers"),
+    0x8D: nxt.error.SystemProtocolError("append not possible"),
+    0x8E: nxt.error.SystemProtocolError("file is full"),
+    0x8F: nxt.error.FileExistsError("file exists"),
+    0x90: nxt.error.ModuleNotFoundError("module not found"),
+    0x91: nxt.error.SystemProtocolError("out of bounds"),
+    0x92: nxt.error.SystemProtocolError("illegal file name"),
+    0x93: nxt.error.SystemProtocolError("illegal handle"),
+    0xBD: nxt.error.DirectProtocolError(
+        "request failed (i.e. specified file not found)"
+    ),
+    0xBE: nxt.error.DirectProtocolError("unknown command opcode"),
+    0xBF: nxt.error.DirectProtocolError("insane packet"),
+    0xC0: nxt.error.DirectProtocolError("data contains out-of-range values"),
+    0xDD: nxt.error.DirectProtocolError("communication bus error"),
+    0xDE: nxt.error.DirectProtocolError("no free memory in communication buffer"),
+    0xDF: nxt.error.DirectProtocolError("specified channel/connection is not valid"),
+    0xE0: nxt.error.I2CError("specified channel/connection not configured or busy"),
+    0xEC: nxt.error.DirectProtocolError("no active program"),
+    0xED: nxt.error.DirectProtocolError("illegal size specified"),
+    0xEE: nxt.error.DirectProtocolError("illegal mailbox queue ID specified"),
+    0xEF: nxt.error.DirectProtocolError(
+        "attempted to access invalid field of a structure"
+    ),
+    0xF0: nxt.error.DirectProtocolError("bad input or output specified"),
+    0xFB: nxt.error.DirectProtocolError("insufficient memory available"),
+    0xFF: nxt.error.DirectProtocolError("bad arguments"),
+}
 
-class InvalidOpcodeError(Exception):
-    pass
 
-class Telegram(object):
+class Telegram:
 
     TYPE = 0    # type byte offset
     CODE = 1    # code byte offset
@@ -42,9 +79,11 @@ class Telegram(object):
             self.typ = self.parse_u8()
             self.opcode = self.parse_u8()
             if not self.is_reply():
-                raise InvalidReplyError
+                raise nxt.error.ProtocolError("not a reply reply")
             if self.opcode != opcode:
-                raise InvalidOpcodeError(self.opcode)
+                raise nxt.error.ProtocolError(
+                    f"invalid reply opcode {self.opcode:#02x}"
+                )
         else:
             self.pkt = BytesIO()
             typ = 0
@@ -68,7 +107,7 @@ class Telegram(object):
     def add_string(self, size, v):
         b = v.encode("ascii")
         if len(b) > size - 1:
-            raise ValueError("String too long")
+            raise ValueError("string too long")
         self.pkt.write(pack("%ds" % size, b))
 
     def add_filename(self, fname):
@@ -118,7 +157,13 @@ class Telegram(object):
         return unpack('<I', self.pkt.read(4))[0]
 
     def check_status(self):
-        nxt.error.check_status(self.parse_u8())
+        status = self.parse_u8()
+        if status:
+            ex = CODES.get(status)
+            if ex:
+                raise ex
+            else:
+                raise nxt.error.ProtocolError(f"unknown status code: {status:#02x}")
 
 import nxt.direct
 import nxt.system

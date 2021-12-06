@@ -15,6 +15,7 @@ from unittest.mock import Mock, call, patch
 import pytest
 
 import nxt.brick
+import nxt.error
 import nxt.motor
 
 
@@ -54,6 +55,18 @@ def test_with(sock, brick):
     assert sock.mock_calls == [call.close()]
 
 
+def test_reply_error(sock, brick):
+    sock.recv.return_value = bytes.fromhex("019700") + b"No\0"
+    with pytest.raises(nxt.error.ProtocolError):
+        brick.boot()
+    sock.recv.return_value = bytes.fromhex("029900") + b"No\0"
+    with pytest.raises(nxt.error.ProtocolError):
+        brick.boot()
+    sock.recv.return_value = bytes.fromhex("029799") + b"No\0"
+    with pytest.raises(nxt.error.ProtocolError):
+        brick.boot()
+
+
 class TestSystem:
     """Test system commands."""
 
@@ -67,7 +80,7 @@ class TestSystem:
     def test_file_open_read_fail(self, sock, brick):
         """Test command failure reported in status code."""
         sock.recv.return_value = bytes.fromhex("028087 00 00000000")
-        with pytest.raises(nxt.error.FileNotFound):
+        with pytest.raises(nxt.error.FileNotFoundError):
             brick.file_open_read("unknown.rxe")
 
     def test_file_open_write(self, sock, brick):
@@ -447,7 +460,7 @@ class TestFilesModules:
     """Test nxt.brick files & modules access."""
 
     def test_find_files_none(self, mbrick):
-        mbrick.file_find_first.side_effect = [nxt.error.FileNotFound()]
+        mbrick.file_find_first.side_effect = [nxt.error.FileNotFoundError()]
         results = list(mbrick.find_files("*.*"))
         assert results == []
         assert mbrick.mock_calls == [
@@ -456,7 +469,7 @@ class TestFilesModules:
 
     def test_find_files_one(self, mbrick):
         mbrick.file_find_first.return_value = (0x42, "test.rxe", 0x04030201)
-        mbrick.file_find_next.side_effect = [nxt.error.FileNotFound()]
+        mbrick.file_find_next.side_effect = [nxt.error.FileNotFoundError()]
         results = list(mbrick.find_files("*.*"))
         assert results == [("test.rxe", 0x04030201)]
         assert mbrick.mock_calls == [
@@ -469,7 +482,7 @@ class TestFilesModules:
         mbrick.file_find_first.return_value = (0x42, "test.rxe", 0x04030201)
         mbrick.file_find_next.side_effect = [
             (0x42, "test.rso", 7),
-            nxt.error.FileNotFound(),
+            nxt.error.FileNotFoundError(),
         ]
         results = list(mbrick.find_files("*.*"))
         assert results == [("test.rxe", 0x04030201), ("test.rso", 7)]
@@ -482,7 +495,7 @@ class TestFilesModules:
 
     def test_find_files_interrupted(self, mbrick):
         mbrick.file_find_first.return_value = (0x42, "test.rxe", 0x04030201)
-        mbrick.file_find_next.side_effect = [nxt.error.FileNotFound()]
+        mbrick.file_find_next.side_effect = [nxt.error.FileNotFoundError()]
         g = mbrick.find_files("*.*")
         assert next(g) == ("test.rxe", 0x04030201)
         g.close()
@@ -492,7 +505,7 @@ class TestFilesModules:
         ]
 
     def test_find_modules_none(self, mbrick):
-        mbrick.module_find_first.side_effect = [nxt.error.ModuleNotFound()]
+        mbrick.module_find_first.side_effect = [nxt.error.ModuleNotFoundError()]
         results = list(mbrick.find_modules("*.*"))
         assert results == []
         assert mbrick.mock_calls == [
@@ -501,7 +514,7 @@ class TestFilesModules:
 
     def test_find_modules_one(self, mbrick):
         mbrick.module_find_first.return_value = (0x42, "Loader", 0x00090001, 0, 8)
-        mbrick.module_find_next.side_effect = [nxt.error.ModuleNotFound()]
+        mbrick.module_find_next.side_effect = [nxt.error.ModuleNotFoundError()]
         results = list(mbrick.find_modules("*.*"))
         assert mbrick.mock_calls == [
             call.module_find_first("*.*"),
@@ -514,7 +527,7 @@ class TestFilesModules:
         mbrick.module_find_first.return_value = (0x42, "Loader", 0x00090001, 0, 8)
         mbrick.module_find_next.side_effect = [
             (0x42, "Dummy", 0x01020304, 0, 12),
-            nxt.error.ModuleNotFound(),
+            nxt.error.ModuleNotFoundError(),
         ]
         results = list(mbrick.find_modules("*.*"))
         assert mbrick.mock_calls == [

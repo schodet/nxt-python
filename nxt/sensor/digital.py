@@ -17,7 +17,7 @@ import logging
 import struct
 import time
 
-from nxt.error import I2CError, I2CPendingError, DirProtError
+from nxt.error import I2CError, I2CPendingError, DirectProtocolError
 
 from .common import *
 
@@ -148,7 +148,7 @@ class BaseDigitalSensor(Sensor):
         for n in range(3):
             try:
                 return self._i2c_query(address, fmt)
-            except DirProtError:
+            except DirectProtocolError:
                 pass
         raise I2CError("read_value timeout")
 

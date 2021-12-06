@@ -8,3 +8,4 @@ API Reference
    locator
    brick
    backends
+   error
