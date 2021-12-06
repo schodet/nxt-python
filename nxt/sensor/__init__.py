@@ -16,7 +16,7 @@
 from .common import *
 from .analog import BaseAnalogSensor
 from .digital import BaseDigitalSensor, find_class
-from .generic import Touch, Light, Sound, Ultrasonic, Color20, Temperature
+from .generic import Touch, Light, Sound, Ultrasonic, Color, Temperature
 from . import mindsensors
 MSSumoEyes = mindsensors.SumoEyes
 MSCompassv2 = mindsensors.Compassv2

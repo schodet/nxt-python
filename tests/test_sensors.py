@@ -106,9 +106,9 @@ class TestGeneric:
             call.get_input_values(PORT_1),
         ]
 
-    def test_color20(self, mbrick):
-        assert nxt.sensor.Color20.get_sample is nxt.sensor.Color20.get_color
-        s = nxt.sensor.Color20(mbrick, PORT_1)
+    def test_color(self, mbrick):
+        assert nxt.sensor.Color.get_sample is nxt.sensor.Color.get_color
+        s = nxt.sensor.Color(mbrick, PORT_1)
         mbrick.get_input_values.side_effect = [
             (PORT_1, True, False, Type.COLORFULL, Mode.RAW, 0, 0, 4, 0),
             (PORT_1, True, False, Type.COLORFULL, Mode.RAW, 0, 0, 4, 0),
