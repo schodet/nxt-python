@@ -101,7 +101,15 @@ class Backend:
         :rtype: Iterator[Brick]
         """
         lookup_names = name is not None
-        for dev in self._bluetooth.discover_devices(lookup_names=lookup_names):
+        try:
+            discovered = self._bluetooth.discover_devices(lookup_names=lookup_names)
+        except self._bluetooth.BluetoothError:
+            logger.exception("failed to discover devices")
+            return None
+        except OSError:
+            logger.exception("failed to discover devices")
+            return None
+        for dev in discovered:
             if lookup_names:
                 devhost, devname = dev
             else:

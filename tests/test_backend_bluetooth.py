@@ -32,9 +32,12 @@ def msock():
 
 @pytest.fixture
 def mbluetooth(msock):
+    class BluetoothError(Exception):
+        pass
+
     bluetooth = Mock()
     bluetooth.BluetoothSocket.return_value = msock
-    bluetooth.BluetoothError = Exception
+    bluetooth.BluetoothError = BluetoothError
     return bluetooth
 
 
@@ -166,6 +169,16 @@ def test_bluetooth_cant_connect(mbluetooth, mbluetooth_import, msock):
         "00:01:02:03:04:05",
     ]
     msock.connect.side_effect = [mbluetooth.BluetoothError]
+    bricks = list(backend.find(blah="blah"))
+    assert len(bricks) == 0
+
+
+def test_bluetooth_cant_discover(mbluetooth, mbluetooth_import, msock):
+    backend = nxt.backend.bluetooth.get_backend()
+    mbluetooth.discover_devices.side_effect = [OSError]
+    bricks = list(backend.find(blah="blah"))
+    assert len(bricks) == 0
+    mbluetooth.discover_devices.side_effect = [mbluetooth.BluetoothError]
     bricks = list(backend.find(blah="blah"))
     assert len(bricks) == 0
 
