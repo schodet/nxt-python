@@ -103,11 +103,13 @@ class Backend:
         lookup_names = name is not None
         try:
             discovered = self._bluetooth.discover_devices(lookup_names=lookup_names)
-        except self._bluetooth.BluetoothError:
-            logger.exception("failed to discover devices")
+        except self._bluetooth.BluetoothError as err:
+            logger.warning("failed to discover Bluetooth devices: %s", err)
+            logger.debug("error from discover_devices", exc_info=True)
             return None
-        except OSError:
-            logger.exception("failed to discover devices")
+        except OSError as err:
+            logger.warning("failed to discover Bluetooth devices: %s", err)
+            logger.debug("error from discover_devices", exc_info=True)
             return None
         for dev in discovered:
             if lookup_names:
@@ -119,7 +121,8 @@ class Backend:
                 try:
                     brick = sock.connect()
                 except self._bluetooth.BluetoothError:
-                    logger.exception("failed to connect to device %s", sock)
+                    logger.warning("failed to connect to device %s", sock)
+                    logger.debug("error from connect", exc_info=True)
                 else:
                     yield brick
 
@@ -133,8 +136,10 @@ def get_backend():
     try:
         import bluetooth
     except ImportError:
+        logger.info("no bluetooth module")
         return None
     except Exception:
-        # Raised when platform is not supported.
+        logger.info("platform is not supported by bluetooth module")
+        logger.debug("error from import", exc_info=True)
         return None
     return Backend(bluetooth)
