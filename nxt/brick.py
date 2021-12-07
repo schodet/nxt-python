@@ -158,7 +158,7 @@ class Brick(object, metaclass=_Meta):  # TODO: this begs to have explicit method
         :param newline: Newline handling for text mode.
         :type newline: str or None
         :return: A file-like object connected to the file on the NXT brick.
-        :rtype: file-like
+        :rtype: io.IOBase
 
         `mode` is a string which specifies how the file should be open. You can combine
         several characters to build the specification:

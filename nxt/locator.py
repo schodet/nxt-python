@@ -254,7 +254,7 @@ def find_with_options(options, *, find_all=False):
     """Find a NXT brick and return it, using options from command line.
 
     :param argparse.Namespace options: Options returned by
-       :func:`argparse.ArgumentParser.parse_args`
+       :meth:`argparse.ArgumentParser.parse_args`
     :param bool find_all: ``True`` to return an iterator over all bricks found.
     :return: The found brick or ``None``, or an iterator if `find_all` is ``True``.
     :rtype: Brick or None or Iterator[Brick]

@@ -38,13 +38,17 @@ needs_sphinx = "3.4"
 # ones.
 extensions = [
     "sphinx.ext.autodoc",
+    "sphinx.ext.intersphinx",
 ]
+
+intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ["_build"]
 
+nitpicky = True
 
 # -- Options for HTML output -------------------------------------------------
 
