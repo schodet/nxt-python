@@ -14,6 +14,7 @@ from unittest.mock import call
 
 import pytest
 
+import nxt.error
 import nxt.motcont
 import nxt.motor
 
@@ -101,7 +102,7 @@ def test_is_ready(mbrick, mtime, mc):
 
 def test_is_ready_error(mbrick, mc):
     mbrick.message_read.return_value = (1, msg("0 1"))
-    with pytest.raises(nxt.motcont.MotorConError):
+    with pytest.raises(nxt.error.ProtocolError):
         mc.is_ready(nxt.motor.PORT_B)
 
 

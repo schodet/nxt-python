@@ -19,12 +19,6 @@ import nxt
 import nxt.error
 
 
-class MotorConError(nxt.error.ProtocolError):
-    """Raised on protocol error."""
-
-    pass
-
-
 def _power(power):
     pw = abs(power)
     if power < 0:
@@ -156,7 +150,7 @@ class MotCont:
             time.sleep(0.015)  # 10ms pause from the docs seems to not be adequate
             reply = self._brick.message_read(0, 1, 1)[1]
             if chr(reply[0]) != strports:
-                raise MotorConError("wrong port returned from ISMOTORREADY")
+                raise nxt.error.ProtocolError("wrong port returned from ISMOTORREADY")
         self._last_is_ready = time.time()
         return bool(int(chr(reply[1])))
 
