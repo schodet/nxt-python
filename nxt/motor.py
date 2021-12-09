@@ -352,7 +352,6 @@ class Motor(BaseMotor):
         REGULATION_MOTOR_SPEED
         """
         tacho_limit = tacho_units
-        tacho = self.get_tacho()
         state = self._get_new_state()
 
         # Update modifiers even if they aren't used, might have been changed

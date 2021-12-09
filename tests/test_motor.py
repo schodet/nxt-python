@@ -119,8 +119,6 @@ def test_idle(mbrick, mmotor):
 def test_weak_turn(mbrick, mmotor):
     mmotor.weak_turn(50, 360)
     assert mbrick.mock_calls == [
-        # TODO: why get_output_state?
-        call.get_output_state(PORT_A),
         call.set_output_state(
             PORT_A, 50, MODE_MOTOR_ON, REGULATION_IDLE, 0, RUN_STATE_RUNNING, 360
         ),
