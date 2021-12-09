@@ -15,8 +15,10 @@
 import time
 from threading import Lock
 
-import nxt
 import nxt.error
+import nxt.motor
+
+__all__ = ["MotCont"]
 
 
 def _power(power):
@@ -37,8 +39,8 @@ class MotCont:
     a wrapper which follows the `MotorControl documentation`_ and provides command
     strings and timing intervals as dictated there.
 
-    To use this module, you will need to put MotorControl22.rxe on your NXT brick. It
-    can be built using NXC and the corresponding source can be found at
+    To use this module, you will need to put ``MotorControl22.rxe`` on your NXT brick.
+    It can be built using NXC and the corresponding source can be found at
     https://github.com/schodet/MotorControl.
 
     Use :func:`MotCont.start` to start the program. You can also start it manually my
@@ -105,13 +107,13 @@ class MotCont:
         """Send a CONTROLLED_MOTORCMD to MotorControl.
 
         :param ports: Port or ports to control, use one of the port constant of
-            `nxt.motor`, or a tuple with one or two of them.
+            :mod:`nxt.motor`, or a tuple with one or two of them.
         :type ports: int or Iterable[int]
         :param int power: Speed or power, -100 to 100.
         :param int tacholimit: Position to drive to, 1 to 999999, or 0 for unlimited.
-        :param bool speedreg: True to enable regulation (default True).
-        :param bool smoothstart: True to enable smooth start (default False).
-        :param bool brake: True to hold brake at end of movement (default False).
+        :param bool speedreg: ``True`` to enable regulation.
+        :param bool smoothstart: ``True`` to enable smooth start.
+        :param bool brake: ``True`` to hold brake at end of movement.
         """
         self._interval_is_ready()
         ports, strports = self._decode_ports(ports, 2)
@@ -125,7 +127,7 @@ class MotCont:
         """Reset NXT tacho count.
 
         :param ports: Port or ports to control, use one of the port constant of
-            `nxt.motor`, or a tuple with one to three of them.
+            :mod:`nxt.motor`, or a tuple with one to three of them.
         :type ports: int or Iterable[int]
         """
         self._interval_is_ready()
@@ -137,10 +139,11 @@ class MotCont:
     def is_ready(self, port):
         """Determine the state of a single motor.
 
-        :param port: Port to control, use one of the port constant of `nxt.motor`, or
-            a tuple with one of them.
+        :param port: Port to control, use one of the port constant of :mod:`nxt.motor`.
+           or a tuple with one of them.
         :type port: int or Iterable[int]
-        :return: True if the motor is ready to accept new commands.
+        :return: ``True`` if the motor is ready to accept new commands.
+        :rtype: bool
         """
         self._interval_is_ready()
         ports, strports = self._decode_ports(port, 1)
@@ -158,11 +161,11 @@ class MotCont:
         """Send a CLASSIC_MOTORCMD to MotorControl.
 
         :param ports: Port or ports to control, use one of the port constant of
-            `nxt.motor`, or a tuple with one or two of them.
+            :mod:`nxt.motor`, or a tuple with one or two of them.
         :type ports: int or Iterable[int]
         :param int power: Speed or power, -100 to 100.
         :param int tacholimit: Position to drive to, 1 to 999999, or 0 for unlimited.
-        :param bool speedreg: True to enable regulation (default True).
+        :param bool speedreg: ``True`` to enable regulation.
         """
         self._interval_is_ready()
         ports, strports = self._decode_ports(ports, 2)
@@ -177,7 +180,7 @@ class MotCont:
         :param int version: Version to start, default to 22 (version 2.2).
 
         It needs to already be present on the brick's flash and named
-        `MotorControlXX.rxc`, where XX is the version number passed as the version
+        ``MotorControlXX.rxc``, where `XX` is the version number passed as the version
         argument.
         """
         try:
@@ -191,6 +194,6 @@ class MotCont:
     def stop(self):
         """Stop the MotorControl program.
 
-        All this actually does is stop the currently running rxe.
+        All this actually does is to stop the currently running program.
         """
         self._brick.stop_program()
