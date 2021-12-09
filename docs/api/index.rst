@@ -1,4 +1,3 @@
-=============
 API Reference
 =============
 
@@ -7,5 +6,8 @@ API Reference
 
    locator
    brick
+   motor
+   sensors/index
    backends
    error
+   motcont

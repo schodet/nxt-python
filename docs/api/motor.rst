@@ -1,8 +1,8 @@
-Brick
+Motor
 =====
 
 Work in progress...
 
-.. automodule:: nxt.brick
+.. automodule:: nxt.motor
    :members:
    :undoc-members:

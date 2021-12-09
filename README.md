@@ -1,52 +1,68 @@
 # ![NXT-Python](./logo.svg)
 
-**The NXT-Python v3 implementation is incomplete, but this is currently being
-worked on. Stay tuned!**
-
 NXT-Python is a package for controlling a LEGO NXT robot using the Python
-programming language. It can communicate using either USB or Bluetooth. It is
-based on Elvin Luff's work ending in 2021, based on Marcus Wanner's work
-until 2013, which in turn is based on NXT\_Python, where releases halted in
-May 2007.
+programming language. It can communicate using either USB or Bluetooth.
+
+NXT-Python for Python 3 is still alpha version, please report any problem you
+run into.
+
+NXT-Python for Python 2 is no longer supported.
+
+NXT-Python repository is on [Github][] with a mirror on [sourcehut][].
+
+[Github]: https://github.com/schodet/nxt-python "NXT-Python repository on Github"
+[sourcehut]: https://sr.ht/~ni/nxt-python/ "NXT-Python repository on sourcehut"
 
 ## Requirements
 
 - [Python 3.x](http://www.python.org)
-- Bluetooth Communications:
-    - [PyBluez](https://github.com/pybluez/pybluez)
-- USB Communications:
+- USB communication:
     - [PyUSB](https://github.com/pyusb/pyusb)
+- Bluetooth communication:
+    - [PyBluez](https://github.com/pybluez/pybluez)
 
 ## Installation
 
-1. There is no release for Python 3 for the moment, please clone the master
-   branch from [the repository](https://github.com/schodet/nxt-python).
-2. Navigate to the package directory, and run `python3 setup.py install`
-3. `import nxt` in your program and get going!
+Install NXT-Python with pip:
 
-This is a quick overview, detailed instructions can be found on the
-[wiki](https://github.com/schodet/nxt-python/wiki/Installation) page.
+    python3 -m pip install --upgrade --pre nxt-python
 
-### Converting between versions
+As there is only pre-releases for the moment, you need the `--pre` option.
+Without this option, an old NXT-Python version would be installed for
+Python 2, which is no longer supported.
 
-Since the 3.x and 2.x series use the same API, in most cases code can be
-automatically converted. Python 2 and Python 3 include a built in
-[2to3](https://docs.python.org/2/library/2to3.html) script which will
-automatically modify the program.
+See [installation][] instructions in the documentation for more informations.
+
+[install instructions]: https://ni.srht.site/nxt-python/latest/installation.html
+
+## Next steps
+
+You can read the [documentation][], or start directly with the [tutorial][].
+
+[documentation]: https://ni.srht.site/nxt-python/latest/
+[tutorial]: https://ni.srht.site/nxt-python/latest/handbook/tutorial.html
+
+## Upgrading your code
+
+If you used previous version of NXT-Python with Python 2, the documentation
+includes an [migration guide][].
+
+[migration guide]: https://ni.srht.site/nxt-python/latest/migration.html
 
 ## Contact
 
-NXT-Python repository maintainer: [schodet](https://github.com/schodet) - New
-maintainer since 2021-11-06, currently working on a first release for Python 3.
+There is a [mailing list][] for questions.
 
-[Github issues page](https://github.com/schodet/nxt-python/issues): Send all
-questions, bugs and requests here!
+NXT-Python repository maintainer is Nicolas Schodet, since 2021-11-06. You can
+contact him on the mailing list.
 
-Please read the [issue
-rules](https://github.com/schodet/nxt-python/wiki/Issue-Rules) before posting
-here.
+You can use the [Github issues page][] to report problems, but please use the
+mailing list for questions.
 
-## Thanks to:
+[mailing list]: https://lists.sr.ht/~ni/nxt-python
+[Github issues page]: https://github.com/schodet/nxt-python/issues
+
+## Thanks
 
 - Doug Lau for writing NXT\_Python, our starting point.
 - rhn for creating what would become v2, making lots of smaller changes, and
@@ -66,3 +82,17 @@ here.
 - Goldsloth for making some useful changes and keeping the tickets moving
   after the migration to Github.
 - All our users for their interest and support!
+
+## License
+
+NXT-Python is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program. If not, see <http://www.gnu.org/licenses/>.

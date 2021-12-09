@@ -10,6 +10,16 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+"""
+The :mod:`.locator` module allows to detect connected NXT bricks and to create
+corresponding :class:`~nxt.brick.Brick` objects.
+
+The :func:`find` function is your main starting point to create a NXT-Python program.
+
+If you want to make a command line tool, :func:`add_arguments` and
+:func:`find_with_options` will make it easy to allow choosing a brick from the command
+line.
+"""
 import configparser
 import importlib
 import logging
