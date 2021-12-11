@@ -6,3 +6,4 @@ Handbook
 
    overview
    tutorial
+   tips
