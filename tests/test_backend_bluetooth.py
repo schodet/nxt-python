@@ -138,14 +138,27 @@ def test_bluetooth_by_host(mbluetooth, mbluetooth_import, msock):
     # Instantiate backend.
     backend = nxt.backend.bluetooth.get_backend()
     # Find brick.
-    mbluetooth.discover_devices.return_value = [
-        "00:01:02:03:04:05",
-        "00:01:02:03:04:06",
-        "00:01:02:03:04:07",
-    ]
     bricks = list(backend.find(host="00:01:02:03:04:05", blah="blah"))
     assert len(bricks) == 1
     brick = bricks[0]
+    assert not mbluetooth.discover_devices.called
+    assert mbluetooth.BluetoothSocket.called
+    assert msock.connect.called
+    sock = brick.sock
+    # str.
+    assert str(sock) == "Bluetooth (00:01:02:03:04:05)"
+    # Close.
+    brick.close()
+
+
+def test_bluetooth_by_host_and_name(mbluetooth, mbluetooth_import, msock):
+    # Instantiate backend.
+    backend = nxt.backend.bluetooth.get_backend()
+    # Find brick.
+    bricks = list(backend.find(host="00:01:02:03:04:05", name="NXT"))
+    assert len(bricks) == 1
+    brick = bricks[0]
+    assert not mbluetooth.discover_devices.called
     assert mbluetooth.BluetoothSocket.called
     assert msock.connect.called
     sock = brick.sock
