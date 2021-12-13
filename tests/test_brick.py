@@ -331,7 +331,7 @@ class TestDirect:
 
     def test_set_input_mode(self, sock, brick):
         brick.set_input_mode(
-            nxt.sensor.PORT_3, nxt.sensor.Type.SWITCH, nxt.sensor.Mode.BOOLEAN
+            nxt.sensor.Port.S3, nxt.sensor.Type.SWITCH, nxt.sensor.Mode.BOOL
         )
         assert sock.mock_calls == sent(bytes.fromhex("8005 02 01 20"))
 
@@ -377,13 +377,13 @@ class TestDirect:
             normalized_value,
             scaled_value,
             calibrated_value,
-        ) = brick.get_input_values(nxt.sensor.PORT_3)
+        ) = brick.get_input_values(nxt.sensor.Port.S3)
         assert sock.mock_calls == sent_recved(bytes.fromhex("0007 02"))
-        assert port == nxt.sensor.PORT_3
-        assert valid == 1
-        assert calibrated == 0
+        assert port == nxt.sensor.Port.S3
+        assert valid is True
+        assert calibrated is False
         assert sensor_type == nxt.sensor.Type.SWITCH
-        assert sensor_mode == nxt.sensor.Mode.BOOLEAN
+        assert sensor_mode == nxt.sensor.Mode.BOOL
         assert raw_value == 0x0201
         assert normalized_value == 0x1211
         assert scaled_value == 0x2221
@@ -391,7 +391,7 @@ class TestDirect:
 
     def test_reset_input_scaled_value(self, sock, brick):
         sock.recv.return_value = bytes.fromhex("020800")
-        brick.reset_input_scaled_value(nxt.sensor.PORT_3)
+        brick.reset_input_scaled_value(nxt.sensor.Port.S3)
         assert sock.mock_calls == sent_recved(bytes.fromhex("0008 02"))
 
     def test_message_write(self, sock, brick):
@@ -429,13 +429,13 @@ class TestDirect:
 
     def test_ls_get_status(self, sock, brick):
         sock.recv.return_value = bytes.fromhex("020e00 07")
-        size = brick.ls_get_status(nxt.sensor.PORT_3)
+        size = brick.ls_get_status(nxt.sensor.Port.S3)
         assert sock.mock_calls == sent_recved(bytes.fromhex("000e 02"))
         assert size == 7
 
     def test_ls_write(self, sock, brick):
         sock.recv.return_value = bytes.fromhex("020f00")
-        brick.ls_write(nxt.sensor.PORT_3, bytes.fromhex("21222324252627"), 9)
+        brick.ls_write(nxt.sensor.Port.S3, bytes.fromhex("21222324252627"), 9)
         assert sock.mock_calls == sent_recved(
             bytes.fromhex("000f 02 07 09 21222324252627")
         )
@@ -444,7 +444,7 @@ class TestDirect:
         sock.recv.return_value = bytes.fromhex(
             "021000 07 21222324252627 000000000000000000"
         )
-        rx_data = brick.ls_read(nxt.sensor.PORT_3)
+        rx_data = brick.ls_read(nxt.sensor.Port.S3)
         assert sock.mock_calls == sent_recved(bytes.fromhex("0010 02"))
         assert rx_data == bytes.fromhex("21222324252627")
 

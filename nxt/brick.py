@@ -21,6 +21,7 @@ import time
 import nxt.error
 import nxt.motor
 import nxt.sensor
+import nxt.sensor.digital
 from nxt.telegram import Opcode, Telegram
 
 __all__ = ["Brick"]
@@ -271,7 +272,19 @@ class Brick:
         finally:
             self.module_close(handle)
 
-    get_sensor = nxt.sensor.get_sensor
+    def get_sensor(self, port):
+        """Tries to detect the sensor type and return the correct sensor object.
+
+        :param nxt.sensor.Port port: Input port identifier.
+        :return: A sensor object.
+        :rtype: nxt.sensor.Sensor
+        :raises nxt.sensor.digital.SearchError: When sensor can not be identified.
+
+        Only work for digital sensors with identification information.
+        """
+        base_sensor = nxt.sensor.digital.BaseDigitalSensor(self, port, False)
+        info = base_sensor.get_sensor_info()
+        return nxt.sensor.digital.find_class(info)(self, port, check_compatible=False)
 
     def get_motor(self, port):
         """Return a motor object connected to one of the brick output port.
@@ -372,14 +385,17 @@ class Brick:
     def set_input_mode(self, port, sensor_type, sensor_mode):
         """Set input port mode on the brick.
 
-        :param int port: Input port constant.
-        :param int sensor_type: Sensor type.
-        :param int sensor_mode: Sensor mode.
+        :param nxt.sensor.Port port: Input port identifier.
+        :param nxt.sensor.Type sensor_type: Sensor type.
+        :param nxt.sensor.Mode sensor_mode: Sensor mode.
+
+        .. warning:: This is a low level function, prefer to use a :mod:`nxt.sensor`
+           class.
         """
         tgram = Telegram(Opcode.DIRECT_SET_IN_MODE, reply_req=False)
-        tgram.add_u8(port)
-        tgram.add_u8(sensor_type)
-        tgram.add_u8(sensor_mode)
+        tgram.add_u8(port.value)
+        tgram.add_u8(sensor_type.value)
+        tgram.add_u8(sensor_mode.value)
         self._cmd(tgram)
 
     def get_output_state(self, port):
@@ -439,15 +455,16 @@ class Brick:
     def get_input_values(self, port):
         """Get input port values from the brick.
 
-        :param int port: Input port constant.
+        :param nxt.sensor.Port port: Input port identifier.
         :return: A tuple with `port`, `valid`, `calibrated`, `sensor_type`,
            `sensor_mode`, `raw_value`, `normalized_value`, `scaled_value`, and
            `calibrated_value`. `rotation_count`.
-        :rtype: (int, int, int, int, int, int, int, int, int)
+        :rtype: (nxt.sensor.Port, bool, bool, nxt.sensor.Type, nxt.sensor.Mode, int,
+           int, int, int)
 
         Return value details:
 
-        - **port** Input port constant.
+        - **port** Input port identifier.
         - **valid** ``True`` if the value is valid, else ``False``.
         - **calibrated** Always ``False``, there is no calibration in NXT firmware.
         - **sensor_type** Sensor type.
@@ -457,15 +474,18 @@ class Brick:
         - **scaled_value** Scaled value.
         - **calibrated_value** Always normalized value, there is no calibration in NXT
           firmware.
+
+        .. warning:: This is a low level function, prefer to use a :mod:`nxt.sensor`
+           class.
         """
         tgram = Telegram(Opcode.DIRECT_GET_IN_VALS)
-        tgram.add_u8(port)
+        tgram.add_u8(port.value)
         tgram = self._cmd(tgram)
-        port = tgram.parse_u8()
-        valid = tgram.parse_u8()
-        calibrated = tgram.parse_u8()
-        sensor_type = tgram.parse_u8()
-        sensor_mode = tgram.parse_u8()
+        port = nxt.sensor.Port(tgram.parse_u8())
+        valid = tgram.parse_bool()
+        calibrated = tgram.parse_bool()
+        sensor_type = nxt.sensor.Type(tgram.parse_u8())
+        sensor_mode = nxt.sensor.Mode(tgram.parse_u8())
         raw_value = tgram.parse_u16()
         normalized_value = tgram.parse_u16()
         scaled_value = tgram.parse_s16()
@@ -485,12 +505,15 @@ class Brick:
     def reset_input_scaled_value(self, port):
         """Reset scaled value for an input port on the brick.
 
-        :param int port: Input port constant.
+        :param nxt.sensor.Port port: Input port identifier.
 
         This can be used to reset accumulated value for some sensor modes.
+
+        .. warning:: This is a low level function, prefer to use a :mod:`nxt.sensor`
+           class.
         """
         tgram = Telegram(Opcode.DIRECT_RESET_IN_VAL)
-        tgram.add_u8(port)
+        tgram.add_u8(port.value)
         self._cmd(tgram)
 
     def message_write(self, inbox, message):
@@ -553,14 +576,17 @@ class Brick:
     def ls_get_status(self, port):
         """Get status of last low-speed transaction to a brick input port.
 
-        :param int port: Input port constant.
+        :param nxt.sensor.Port port: Input port identifier.
         :return: Number of bytes to read as a result of the transaction.
         :rtype: int
         :raises nxt.error.I2CPendingError: When transaction is still in progress.
         :raises nxt.error.DirectProtocolError: When there is an error on the bus.
+
+        .. warning:: This is a low level function, prefer to use a :mod:`nxt.sensor`
+           class.
         """
         tgram = Telegram(Opcode.DIRECT_LS_GET_STATUS)
-        tgram.add_u8(port)
+        tgram.add_u8(port.value)
         tgram = self._cmd(tgram)
         size = tgram.parse_u8()
         return size
@@ -568,15 +594,18 @@ class Brick:
     def ls_write(self, port, tx_data, rx_bytes):
         """Write data to a brick input port using low speed transaction.
 
-        :param int port: Input port constant.
+        :param nxt.sensor.Port port: Input port identifier.
         :param bytes tx_data: Data to send.
         :param int rx_bytes: Number of bytes to receive.
 
         Function returns immediately. Transaction status can be retrieved using
         :meth:`ls_get_status` and result must be read using :meth:`ls_read`.
+
+        .. warning:: This is a low level function, prefer to use a :mod:`nxt.sensor`
+           class.
         """
         tgram = Telegram(Opcode.DIRECT_LS_WRITE)
-        tgram.add_u8(port)
+        tgram.add_u8(port.value)
         tgram.add_u8(len(tx_data))
         tgram.add_u8(rx_bytes)
         tgram.add_bytes(tx_data)
@@ -585,16 +614,19 @@ class Brick:
     def ls_read(self, port):
         """Read result of low speed transaction.
 
-        :param int port: Input port constant.
+        :param nxt.sensor.Port port: Input port identifier.
         :return: Data received.
         :rtype: bytes
         :raises nxt.error.I2CPendingError: When transaction is still in progress.
         :raises nxt.error.DirectProtocolError: When there is an error on the bus.
 
         The :meth:`ls_write` function must be called to initiate the transaction.
+
+        .. warning:: This is a low level function, prefer to use a :mod:`nxt.sensor`
+           class.
         """
         tgram = Telegram(Opcode.DIRECT_LS_READ)
-        tgram.add_u8(port)
+        tgram.add_u8(port.value)
         tgram = self._cmd(tgram)
         size = tgram.parse_u8()
         rx_data = tgram.parse_bytes(size)

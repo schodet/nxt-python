@@ -42,8 +42,9 @@ use this code before calling any NXT-Python function::
     import logging
     logging.basicConfig(level=logging.DEBUG)
 
-The :mod:`!nxt` module no longer exports name from sub-modules. In general,
-NXT-Python now avoids to have two names for the same object.
+The :mod:`!nxt` and :mod:`nxt.sensor` modules no longer exports name from
+sub-modules. In general, NXT-Python now avoids to have two names for the same
+object.
 
 Output port constants are replaced by enumerations, using the :mod:`enum`
 module:
@@ -71,6 +72,50 @@ NXT-Python 2                     NXT-Python 3
 
 You can now create :class:`nxt.motor.Motor` objects using
 :meth:`nxt.brick.Brick.get_motor`, however direct creation still works.
+
+Input port constants are replaced by enumerations, using the :mod:`enum`
+module. The :mod:`!nxt.sensor.common` module has been removed, its content is
+directly available in :mod:`nxt.sensor`:
+
+.. py:currentmodule:: nxt.sensor
+
+===============================  ============================
+NXT-Python 2                     NXT-Python 3
+===============================  ============================
+:data:`!PORT_1`                  :attr:`Port.S1`
+:data:`!PORT_2`                  :attr:`Port.S2`
+:data:`!PORT_3`                  :attr:`Port.S3`
+:data:`!PORT_4`                  :attr:`Port.S4`
+:attr:`!Type.NO_SENSOR`          :attr:`Type.NO_SENSOR`
+:attr:`!Type.SWITCH`             :attr:`Type.SWITCH`
+:attr:`!Type.TEMPERATURE`        :attr:`Type.TEMPERATURE`
+:attr:`!Type.REFLECTION`         :attr:`Type.REFLECTION`
+:attr:`!Type.ANGLE`              :attr:`Type.ANGLE`
+:attr:`!Type.LIGHT_ACTIVE`       :attr:`Type.LIGHT_ACTIVE`
+:attr:`!Type.LIGHT_INACTIVE`     :attr:`Type.LIGHT_INACTIVE`
+:attr:`!Type.SOUND_DB`           :attr:`Type.SOUND_DB`
+:attr:`!Type.SOUND_DBA`          :attr:`Type.SOUND_DBA`
+:attr:`!Type.CUSTOM`             :attr:`Type.CUSTOM`
+:attr:`!Type.LOW_SPEED`          :attr:`Type.LOW_SPEED`
+:attr:`!Type.LOW_SPEED_9V`       :attr:`Type.LOW_SPEED_9V`
+:attr:`!Type.HIGH_SPEED`         :attr:`Type.HIGH_SPEED`
+:attr:`!Type.COLORFULL`          :attr:`Type.COLOR_FULL`
+:attr:`!Type.COLORRED`           :attr:`Type.COLOR_RED`
+:attr:`!Type.COLORGREEN`         :attr:`Type.COLOR_GREEN`
+:attr:`!Type.COLORBLUE`          :attr:`Type.COLOR_BLUE`
+:attr:`!Type.COLORNONE`          :attr:`Type.COLOR_NONE`
+:attr:`!Type.COLOREXIT`          :attr:`Type.COLOR_EXIT`
+:attr:`!Mode.RAW`                :attr:`Mode.RAW`
+:attr:`!Mode.BOOLEAN`            :attr:`Mode.BOOL`
+:attr:`!Mode.TRANSITION_CNT`     :attr:`Mode.EDGE`
+:attr:`!Mode.PERIOD_COUNTER`     :attr:`Mode.PULSE`
+:attr:`!Mode.PCT_FULL_SCALE`     :attr:`Mode.PERCENT`
+:attr:`!Mode.CELSIUS`            :attr:`Mode.CELSIUS`
+:attr:`!Mode.FAHRENHEIT`         :attr:`Mode.FAHRENHEIT`
+:attr:`!Mode.ANGLE_STEPS`        :attr:`Mode.ROTATION`
+:attr:`!Mode.MASK`               Removed
+:attr:`!Mode.MASK_SLOPE`         Removed
+===============================  ============================
 
 
 Text String or Binary String
@@ -131,6 +176,11 @@ From :mod:`nxt.error`:
 - :exc:`!FileNotFound` has been renamed to :exc:`FileNotFoundError`.
 - :exc:`!ModuleNotFound` has been renamed to :exc:`ModuleNotFoundError`.
 
+Sensors:
+
+- :class:`!nxt.sensor.generic.Color20` has been renamed to
+  :class:`nxt.sensor.generic.Color`.
+
 
 Removed
 ^^^^^^^
@@ -185,11 +235,6 @@ From :class:`nxt.brick.Brick`:
   be used with the ``with`` syntax.
 - :meth:`~Brick.boot` now takes a argument to avoid accidental firmware
   erasure.
-
-Sensors:
-
-- :class:`!nxt.sensor.generic.Color20` has been renamed to
-  :class:`nxt.sensor.generic.Color`.
 
 Other:
 

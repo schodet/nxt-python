@@ -15,7 +15,7 @@ from unittest.mock import Mock, call
 import pytest
 
 import nxt.sensor
-from nxt.sensor import PORT_1, PORT_2, Mode, Type
+from nxt.sensor import Mode, Port, Type
 
 
 @pytest.fixture
@@ -34,17 +34,17 @@ class TestGeneric:
     """Test non digital sensors."""
 
     def test_analog(self, mbrick):
-        s = nxt.sensor.analog.BaseAnalogSensor(mbrick, PORT_1)
+        s = nxt.sensor.analog.BaseAnalogSensor(mbrick, Port.S1)
         mbrick.get_input_values.side_effect = [
-            (PORT_1, True, False, Type.SWITCH, Mode.BOOLEAN, 1, 2, 3, 4),
+            (Port.S1, True, False, Type.SWITCH, Mode.BOOL, 1, 2, 3, 4),
         ]
-        s.set_input_mode(Type.SWITCH, Mode.BOOLEAN)
+        s.set_input_mode(Type.SWITCH, Mode.BOOL)
         v = s.get_input_values()
-        assert v.port == PORT_1
+        assert v.port == Port.S1
         assert v.valid is True
         assert v.calibrated is False
         assert v.sensor_type == Type.SWITCH
-        assert v.mode == Mode.BOOLEAN
+        assert v.mode == Mode.BOOL
         assert v.raw_value == 1
         assert v.normalized_value == 2
         assert v.scaled_value == 3
@@ -52,83 +52,90 @@ class TestGeneric:
         assert str(v).startswith("(")
         s.reset_input_scaled_value()
         assert mbrick.mock_calls == [
-            call.set_input_mode(PORT_1, Type.SWITCH, Mode.BOOLEAN),
-            call.get_input_values(PORT_1),
-            call.reset_input_scaled_value(PORT_1),
+            call.set_input_mode(Port.S1, Type.SWITCH, Mode.BOOL),
+            call.get_input_values(Port.S1),
+            call.reset_input_scaled_value(Port.S1),
         ]
 
     def test_touch(self, mbrick):
-        assert nxt.sensor.Touch.get_sample is nxt.sensor.Touch.is_pressed
-        s = nxt.sensor.Touch(mbrick, PORT_1)
+        assert (
+            nxt.sensor.generic.Touch.get_sample is nxt.sensor.generic.Touch.is_pressed
+        )
+        s = nxt.sensor.generic.Touch(mbrick, Port.S1)
         mbrick.get_input_values.side_effect = [
-            (PORT_1, True, False, Type.SWITCH, Mode.BOOLEAN, 1023, 1023, 0, 1023),
-            (PORT_1, True, False, Type.SWITCH, Mode.BOOLEAN, 183, 183, 1, 183),
+            (Port.S1, True, False, Type.SWITCH, Mode.BOOL, 1023, 1023, 0, 1023),
+            (Port.S1, True, False, Type.SWITCH, Mode.BOOL, 183, 183, 1, 183),
         ]
         assert s.is_pressed() is False
         assert s.is_pressed() is True
         assert mbrick.mock_calls == [
-            call.set_input_mode(PORT_1, Type.SWITCH, Mode.BOOLEAN),
-            call.get_input_values(PORT_1),
-            call.get_input_values(PORT_1),
+            call.set_input_mode(Port.S1, Type.SWITCH, Mode.BOOL),
+            call.get_input_values(Port.S1),
+            call.get_input_values(Port.S1),
         ]
 
     def test_light(self, mbrick):
-        assert nxt.sensor.Light.get_sample is nxt.sensor.Light.get_lightness
-        s = nxt.sensor.Light(mbrick, PORT_1)
+        assert (
+            nxt.sensor.generic.Light.get_sample
+            is nxt.sensor.generic.Light.get_lightness
+        )
+        s = nxt.sensor.generic.Light(mbrick, Port.S1)
         mbrick.get_input_values.side_effect = [
-            (PORT_1, True, False, Type.LIGHT_ACTIVE, Mode.RAW, 726, 250, 250, 250),
-            (PORT_1, True, False, Type.LIGHT_INACTIVE, Mode.RAW, 823, 107, 107, 107),
+            (Port.S1, True, False, Type.LIGHT_ACTIVE, Mode.RAW, 726, 250, 250, 250),
+            (Port.S1, True, False, Type.LIGHT_INACTIVE, Mode.RAW, 823, 107, 107, 107),
         ]
         assert s.get_lightness() == 250
         s.set_illuminated(False)
         assert s.get_lightness() == 107
         assert mbrick.mock_calls == [
-            call.set_input_mode(PORT_1, Type.LIGHT_ACTIVE, Mode.RAW),
-            call.get_input_values(PORT_1),
-            call.set_input_mode(PORT_1, Type.LIGHT_INACTIVE, Mode.RAW),
-            call.get_input_values(PORT_1),
+            call.set_input_mode(Port.S1, Type.LIGHT_ACTIVE, Mode.RAW),
+            call.get_input_values(Port.S1),
+            call.set_input_mode(Port.S1, Type.LIGHT_INACTIVE, Mode.RAW),
+            call.get_input_values(Port.S1),
         ]
 
     def test_sound(self, mbrick):
-        assert nxt.sensor.Sound.get_sample is nxt.sensor.Sound.get_loudness
-        s = nxt.sensor.Sound(mbrick, PORT_1)
+        assert (
+            nxt.sensor.generic.Sound.get_sample is nxt.sensor.generic.Sound.get_loudness
+        )
+        s = nxt.sensor.generic.Sound(mbrick, Port.S1)
         mbrick.get_input_values.side_effect = [
-            (PORT_1, True, False, Type.SOUND_DBA, Mode.RAW, 999, 15, 15, 15),
-            (PORT_1, True, False, Type.SOUND_DB, Mode.RAW, 999, 15, 15, 15),
+            (Port.S1, True, False, Type.SOUND_DBA, Mode.RAW, 999, 15, 15, 15),
+            (Port.S1, True, False, Type.SOUND_DB, Mode.RAW, 999, 15, 15, 15),
         ]
         assert s.get_loudness() == 15
         s.set_adjusted(False)
         assert s.get_loudness() == 15
         assert mbrick.mock_calls == [
-            call.set_input_mode(PORT_1, Type.SOUND_DBA, Mode.RAW),
-            call.get_input_values(PORT_1),
-            call.set_input_mode(PORT_1, Type.SOUND_DB, Mode.RAW),
-            call.get_input_values(PORT_1),
+            call.set_input_mode(Port.S1, Type.SOUND_DBA, Mode.RAW),
+            call.get_input_values(Port.S1),
+            call.set_input_mode(Port.S1, Type.SOUND_DB, Mode.RAW),
+            call.get_input_values(Port.S1),
         ]
 
     def test_color(self, mbrick):
-        assert nxt.sensor.Color.get_sample is nxt.sensor.Color.get_color
-        s = nxt.sensor.Color(mbrick, PORT_1)
+        assert nxt.sensor.generic.Color.get_sample is nxt.sensor.generic.Color.get_color
+        s = nxt.sensor.generic.Color(mbrick, Port.S1)
         mbrick.get_input_values.side_effect = [
-            (PORT_1, True, False, Type.COLORFULL, Mode.RAW, 0, 0, 4, 0),
-            (PORT_1, True, False, Type.COLORFULL, Mode.RAW, 0, 0, 4, 0),
+            (Port.S1, True, False, Type.COLOR_FULL, Mode.RAW, 0, 0, 4, 0),
+            (Port.S1, True, False, Type.COLOR_FULL, Mode.RAW, 0, 0, 4, 0),
             # TODO: handle invalid measures on configuration change.
-            (PORT_1, True, False, Type.COLORRED, Mode.RAW, 114, 46, 46, 46),
-            (PORT_1, True, False, Type.COLORRED, Mode.RAW, 114, 46, 46, 46),
+            (Port.S1, True, False, Type.COLOR_RED, Mode.RAW, 114, 46, 46, 46),
+            (Port.S1, True, False, Type.COLOR_RED, Mode.RAW, 114, 46, 46, 46),
         ]
         assert s.get_color() == 4
-        assert s.get_reflected_light(Type.COLORRED) == 46
-        assert s.get_light_color() == Type.COLORRED
+        assert s.get_reflected_light(Type.COLOR_RED) == 46
+        assert s.get_light_color() == Type.COLOR_RED
         assert mbrick.mock_calls == [
             # TODO: set too much input mode.
-            call.set_input_mode(PORT_1, Type.COLORFULL, Mode.RAW),
-            call.set_input_mode(PORT_1, Type.COLORFULL, Mode.RAW),
+            call.set_input_mode(Port.S1, Type.COLOR_FULL, Mode.RAW),
+            call.set_input_mode(Port.S1, Type.COLOR_FULL, Mode.RAW),
             # TODO: get too much input values.
-            call.get_input_values(PORT_1),
-            call.get_input_values(PORT_1),
-            call.set_input_mode(PORT_1, Type.COLORRED, Mode.RAW),
-            call.get_input_values(PORT_1),
-            call.get_input_values(PORT_1),
+            call.get_input_values(Port.S1),
+            call.get_input_values(Port.S1),
+            call.set_input_mode(Port.S1, Type.COLOR_RED, Mode.RAW),
+            call.get_input_values(Port.S1),
+            call.get_input_values(Port.S1),
         ]
 
 
@@ -141,7 +148,7 @@ class TestDigital:
     sensor_type_bin = b"Sonar\0\0\0"
 
     def test_get_sensor_info(self, mbrick):
-        s = nxt.sensor.BaseDigitalSensor(mbrick, PORT_1, False)
+        s = nxt.sensor.digital.BaseDigitalSensor(mbrick, Port.S1, False)
         mbrick.ls_get_status.return_value = 8
         mbrick.ls_read.side_effect = [
             self.version_bin,
@@ -154,20 +161,20 @@ class TestDigital:
         assert info.sensor_type == "Sonar"
         print(info)
         assert mbrick.mock_calls == [
-            call.set_input_mode(PORT_1, Type.LOW_SPEED_9V, Mode.RAW),
-            call.ls_write(PORT_1, bytes((0x02, 0x00)), 8),
-            call.ls_get_status(PORT_1),
-            call.ls_read(PORT_1),
-            call.ls_write(PORT_1, bytes((0x02, 0x08)), 8),
-            call.ls_get_status(PORT_1),
-            call.ls_read(PORT_1),
-            call.ls_write(PORT_1, bytes((0x02, 0x10)), 8),
-            call.ls_get_status(PORT_1),
-            call.ls_read(PORT_1),
+            call.set_input_mode(Port.S1, Type.LOW_SPEED_9V, Mode.RAW),
+            call.ls_write(Port.S1, bytes((0x02, 0x00)), 8),
+            call.ls_get_status(Port.S1),
+            call.ls_read(Port.S1),
+            call.ls_write(Port.S1, bytes((0x02, 0x08)), 8),
+            call.ls_get_status(Port.S1),
+            call.ls_read(Port.S1),
+            call.ls_write(Port.S1, bytes((0x02, 0x10)), 8),
+            call.ls_get_status(Port.S1),
+            call.ls_read(Port.S1),
         ]
 
     def test_check_compatible(self, mbrick, caplog):
-        class DummySensor(nxt.sensor.BaseDigitalSensor):
+        class DummySensor(nxt.sensor.digital.BaseDigitalSensor):
             pass
 
         DummySensor.add_compatible_sensor(None, "NXT-PYTH", "Dummy")
@@ -180,82 +187,82 @@ class TestDigital:
             b"NXT-PYTH",
             b"Plop\0\0\0\0",
         ]
-        DummySensor(mbrick, PORT_1)
+        DummySensor(mbrick, Port.S1)
         assert "WARNING" not in caplog.text
-        DummySensor(mbrick, PORT_2)
+        DummySensor(mbrick, Port.S2)
         assert "WARNING" in caplog.text
 
     def test_write_value(self, mbrick):
-        s = nxt.sensor.BaseDigitalSensor(mbrick, PORT_1, False)
+        s = nxt.sensor.digital.BaseDigitalSensor(mbrick, Port.S1, False)
         s.I2C_ADDRESS = dict(s.I2C_ADDRESS, command=(0x41, "B"))
         s.write_value("command", (0x12,))
         assert mbrick.mock_calls == [
-            call.set_input_mode(PORT_1, Type.LOW_SPEED_9V, Mode.RAW),
-            call.ls_write(PORT_1, bytes((0x02, 0x41, 0x12)), 0),
+            call.set_input_mode(Port.S1, Type.LOW_SPEED_9V, Mode.RAW),
+            call.ls_write(Port.S1, bytes((0x02, 0x41, 0x12)), 0),
         ]
 
     def test_not_ready(self, mbrick):
-        s = nxt.sensor.BaseDigitalSensor(mbrick, PORT_1, False)
+        s = nxt.sensor.digital.BaseDigitalSensor(mbrick, Port.S1, False)
         mbrick.ls_get_status.side_effect = [nxt.error.I2CPendingError("pending"), 8]
         mbrick.ls_read.return_value = self.product_id_bin
         assert s.read_value("product_id") == (self.product_id_bin,)
         assert mbrick.mock_calls == [
-            call.set_input_mode(PORT_1, Type.LOW_SPEED_9V, Mode.RAW),
-            call.ls_write(PORT_1, bytes((0x02, 0x08)), 8),
-            call.ls_get_status(PORT_1),
-            call.ls_get_status(PORT_1),
-            call.ls_read(PORT_1),
+            call.set_input_mode(Port.S1, Type.LOW_SPEED_9V, Mode.RAW),
+            call.ls_write(Port.S1, bytes((0x02, 0x08)), 8),
+            call.ls_get_status(Port.S1),
+            call.ls_get_status(Port.S1),
+            call.ls_read(Port.S1),
         ]
 
     def test_status_timeout(self, mbrick):
-        s = nxt.sensor.BaseDigitalSensor(mbrick, PORT_1, False)
+        s = nxt.sensor.digital.BaseDigitalSensor(mbrick, Port.S1, False)
         mbrick.ls_get_status.side_effect = (
             [nxt.error.I2CPendingError("pending")] * 30 * 3
         )
         with pytest.raises(nxt.error.I2CError):
             s.read_value("product_id")
-        mock_calls = [call.set_input_mode(PORT_1, Type.LOW_SPEED_9V, Mode.RAW)] + (
-            [call.ls_write(PORT_1, bytes((0x02, 0x08)), 8)]
-            + [call.ls_get_status(PORT_1)] * 30
-            + [call.ls_read(PORT_1)]
+        mock_calls = [call.set_input_mode(Port.S1, Type.LOW_SPEED_9V, Mode.RAW)] + (
+            [call.ls_write(Port.S1, bytes((0x02, 0x08)), 8)]
+            + [call.ls_get_status(Port.S1)] * 30
+            + [call.ls_read(Port.S1)]
         ) * 3
         assert mbrick.mock_calls == mock_calls
 
     def test_read_error(self, mbrick):
-        s = nxt.sensor.BaseDigitalSensor(mbrick, PORT_1, False)
+        s = nxt.sensor.digital.BaseDigitalSensor(mbrick, Port.S1, False)
         mbrick.ls_get_status.side_effect = [8, 8]
         mbrick.ls_read.side_effect = [self.product_id_bin[1:], self.product_id_bin]
         assert s.read_value("product_id") == (self.product_id_bin,)
         assert mbrick.mock_calls == [
-            call.set_input_mode(PORT_1, Type.LOW_SPEED_9V, Mode.RAW),
-            call.ls_write(PORT_1, bytes((0x02, 0x08)), 8),
-            call.ls_get_status(PORT_1),
-            call.ls_read(PORT_1),
+            call.set_input_mode(Port.S1, Type.LOW_SPEED_9V, Mode.RAW),
+            call.ls_write(Port.S1, bytes((0x02, 0x08)), 8),
+            call.ls_get_status(Port.S1),
+            call.ls_read(Port.S1),
             # Retry.
-            call.ls_write(PORT_1, bytes((0x02, 0x08)), 8),
-            call.ls_get_status(PORT_1),
-            call.ls_read(PORT_1),
+            call.ls_write(Port.S1, bytes((0x02, 0x08)), 8),
+            call.ls_get_status(Port.S1),
+            call.ls_read(Port.S1),
         ]
 
     def test_read_timeout(self, mbrick):
-        s = nxt.sensor.BaseDigitalSensor(mbrick, PORT_1, False)
+        s = nxt.sensor.digital.BaseDigitalSensor(mbrick, Port.S1, False)
         mbrick.ls_get_status.return_value = 8
         mbrick.ls_read.return_value = self.product_id_bin[1:]
         with pytest.raises(nxt.error.I2CError):
             s.read_value("product_id")
-        mock_calls = [call.set_input_mode(PORT_1, Type.LOW_SPEED_9V, Mode.RAW)] + [
-            call.ls_write(PORT_1, bytes((0x02, 0x08)), 8),
-            call.ls_get_status(PORT_1),
-            call.ls_read(PORT_1),
+        mock_calls = [call.set_input_mode(Port.S1, Type.LOW_SPEED_9V, Mode.RAW)] + [
+            call.ls_write(Port.S1, bytes((0x02, 0x08)), 8),
+            call.ls_get_status(Port.S1),
+            call.ls_read(Port.S1),
         ] * 3
         assert mbrick.mock_calls == mock_calls
 
     def test_find_class(self):
         def test(info, cls):
-            found = nxt.sensor.find_class(nxt.sensor.digital.SensorInfo(*info))
+            found = nxt.sensor.digital.find_class(nxt.sensor.digital.SensorInfo(*info))
             assert found is cls
 
-        test(("V1.0", "LEGO", "Sonar"), nxt.sensor.Ultrasonic)
+        test(("V1.0", "LEGO", "Sonar"), nxt.sensor.generic.Ultrasonic)
         test(("Vx.xx", "mndsnsrs", "CMPS"), nxt.sensor.mindsensors.Compassv2)
         test(("Vx.xx", "mndsnsrs", "DIST"), nxt.sensor.mindsensors.DIST)
         test(("V3.20", "mndsnsrs", "ACCL-NX"), nxt.sensor.mindsensors.ACCL)
@@ -285,19 +292,19 @@ class TestDigital:
             self.product_id_bin,
             self.sensor_type_bin,
         ]
-        assert mbrick.get_sensor(PORT_1).__class__ is nxt.sensor.Ultrasonic
+        assert mbrick.get_sensor(Port.S1).__class__ is nxt.sensor.generic.Ultrasonic
         assert mbrick.mock_calls == [
-            call.set_input_mode(PORT_1, Type.LOW_SPEED_9V, Mode.RAW),
-            call.ls_write(PORT_1, bytes((0x02, 0x00)), 8),
-            call.ls_get_status(PORT_1),
-            call.ls_read(PORT_1),
-            call.ls_write(PORT_1, bytes((0x02, 0x08)), 8),
-            call.ls_get_status(PORT_1),
-            call.ls_read(PORT_1),
-            call.ls_write(PORT_1, bytes((0x02, 0x10)), 8),
-            call.ls_get_status(PORT_1),
-            call.ls_read(PORT_1),
-            call.set_input_mode(PORT_1, Type.LOW_SPEED_9V, Mode.RAW),
+            call.set_input_mode(Port.S1, Type.LOW_SPEED_9V, Mode.RAW),
+            call.ls_write(Port.S1, bytes((0x02, 0x00)), 8),
+            call.ls_get_status(Port.S1),
+            call.ls_read(Port.S1),
+            call.ls_write(Port.S1, bytes((0x02, 0x08)), 8),
+            call.ls_get_status(Port.S1),
+            call.ls_read(Port.S1),
+            call.ls_write(Port.S1, bytes((0x02, 0x10)), 8),
+            call.ls_get_status(Port.S1),
+            call.ls_read(Port.S1),
+            call.set_input_mode(Port.S1, Type.LOW_SPEED_9V, Mode.RAW),
         ]
 
 
@@ -305,8 +312,11 @@ class TestGenericDigital:
     """Test LEGO digital sensors."""
 
     def test_ultrasonic(self, mbrick, mdigital):
-        assert nxt.sensor.Ultrasonic.get_sample is nxt.sensor.Ultrasonic.get_distance
-        s = nxt.sensor.Ultrasonic(mbrick, PORT_1, check_compatible=False)
+        assert (
+            nxt.sensor.generic.Ultrasonic.get_sample
+            is nxt.sensor.generic.Ultrasonic.get_distance
+        )
+        s = nxt.sensor.generic.Ultrasonic(mbrick, Port.S1, check_compatible=False)
         mdigital.read_value.side_effect = [
             (42,),
             (b"10E-2m\0",),
@@ -332,8 +342,11 @@ class TestGenericDigital:
         ]
 
     def test_temperature(self, mbrick, mdigital):
-        assert nxt.sensor.Temperature.get_sample is nxt.sensor.Temperature.get_deg_c
-        s = nxt.sensor.Temperature(mbrick, PORT_1)
+        assert (
+            nxt.sensor.generic.Temperature.get_sample
+            is nxt.sensor.generic.Temperature.get_deg_c
+        )
+        s = nxt.sensor.generic.Temperature(mbrick, Port.S1)
         mdigital.read_value.return_value = (1600 * 16,)
         assert s.get_deg_c() == 100
         assert s.get_deg_f() == 212
@@ -347,12 +360,12 @@ class TestMindsensors:
     """Test Mindsensors sensors."""
 
     def test_sumoeyes(self, mbrick):
-        s = nxt.sensor.mindsensors.SumoEyes(mbrick, PORT_1)
+        s = nxt.sensor.mindsensors.SumoEyes(mbrick, Port.S1)
         mbrick.get_input_values.side_effect = [
-            (PORT_1, True, False, Type.LIGHT_ACTIVE, Mode.RAW, 0, 0, 0, 0),
-            (PORT_1, True, False, Type.LIGHT_ACTIVE, Mode.RAW, 0, 350, 0, 0),
-            (PORT_1, True, False, Type.LIGHT_ACTIVE, Mode.RAW, 0, 650, 0, 0),
-            (PORT_1, True, False, Type.LIGHT_ACTIVE, Mode.RAW, 0, 800, 0, 0),
+            (Port.S1, True, False, Type.LIGHT_ACTIVE, Mode.RAW, 0, 0, 0, 0),
+            (Port.S1, True, False, Type.LIGHT_ACTIVE, Mode.RAW, 0, 350, 0, 0),
+            (Port.S1, True, False, Type.LIGHT_ACTIVE, Mode.RAW, 0, 650, 0, 0),
+            (Port.S1, True, False, Type.LIGHT_ACTIVE, Mode.RAW, 0, 800, 0, 0),
         ]
         m = s.get_sample()
         assert str(m) == "(left: False, right: False)"
@@ -365,12 +378,12 @@ class TestMindsensors:
         assert (m.left, m.right) == (True, True)
         s.set_long_range(True)
         assert mbrick.mock_calls == [
-            call.set_input_mode(PORT_1, Type.LIGHT_ACTIVE, Mode.RAW),
-            call.get_input_values(PORT_1),
-            call.get_input_values(PORT_1),
-            call.get_input_values(PORT_1),
-            call.get_input_values(PORT_1),
-            call.set_input_mode(PORT_1, Type.LIGHT_INACTIVE, Mode.RAW),
+            call.set_input_mode(Port.S1, Type.LIGHT_ACTIVE, Mode.RAW),
+            call.get_input_values(Port.S1),
+            call.get_input_values(Port.S1),
+            call.get_input_values(Port.S1),
+            call.get_input_values(Port.S1),
+            call.set_input_mode(Port.S1, Type.LIGHT_INACTIVE, Mode.RAW),
         ]
 
     def test_compassv2(self, mbrick, mdigital):
@@ -378,7 +391,7 @@ class TestMindsensors:
             nxt.sensor.mindsensors.Compassv2.get_sample
             is nxt.sensor.mindsensors.Compassv2.get_heading
         )
-        s = nxt.sensor.mindsensors.Compassv2(mbrick, PORT_1, False)
+        s = nxt.sensor.mindsensors.Compassv2(mbrick, Port.S1, False)
         mdigital.read_value.return_value = (300,)
         # TODO: should return degrees (divide by 10).
         assert s.get_heading() == 300
@@ -395,7 +408,7 @@ class TestMindsensors:
             nxt.sensor.mindsensors.DIST.get_sample
             is nxt.sensor.mindsensors.DIST.get_distance
         )
-        s = nxt.sensor.mindsensors.DIST(mbrick, PORT_1, False)
+        s = nxt.sensor.mindsensors.DIST(mbrick, Port.S1, False)
         # TODO: get rid of ord, adapt format.
         mdigital.read_value.side_effect = [(100,), (ord("2"),), (42,), (43,), (44,)]
         assert s.get_distance() == 100
@@ -414,7 +427,7 @@ class TestMindsensors:
         ]
 
     def test_rtc(self, mbrick, mdigital):
-        s = nxt.sensor.mindsensors.RTC(mbrick, PORT_1)
+        s = nxt.sensor.mindsensors.RTC(mbrick, Port.S1)
         # TODO: this one is completely broken:
         #  - Return str instead of int.
         #  - Bad handling of hour format.
@@ -429,7 +442,7 @@ class TestMindsensors:
             nxt.sensor.mindsensors.ACCL.get_sample
             is nxt.sensor.mindsensors.ACCL.get_all_accel
         )
-        s = nxt.sensor.mindsensors.ACCL(mbrick, PORT_1, False)
+        s = nxt.sensor.mindsensors.ACCL(mbrick, Port.S1, False)
         # TODO: get rid of ord, adapt format.
         mdigital.read_value.side_effect = [
             (ord("2"),),
@@ -465,7 +478,7 @@ class TestMindsensors:
 
     def test_mtrmux(self, mbrick, mdigital):
         assert not hasattr(nxt.sensor.mindsensors.MTRMUX, "get_sample")
-        s = nxt.sensor.mindsensors.MTRMUX(mbrick, PORT_1, False)
+        s = nxt.sensor.mindsensors.MTRMUX(mbrick, Port.S1, False)
         mdigital.read_value.side_effect = [(1,), (2,)]
         s.command(s.Commands.FLOAT)
         s.set_direction(1, 1)
@@ -485,7 +498,7 @@ class TestMindsensors:
             nxt.sensor.mindsensors.LineLeader.get_sample
             is nxt.sensor.mindsensors.LineLeader.get_reading_all
         )
-        s = nxt.sensor.mindsensors.LineLeader(mbrick, PORT_1, False)
+        s = nxt.sensor.mindsensors.LineLeader(mbrick, Port.S1, False)
         mdigital.read_value.side_effect = [
             (-10,),
             (50,),
@@ -523,7 +536,7 @@ class TestMindsensors:
 
     def test_servo(self, mbrick, mdigital):
         assert not hasattr(nxt.sensor.mindsensors.Servo, "get_sample")
-        s = nxt.sensor.mindsensors.Servo(mbrick, PORT_1, False)
+        s = nxt.sensor.mindsensors.Servo(mbrick, Port.S1, False)
         # TODO: command can not work, can not fit two bytes in one byte.
         mdigital.read_value.side_effect = [(1,), (42,), (43,)]
         assert s.get_bat_level() == 1
@@ -543,7 +556,7 @@ class TestMindsensors:
 
     def test_mmx(self, mbrick, mdigital):
         assert not hasattr(nxt.sensor.mindsensors.MMX, "get_sample")
-        s = nxt.sensor.mindsensors.MMX(mbrick, PORT_1, False)
+        s = nxt.sensor.mindsensors.MMX(mbrick, Port.S1, False)
         mdigital.read_value.side_effect = [
             (1,),
             (0xAA,),
@@ -589,7 +602,7 @@ class TestMindsensors:
 
     def test_hid(self, mbrick, mdigital):
         assert not hasattr(nxt.sensor.mindsensors.HID, "get_sample")
-        s = nxt.sensor.mindsensors.HID(mbrick, PORT_1, False)
+        s = nxt.sensor.mindsensors.HID(mbrick, Port.S1, False)
         s.command(s.Commands.ASCII_MODE)
         s.set_modifier(42)
         s.write_data("a")
@@ -600,7 +613,7 @@ class TestMindsensors:
         ]
 
     def test_ps2(self, mbrick, mdigital):
-        s = nxt.sensor.mindsensors.PS2(mbrick, PORT_1, False)
+        s = nxt.sensor.mindsensors.PS2(mbrick, Port.S1, False)
         mdigital.read_value.side_effect = [
             (42,),
             (0x55,),
@@ -653,7 +666,7 @@ class TestHitechnic:
             nxt.sensor.hitechnic.Compass.get_sample
             is nxt.sensor.hitechnic.Compass.get_heading
         )
-        s = nxt.sensor.hitechnic.Compass(mbrick, PORT_1, False)
+        s = nxt.sensor.hitechnic.Compass(mbrick, Port.S1, False)
         mdigital.read_value.return_value = (10,)
         assert s.get_heading() == 30
         assert s.get_relative_heading(0) == 30
@@ -680,7 +693,7 @@ class TestHitechnic:
             nxt.sensor.hitechnic.Accelerometer.get_sample
             is nxt.sensor.hitechnic.Accelerometer.get_acceleration
         )
-        s = nxt.sensor.hitechnic.Accelerometer(mbrick, PORT_1, False)
+        s = nxt.sensor.hitechnic.Accelerometer(mbrick, Port.S1, False)
         mdigital.read_value.return_value = (0x12, 0x23, -0x32, 0x3, 0x0, 0x2)
         v = s.get_acceleration()
         assert (v.x, v.y, v.z) == (75, 140, -198)
@@ -693,7 +706,7 @@ class TestHitechnic:
             nxt.sensor.hitechnic.IRReceiver.get_sample
             is nxt.sensor.hitechnic.IRReceiver.get_speeds
         )
-        s = nxt.sensor.hitechnic.IRReceiver(mbrick, PORT_1, False)
+        s = nxt.sensor.hitechnic.IRReceiver(mbrick, Port.S1, False)
         mdigital.read_value.return_value = (0, -16, 30, -44, 58, -72, 100, -128)
         v = s.get_speeds()
         assert (v.m1A, v.m1B) == (0, -16)
@@ -714,7 +727,7 @@ class TestHitechnic:
             nxt.sensor.hitechnic.IRSeekerv2.get_sample
             is nxt.sensor.hitechnic.IRSeekerv2.get_ac_values
         )
-        s = nxt.sensor.hitechnic.IRSeekerv2(mbrick, PORT_1, False)
+        s = nxt.sensor.hitechnic.IRSeekerv2(mbrick, Port.S1, False)
         mdigital.read_value.side_effect = [
             (5, 42, 43, 44, 45, 46, 44),
             (5, 42, 43, 44, 45, 46),
@@ -754,12 +767,12 @@ class TestHitechnic:
             nxt.sensor.hitechnic.EOPD.get_sample
             is nxt.sensor.hitechnic.EOPD.get_scaled_value
         )
-        s = nxt.sensor.hitechnic.EOPD(mbrick, PORT_1)
+        s = nxt.sensor.hitechnic.EOPD(mbrick, Port.S1)
         mbrick.get_input_values.side_effect = [
-            (PORT_1, True, False, Type.LIGHT_INACTIVE, Mode.RAW, 523, 0, 0, 0),
-            (PORT_1, True, False, Type.LIGHT_INACTIVE, Mode.RAW, 398, 0, 0, 0),
-            (PORT_1, True, False, Type.LIGHT_INACTIVE, Mode.RAW, 398, 0, 0, 0),
-            (PORT_1, True, False, Type.LIGHT_INACTIVE, Mode.RAW, 1023, 0, 0, 0),
+            (Port.S1, True, False, Type.LIGHT_INACTIVE, Mode.RAW, 523, 0, 0, 0),
+            (Port.S1, True, False, Type.LIGHT_INACTIVE, Mode.RAW, 398, 0, 0, 0),
+            (Port.S1, True, False, Type.LIGHT_INACTIVE, Mode.RAW, 398, 0, 0, 0),
+            (Port.S1, True, False, Type.LIGHT_INACTIVE, Mode.RAW, 1023, 0, 0, 0),
         ]
         # TODO: choose a mode in constructor, or raise error if no mode chosen.
         s.set_range_long()
@@ -769,12 +782,12 @@ class TestHitechnic:
         assert s.get_scaled_value() == 10
         assert s.get_scaled_value() == 250
         assert mbrick.mock_calls == [
-            call.set_input_mode(PORT_1, Type.LIGHT_ACTIVE, Mode.RAW),
-            call.set_input_mode(PORT_1, Type.LIGHT_INACTIVE, Mode.RAW),
-            call.get_input_values(PORT_1),
-            call.get_input_values(PORT_1),
-            call.get_input_values(PORT_1),
-            call.get_input_values(PORT_1),
+            call.set_input_mode(Port.S1, Type.LIGHT_ACTIVE, Mode.RAW),
+            call.set_input_mode(Port.S1, Type.LIGHT_INACTIVE, Mode.RAW),
+            call.get_input_values(Port.S1),
+            call.get_input_values(Port.S1),
+            call.get_input_values(Port.S1),
+            call.get_input_values(Port.S1),
         ]
 
     def test_colorv2(self, mbrick, mdigital):
@@ -782,7 +795,7 @@ class TestHitechnic:
             nxt.sensor.hitechnic.Colorv2.get_sample
             is nxt.sensor.hitechnic.Colorv2.get_active_color
         )
-        s = nxt.sensor.hitechnic.Colorv2(mbrick, PORT_1, False)
+        s = nxt.sensor.hitechnic.Colorv2(mbrick, Port.S1, False)
         mdigital.read_value.side_effect = [
             (8, 100, 50, 0, 75, 42, 66, 33, 0),
             (100, 50, 0, 75),
@@ -817,12 +830,12 @@ class TestHitechnic:
             nxt.sensor.hitechnic.Gyro.get_sample
             is nxt.sensor.hitechnic.Gyro.get_rotation_speed
         )
-        s = nxt.sensor.hitechnic.Gyro(mbrick, PORT_1)
+        s = nxt.sensor.hitechnic.Gyro(mbrick, Port.S1)
         mbrick.get_input_values.side_effect = [
-            (PORT_1, True, False, Type.ANGLE, Mode.RAW, 0, 0, 42, 0),
-            (PORT_1, True, False, Type.ANGLE, Mode.RAW, 0, 0, 42, 0),
-            (PORT_1, True, False, Type.ANGLE, Mode.RAW, 0, 0, 54, 0),
-            (PORT_1, True, False, Type.ANGLE, Mode.RAW, 0, 0, 54, 0),
+            (Port.S1, True, False, Type.ANGLE, Mode.RAW, 0, 0, 42, 0),
+            (Port.S1, True, False, Type.ANGLE, Mode.RAW, 0, 0, 42, 0),
+            (Port.S1, True, False, Type.ANGLE, Mode.RAW, 0, 0, 54, 0),
+            (Port.S1, True, False, Type.ANGLE, Mode.RAW, 0, 0, 54, 0),
         ]
         assert s.get_rotation_speed() == 42
         s.calibrate()
@@ -830,16 +843,16 @@ class TestHitechnic:
         s.set_zero(0)
         assert s.get_rotation_speed() == 54
         assert mbrick.mock_calls == [
-            call.set_input_mode(PORT_1, Type.ANGLE, Mode.RAW),
-            call.get_input_values(PORT_1),
-            call.get_input_values(PORT_1),
-            call.get_input_values(PORT_1),
-            call.get_input_values(PORT_1),
+            call.set_input_mode(Port.S1, Type.ANGLE, Mode.RAW),
+            call.get_input_values(Port.S1),
+            call.get_input_values(Port.S1),
+            call.get_input_values(Port.S1),
+            call.get_input_values(Port.S1),
         ]
 
     def test_prototype(self, mbrick, mdigital):
         assert not hasattr(nxt.sensor.hitechnic.Prototype, "get_sample")
-        s = nxt.sensor.hitechnic.Prototype(mbrick, PORT_1, False)
+        s = nxt.sensor.hitechnic.Prototype(mbrick, Port.S1, False)
         mdigital.read_value.side_effect = [
             (42, 43, 44, 45, 46),
             (0x2A,),
@@ -872,7 +885,7 @@ class TestHitechnic:
 
     def test_servocon(self, mbrick, mdigital):
         assert not hasattr(nxt.sensor.hitechnic.ServoCon, "get_sample")
-        s = nxt.sensor.hitechnic.ServoCon(mbrick, PORT_1, False)
+        s = nxt.sensor.hitechnic.ServoCon(mbrick, Port.S1, False)
         mdigital.read_value.side_effect = [
             (1,),
             (43,),
@@ -892,7 +905,7 @@ class TestHitechnic:
 
     def test_motorcon(self, mbrick, mdigital):
         assert not hasattr(nxt.sensor.hitechnic.MotorCon, "get_sample")
-        s = nxt.sensor.hitechnic.MotorCon(mbrick, PORT_1, False)
+        s = nxt.sensor.hitechnic.MotorCon(mbrick, Port.S1, False)
         mdigital.read_value.side_effect = [
             (123456,),
             (654321,),
@@ -935,7 +948,7 @@ class TestHitechnic:
             nxt.sensor.hitechnic.Angle.get_sample
             is nxt.sensor.hitechnic.Angle.get_angle
         )
-        s = nxt.sensor.hitechnic.Angle(mbrick, PORT_1, False)
+        s = nxt.sensor.hitechnic.Angle(mbrick, Port.S1, False)
         mdigital.read_value.side_effect = [
             (21, 1),
             (123456789,),

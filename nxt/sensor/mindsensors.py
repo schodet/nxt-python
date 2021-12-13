@@ -15,7 +15,7 @@
 
 import logging
 
-from .common import *
+from nxt.sensor import Type, Mode
 from .digital import BaseDigitalSensor, SensorInfo
 from .analog import BaseAnalogSensor
 

@@ -204,6 +204,9 @@ class Telegram:
     def parse_filename(self):
         return self.parse_string(20)
 
+    def parse_bool(self):
+        return unpack("<?", self.pkt.read(1))[0]
+
     def parse_s8(self):
         return unpack("<b", self.pkt.read(1))[0]
 

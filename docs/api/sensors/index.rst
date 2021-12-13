@@ -6,10 +6,6 @@ Work in progress...
 .. automodule:: nxt.sensor
    :members:
 
-.. automodule:: nxt.sensor.common
-   :members:
-   :undoc-members:
-
 .. automodule:: nxt.sensor.analog
    :members:
    :undoc-members:

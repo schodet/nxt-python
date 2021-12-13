@@ -18,8 +18,7 @@ import struct
 import time
 
 from nxt.error import I2CError, I2CPendingError, DirectProtocolError
-
-from .common import *
+import nxt.sensor
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +44,7 @@ class SensorInfo:
         outstr += (self.clarifybinary(str(self.sensor_type), 'Type'))
         return outstr
 
-class BaseDigitalSensor(Sensor):
+class BaseDigitalSensor(nxt.sensor.Sensor):
     """Object for digital sensors. I2C_ADDRESS is the dictionary storing name
     to i2c address mappings. It should be updated in every subclass. When
     subclassing this class, make sure to call add_compatible_sensor to add
@@ -66,7 +65,7 @@ class BaseDigitalSensor(Sensor):
         a warning.
         """
         super(BaseDigitalSensor, self).__init__(brick, port)
-        self.set_input_mode(Type.LOW_SPEED_9V, Mode.RAW)
+        self.set_input_mode(nxt.sensor.Type.LOW_SPEED_9V, nxt.sensor.Mode.RAW)
         self.last_poll = time.time()
         self.poll_delay = 0.01
         time.sleep(0.1)  # Give I2C time to initialize
@@ -77,9 +76,9 @@ class BaseDigitalSensor(Sensor):
             sensor = self.get_sensor_info()
             if not sensor in self.compatible_sensors:
                 logger.warning(
-                    "wrong sensor class chosen for sensor %s on port %d",
+                    "wrong sensor class chosen for sensor %s on port %s",
                     sensor.product_id,
-                    port + 1,
+                    port,
                 )
                 logger.warning(
                     "   You may be using the wrong type of sensor or may have "
@@ -94,7 +93,7 @@ class BaseDigitalSensor(Sensor):
     def _ls_get_status(self, size):
         for n in range(30): #https://code.google.com/p/nxt-python/issues/detail?id=35
             try:
-                b = self.brick.ls_get_status(self.port)
+                b = self._brick.ls_get_status(self._port)
                 if b >= size:
                     return b
             except I2CPendingError:
@@ -112,7 +111,7 @@ class BaseDigitalSensor(Sensor):
             diff = now - self.last_poll
             time.sleep(self.poll_delay - diff)
         self.last_poll = time.time()
-        self.brick.ls_write(self.port, msg, 0)
+        self._brick.ls_write(self._port, msg, 0)
 
     def _i2c_query(self, address, format):
         """Reads an i2c value from given address, and returns a value unpacked
@@ -126,12 +125,12 @@ class BaseDigitalSensor(Sensor):
             diff = now - self.last_poll
             time.sleep(self.poll_delay - diff)
         self.last_poll = time.time()
-        self.brick.ls_write(self.port, msg, size)
+        self._brick.ls_write(self._port, msg, size)
         try:
             self._ls_get_status(size)
         finally:
             #we should clear the buffer no matter what happens
-            data = self.brick.ls_read(self.port)
+            data = self._brick.ls_read(self._port)
         if len(data) < size:
             raise I2CError('Read failure: Not enough bytes')
         data = struct.unpack(format, data[-size:])

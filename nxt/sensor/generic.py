@@ -13,7 +13,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from .common import *
+from nxt.sensor import Type, Mode
 from .digital import BaseDigitalSensor
 from .analog import BaseAnalogSensor
 
@@ -23,7 +23,7 @@ class Touch(BaseAnalogSensor):
 
     def __init__(self, brick, port):
         super(Touch, self).__init__(brick, port)
-        self.set_input_mode(Type.SWITCH, Mode.BOOLEAN)
+        self.set_input_mode(Type.SWITCH, Mode.BOOL)
 
     def is_pressed(self):
         return bool(self.get_input_values().scaled_value)
@@ -136,14 +136,14 @@ Ultrasonic.add_compatible_sensor(None, 'LEGO', 'Sonar') #Tested with version 'V1
 class Color(BaseAnalogSensor):
     def __init__(self, brick, port):
         super(Color, self).__init__(brick, port)
-        self.set_light_color(Type.COLORFULL)
+        self.set_light_color(Type.COLOR_FULL)
 
     def set_light_color(self, color):
-        """color should be one of the COLOR* Type namespace values, e.g. Type.COLORBLUE"""
+        """color should be one of the COLOR_* Type namespace values, e.g. Type.COLOR_BLUE"""
         self.set_input_mode(color, Mode.RAW)
 
     def get_light_color(self):
-        """Returns one of the COLOR* Type namespace values, e.g. Type.COLORRED"""
+        """Returns one of the COLOR_* Type namespace values, e.g. Type.COLOR_RED"""
         return self.get_input_values().sensor_type
 
     def get_reflected_light(self, color):
@@ -151,7 +151,7 @@ class Color(BaseAnalogSensor):
         return self.get_input_values().scaled_value
 
     def get_color(self):
-        self.get_reflected_light(Type.COLORFULL)
+        self.get_reflected_light(Type.COLOR_FULL)
         return self.get_input_values().scaled_value
 
     get_sample = get_color
