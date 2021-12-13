@@ -257,7 +257,7 @@ class ApplicationWindow(Gtk.ApplicationWindow):
             print("Protocol version: %s.%s" % prot_version)
             if prot_version == PROTOCOL_VER:
                 brick_name, brick_hostid, brick_signal_strengths, brick_user_flash = self.brick.get_device_info()
-                connection_type = str(self.brick.sock)
+                connection_type = str(self.brick._sock)
                 self.brick_info_str = "Connected via %s to %s [%s]\tFirmware: v%s.%s\tFree space: %s" % (
                     connection_type, brick_name, brick_hostid, fw_version[0], fw_version[1], brick_user_flash)
             else:

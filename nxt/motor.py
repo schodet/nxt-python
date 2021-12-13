@@ -277,7 +277,7 @@ class Motor(BaseMotor):
         self._read_state()
         self.sync = 0
         self.turn_ratio = 0
-        self.method = brick.sock.type
+        self.method = brick._sock.type
 
     def _set_state(self, state):
         logger.debug("setting brick output state: %s", state)

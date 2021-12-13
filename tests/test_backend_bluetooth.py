@@ -92,7 +92,7 @@ def test_bluetooth(mbluetooth, mbluetooth_import, msock):
     brick = bricks[0]
     assert mbluetooth.BluetoothSocket.called
     assert msock.connect.called
-    sock = brick.sock
+    sock = brick._sock
     # str.
     assert str(sock) == "Bluetooth (00:01:02:03:04:05)"
     # Send.
@@ -127,7 +127,7 @@ def test_bluetooth_by_name(mbluetooth, mbluetooth_import, msock):
     brick = bricks[0]
     assert mbluetooth.BluetoothSocket.called
     assert msock.connect.called
-    sock = brick.sock
+    sock = brick._sock
     # str.
     assert str(sock) == "Bluetooth (00:01:02:03:04:07)"
     # Close.
@@ -144,7 +144,7 @@ def test_bluetooth_by_host(mbluetooth, mbluetooth_import, msock):
     assert not mbluetooth.discover_devices.called
     assert mbluetooth.BluetoothSocket.called
     assert msock.connect.called
-    sock = brick.sock
+    sock = brick._sock
     # str.
     assert str(sock) == "Bluetooth (00:01:02:03:04:05)"
     # Close.
@@ -161,7 +161,7 @@ def test_bluetooth_by_host_and_name(mbluetooth, mbluetooth_import, msock):
     assert not mbluetooth.discover_devices.called
     assert mbluetooth.BluetoothSocket.called
     assert msock.connect.called
-    sock = brick.sock
+    sock = brick._sock
     # str.
     assert str(sock) == "Bluetooth (00:01:02:03:04:05)"
     # Close.
@@ -204,7 +204,7 @@ def test_bluetooth_real():
     bricks = list(backend.find())
     assert len(bricks) > 0, "no NXT found"
     brick = bricks[0]
-    sock = brick.sock
+    sock = brick._sock
     # str.
     assert str(sock).startswith("Bluetooth (")
     # Send.

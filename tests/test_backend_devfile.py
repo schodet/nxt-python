@@ -63,7 +63,7 @@ def test_devfile(mopen, mtty, mdev):
     brick = bricks[0]
     assert mopen.called
     assert mtty.setraw.called
-    sock = brick.sock
+    sock = brick._sock
     # str.
     assert str(sock).startswith("DevFile (/dev")
     # Send.
@@ -129,7 +129,7 @@ def test_devfile_real():
     bricks = list(backend.find())
     assert len(bricks) > 0, "no NXT found"
     brick = bricks[0]
-    sock = brick.sock
+    sock = brick._sock
     # str.
     assert str(sock).startswith("DevFile (/dev")
     # Send.

@@ -45,8 +45,8 @@ class TestGeneric:
         assert v.calibrated is False
         assert v.sensor_type == Type.SWITCH
         assert v.mode == Mode.BOOLEAN
-        assert v.raw_ad_value == 1
-        assert v.normalized_ad_value == 2
+        assert v.raw_value == 1
+        assert v.normalized_value == 2
         assert v.scaled_value == 3
         assert v.calibrated_value == 4
         assert str(v).startswith("(")

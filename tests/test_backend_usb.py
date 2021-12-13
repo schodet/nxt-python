@@ -54,7 +54,7 @@ def test_usb(musb, mdev):
     assert mdev.reset.called
     assert mdev.set_configuration.called
     assert mdev.get_active_configuration.called
-    sock = brick.sock
+    sock = brick._sock
     # str.
     assert str(sock).startswith("USB (Bus")
     # Send.
@@ -80,7 +80,7 @@ def test_usb_real():
     bricks = list(backend.find())
     assert len(bricks) > 0, "no NXT found"
     brick = bricks[0]
-    sock = brick.sock
+    sock = brick._sock
     # str.
     assert str(sock).startswith("USB (Bus")
     # Send.

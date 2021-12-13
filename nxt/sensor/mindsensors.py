@@ -33,7 +33,7 @@ class SumoEyes(BaseAnalogSensor):
         """
         def __init__(self, raw_reading):
             self.raw = raw_reading
-            val = raw_reading.normalized_ad_value # FIXME: make it rely on raw_ad_value
+            val = raw_reading.normalized_value # FIXME: make it rely on raw_value
             right = 600 < val < 700
             both = 700 <= val < 900
             left = 300 < val < 400

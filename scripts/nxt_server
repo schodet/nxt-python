@@ -34,13 +34,13 @@ def serve(brick, channel, details):
                 break
             code = data[0]
             if code == 0x00 or code == 0x01 or code == 0x02:
-                brick.sock.send(data)
-                reply = brick.sock.recv()
+                brick._sock.send(data)
+                reply = brick._sock.recv()
                 channel.send(reply)
             elif code == 0x80 or code == 0x81:
-                brick.sock.send(data)
+                brick._sock.send(data)
             elif code == 0x98:
-                channel.send(brick.sock.type.encode("ascii"))
+                channel.send(brick._sock.type.encode("ascii"))
             elif code == 0x99:
                 run = False
             else:

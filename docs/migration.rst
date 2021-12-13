@@ -156,6 +156,8 @@ From :class:`nxt.brick.Brick`:
 - :meth:`~Brick.close` now closes the connection to the NXT brick. Also
   :class:`Brick` now implements the context manager interface so that it can
   be used with the ``with`` syntax.
+- :meth:`~Brick.boot` now takes a argument to avoid accidental firmware
+  erasure.
 
 Sensors:
 

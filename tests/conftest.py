@@ -81,8 +81,8 @@ def make_brick_mock():
     def get_sensor(*args, **kwargs):
         return nxt.brick.Brick.get_sensor(b, *args, **kwargs)
 
-    b.sock.bsize = 60
-    b.sock.type = "usb"
+    b._sock.bsize = 60
+    b._sock.type = "usb"
     b.find_files = find_files
     b.find_modules = find_modules
     b.open_file = open_file

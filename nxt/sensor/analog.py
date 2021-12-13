@@ -21,12 +21,12 @@ class RawReading: # can be converted to the old version
     """
     def __init__(self, values):
         (self.port, self.valid, self.calibrated, self.sensor_type, self.mode,
-            self.raw_ad_value, self.normalized_ad_value, self.scaled_value,
+            self.raw_value, self.normalized_value, self.scaled_value,
             self.calibrated_value) = values
     
     def __repr__(self):
         return str((self.port, self.valid, self.calibrated, self.sensor_type, self.mode,
-            self.raw_ad_value, self.normalized_ad_value, self.scaled_value,
+            self.raw_value, self.normalized_value, self.scaled_value,
             self.calibrated_value))
             
 

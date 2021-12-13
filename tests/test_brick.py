@@ -58,13 +58,13 @@ def test_with(sock, brick):
 def test_reply_error(sock, brick):
     sock.recv.return_value = bytes.fromhex("019700") + b"No\0"
     with pytest.raises(nxt.error.ProtocolError):
-        brick.boot()
+        brick.boot(sure=True)
     sock.recv.return_value = bytes.fromhex("029900") + b"No\0"
     with pytest.raises(nxt.error.ProtocolError):
-        brick.boot()
+        brick.boot(sure=True)
     sock.recv.return_value = bytes.fromhex("029799") + b"No\0"
     with pytest.raises(nxt.error.ProtocolError):
-        brick.boot()
+        brick.boot(sure=True)
 
 
 class TestSystem:
@@ -119,30 +119,30 @@ class TestSystem:
         sock.recv.return_value = (
             bytes.fromhex("028500") + b"test.rxe\0\0\0\0\0\0\0\0\0\0\0\0"
         )
-        fname = brick.file_delete("test.rxe")
+        name = brick.file_delete("test.rxe")
         assert sock.mock_calls == sent_recved(
             bytes.fromhex("0185") + b"test.rxe\0\0\0\0\0\0\0\0\0\0\0\0"
         )
-        assert fname == "test.rxe"
+        assert name == "test.rxe"
 
     def test_file_find_first(self, sock, brick):
         sock.recv.return_value = (
             bytes.fromhex("028600 42") + test_rxe_bin + bytes.fromhex("01020304")
         )
-        handle, fname, size = brick.file_find_first("*.*")
+        handle, name, size = brick.file_find_first("*.*")
         assert sock.mock_calls == sent_recved(bytes.fromhex("0186") + star_star_bin)
         assert handle == 0x42
-        assert fname == "test.rxe"
+        assert name == "test.rxe"
         assert size == 0x04030201
 
     def test_file_find_next(self, sock, brick):
         sock.recv.return_value = (
             bytes.fromhex("028700 42") + test_rxe_bin + bytes.fromhex("01020304")
         )
-        handle, fname, size = brick.file_find_next(0x42)
+        handle, name, size = brick.file_find_next(0x42)
         assert sock.mock_calls == sent_recved(bytes.fromhex("0187 42"))
         assert handle == 0x42
-        assert fname == "test.rxe"
+        assert name == "test.rxe"
         assert size == 0x04030201
 
     def test_get_firmware_version(self, sock, brick):
@@ -181,10 +181,10 @@ class TestSystem:
             + loader_bin
             + bytes.fromhex("01000900 00000000 0800")
         )
-        handle, mname, mod_id, mod_size, mod_iomap_size = brick.module_find_first("*.*")
+        handle, name, mod_id, mod_size, mod_iomap_size = brick.module_find_first("*.*")
         assert sock.mock_calls == sent_recved(bytes.fromhex("0190") + star_star_bin)
         assert handle == 0x42
-        assert mname == "Loader"
+        assert name == "Loader"
         assert mod_id == 0x00090001
         assert mod_size == 0
         assert mod_iomap_size == 8
@@ -195,10 +195,10 @@ class TestSystem:
             + loader_bin
             + bytes.fromhex("01000900 00000000 0800")
         )
-        handle, mname, mod_id, mod_size, mod_iomap_size = brick.module_find_next(0x42)
+        handle, name, mod_id, mod_size, mod_iomap_size = brick.module_find_next(0x42)
         assert sock.mock_calls == sent_recved(bytes.fromhex("0191 42"))
         assert handle == 0x42
-        assert mname == "Loader"
+        assert name == "Loader"
         assert mod_id == 0x00090001
         assert mod_size == 0
         assert mod_iomap_size == 8
@@ -213,10 +213,10 @@ class TestSystem:
         sock.recv.return_value = bytes.fromhex(
             "029400 01020304 0700 212223242526270000"
         )
-        mod_id, contents = brick.read_io_map(0x04030201, 0x3231, 0x4241)
+        mod_id, data = brick.read_io_map(0x04030201, 0x3231, 0x4241)
         assert sock.mock_calls == sent_recved(bytes.fromhex("0194 01020304 3132 4142"))
         assert mod_id == 0x04030201
-        assert contents == bytes.fromhex("21222324252627")
+        assert data == bytes.fromhex("21222324252627")
 
     def test_write_io_map(self, sock, brick):
         sock.recv.return_value = bytes.fromhex("029500 01020304 0700")
@@ -229,9 +229,13 @@ class TestSystem:
         assert mod_id == 0x04030201
         assert size == 7
 
+    def test_boot_not_sure(self, sock, brick):
+        with pytest.raises(ValueError):
+            brick.boot()
+
     def test_boot(self, sock, brick):
         sock.recv.return_value = bytes.fromhex("029700") + b"Yes\0"
-        resp = brick.boot()
+        resp = brick.boot(sure=True)
         assert sock.mock_calls == sent_recved(
             bytes.fromhex("0197") + b"Let's dance: SAMBA\0"
         )
@@ -300,8 +304,8 @@ class TestDirect:
         assert sock.mock_calls == sent_recved(bytes.fromhex("0001"))
 
     def test_play_sound_file(self, sock, brick):
-        brick.play_sound_file(3, "test.rso")
-        assert sock.mock_calls == sent(bytes.fromhex("8002 03") + test_rso_bin)
+        brick.play_sound_file(True, "test.rso")
+        assert sock.mock_calls == sent(bytes.fromhex("8002 01") + test_rso_bin)
 
     def test_play_tone(self, sock, brick):
         brick.play_tone(440, 1000)
@@ -369,8 +373,8 @@ class TestDirect:
             calibrated,
             sensor_type,
             sensor_mode,
-            raw_ad_value,
-            normalized_ad_value,
+            raw_value,
+            normalized_value,
             scaled_value,
             calibrated_value,
         ) = brick.get_input_values(nxt.sensor.PORT_3)
@@ -380,8 +384,8 @@ class TestDirect:
         assert calibrated == 0
         assert sensor_type == nxt.sensor.Type.SWITCH
         assert sensor_mode == nxt.sensor.Mode.BOOLEAN
-        assert raw_ad_value == 0x0201
-        assert normalized_ad_value == 0x1211
+        assert raw_value == 0x0201
+        assert normalized_value == 0x1211
         assert scaled_value == 0x2221
         assert calibrated_value == 0x3231
 
@@ -396,6 +400,10 @@ class TestDirect:
         assert sock.mock_calls == sent_recved(
             bytes.fromhex("0009 03 08 21222324252627 00")
         )
+
+    def test_message_write_too_large(self, sock, brick):
+        with pytest.raises(ValueError):
+            brick.message_write(3, bytes.fromhex("21") * 59)
 
     def test_reset_motor_position(self, sock, brick):
         sock.recv.return_value = bytes.fromhex("020a00")
@@ -415,9 +423,9 @@ class TestDirect:
 
     def test_keep_alive(self, sock, brick):
         sock.recv.return_value = bytes.fromhex("020d00 01020304")
-        sleep_time = brick.keep_alive()
+        sleep_timeout = brick.keep_alive()
         assert sock.mock_calls == sent_recved(bytes.fromhex("000d"))
-        assert sleep_time == 0x04030201
+        assert sleep_timeout == 0x04030201
 
     def test_ls_get_status(self, sock, brick):
         sock.recv.return_value = bytes.fromhex("020e00 07")
@@ -436,15 +444,15 @@ class TestDirect:
         sock.recv.return_value = bytes.fromhex(
             "021000 07 21222324252627 000000000000000000"
         )
-        contents = brick.ls_read(nxt.sensor.PORT_3)
+        rx_data = brick.ls_read(nxt.sensor.PORT_3)
         assert sock.mock_calls == sent_recved(bytes.fromhex("0010 02"))
-        assert contents == bytes.fromhex("21222324252627")
+        assert rx_data == bytes.fromhex("21222324252627")
 
     def test_get_current_program_name(self, sock, brick):
         sock.recv.return_value = bytes.fromhex("021100") + test_rxe_bin
-        fname = brick.get_current_program_name()
+        name = brick.get_current_program_name()
         assert sock.mock_calls == sent_recved(bytes.fromhex("0011"))
-        assert fname == "test.rxe"
+        assert name == "test.rxe"
 
     def test_message_read(self, sock, brick):
         sock.recv.return_value = bytes.fromhex("021300 00 07 21222324252627") + bytes(

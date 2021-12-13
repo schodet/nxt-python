@@ -45,11 +45,11 @@ def test_socket(msocket, mdev):
     bricks = list(backend.find(blah="blah"))
     assert len(bricks) == 1
     brick = bricks[0]
-    assert brick.sock.type == "ipusb"
+    assert brick._sock.type == "ipusb"
     assert msocket.socket.called
     assert mdev.connect.called
     assert mdev.send.call_args == call(b"\x98")
-    sock = brick.sock
+    sock = brick._sock
     # str.
     assert str(sock) == "Socket (localhost:2727)"
     # Send.
@@ -84,7 +84,7 @@ def test_socket_real():
     bricks = list(backend.find())
     assert len(bricks) > 0, "no NXT found"
     brick = bricks[0]
-    sock = brick.sock
+    sock = brick._sock
     # str.
     assert str(sock) == "Socket (localhost:2727)"
     # Send.
