@@ -60,3 +60,7 @@ html_theme = "sphinx_rtd_theme"
 html_logo = "../logo.svg"
 html_favicon = "favicon.ico"
 html_copy_source = False
+
+# -- Options for autodoc -----------------------------------------------------
+
+autodoc_member_order = "bysource"
