@@ -33,7 +33,7 @@ Python 2, which is no longer supported.
 
 See [installation][] instructions in the documentation for more informations.
 
-[install instructions]: https://ni.srht.site/nxt-python/latest/installation.html
+[installation]: https://ni.srht.site/nxt-python/latest/installation.html
 
 ## Next steps
 
