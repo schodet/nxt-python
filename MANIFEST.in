@@ -1,3 +1,7 @@
 include logo.svg
 include tests/*.py
 include scripts/python-nxt-filer.desktop
+include docs/Makefile
+include docs/conf.py
+include docs/favicon.ico
+recursive-include docs *.rst
