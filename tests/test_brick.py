@@ -319,12 +319,12 @@ class TestDirect:
 
     def test_set_output_state(self, sock, brick):
         brick.set_output_state(
-            nxt.motor.PORT_B,
+            nxt.motor.Port.B,
             -100,
-            nxt.motor.MODE_MOTOR_ON,
-            nxt.motor.REGULATION_IDLE,
+            nxt.motor.Mode.ON,
+            nxt.motor.RegulationMode.IDLE,
             -5,
-            nxt.motor.RUN_STATE_RUNNING,
+            nxt.motor.RunState.RUNNING,
             0x04030201,
         )
         assert sock.mock_calls == sent(bytes.fromhex("8004 01 9c 01 00 fb 20 01020304"))
@@ -343,21 +343,21 @@ class TestDirect:
             port,
             power,
             mode,
-            regulation,
+            regulation_mode,
             turn_ratio,
             run_state,
             tacho_limit,
             tacho_count,
             block_tacho_count,
             rotation_count,
-        ) = brick.get_output_state(nxt.motor.PORT_B)
+        ) = brick.get_output_state(nxt.motor.Port.B)
         assert sock.mock_calls == sent_recved(bytes.fromhex("0006 01"))
-        assert port == nxt.motor.PORT_B
+        assert port == nxt.motor.Port.B
         assert power == -100
-        assert mode == nxt.motor.MODE_MOTOR_ON
-        assert regulation == nxt.motor.REGULATION_IDLE
+        assert mode == nxt.motor.Mode.ON
+        assert regulation_mode == nxt.motor.RegulationMode.IDLE
         assert turn_ratio == -5
-        assert run_state == nxt.motor.RUN_STATE_RUNNING
+        assert run_state == nxt.motor.RunState.RUNNING
         assert tacho_limit == 0x04030201
         assert tacho_count == 0x14131211
         assert block_tacho_count == 0x24232221
@@ -407,7 +407,7 @@ class TestDirect:
 
     def test_reset_motor_position(self, sock, brick):
         sock.recv.return_value = bytes.fromhex("020a00")
-        brick.reset_motor_position(nxt.motor.PORT_B, True)
+        brick.reset_motor_position(nxt.motor.Port.B, True)
         assert sock.mock_calls == sent_recved(bytes.fromhex("000a 01 01"))
 
     def test_get_battery_level(self, sock, brick):

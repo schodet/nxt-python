@@ -14,47 +14,77 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+import enum
 import logging
 import time
 
 logger = logging.getLogger(__name__)
 
-#: Constant to address the motor connected on port A.
-PORT_A = 0x00
-#: Constant to address the motor connected on port B.
-PORT_B = 0x01
-#: Constant to address the motor connected on port C.
-PORT_C = 0x02
-#: Constant to address all the motor ports, only works with low level functions.
-PORT_ALL = 0xFF
 
-#: Motor mode, keep the motor unpowered.
-MODE_IDLE = 0x00
-#: Motor mode, enable motor power.
-MODE_MOTOR_ON = 0x01
-#: Motor mode, enable brake, motor inputs are not left floating.
-MODE_BRAKE = 0x02
-#: Motor mode, enable regulation.
-MODE_REGULATED = 0x04
+class Port(enum.Enum):
+    """Output port identifier."""
 
-#: Regulation mode, no regulation.
-REGULATION_IDLE = 0x00
-#: Regulation mode, speed regulation.
-REGULATION_MOTOR_SPEED = 0x01
-#: Regulation mode, synchronous regulation of two motors.
-REGULATION_MOTOR_SYNC = 0x02
+    A = 0
+    """Output port A."""
 
-#: Run state, not running.
-RUN_STATE_IDLE = 0x00
-#: Run state, ramping speed up.
-RUN_STATE_RAMP_UP = 0x10
-#: Run state, running at constant speed.
-RUN_STATE_RUNNING = 0x20
-#: Run state, ramping speed down.
-RUN_STATE_RAMP_DOWN = 0x40
+    B = 1
+    """Output port B."""
 
-#: No angle limit.
+    C = 2
+    """Output port C."""
+
+
+class Mode(enum.Flag):
+    """Motor mode.
+
+    These are flags that can be combined together using the `|` operator.
+    """
+
+    IDLE = 0x00
+    """Keep the motor unpowered."""
+
+    ON = 0x01
+    """Enable motor power."""
+
+    BRAKE = 0x02
+    """Enable brake, motor input voltage is not left floating, must also be
+    :attr:`ON`."""
+
+    REGULATED = 0x04
+    """Enable regulation, must also be :attr:`ON`."""
+
+
+class RegulationMode(enum.Enum):
+    """Motor regulation mode."""
+
+    IDLE = 0
+    """No regulation."""
+
+    SPEED = 1
+    """Speed regulation, :attr:`Mode.REGULATED` must be enabled."""
+
+    SYNC = 2
+    """Synchronous regulation of two motors, :attr:`Mode.REGULATED` must be enabled."""
+
+
+class RunState(enum.Enum):
+    """Motor run state."""
+
+    IDLE = 0x00
+    """Not running."""
+
+    RAMP_UP = 0x10
+    """Ramping speed up."""
+
+    RUNNING = 0x20
+    """Running at constant speed."""
+
+    RAMP_DOWN = 0x40
+    """Ramping speed down."""
+
+
 LIMIT_RUN_FOREVER = 0
+"""No angle limit."""
 
 
 class BlockedException(Exception):
@@ -71,7 +101,7 @@ class OutputState:
         (
             self.power,
             self.mode,
-            self.regulation,
+            self.regulation_mode,
             self.turn_ratio,
             self.run_state,
             self.tacho_limit,
@@ -82,38 +112,21 @@ class OutputState:
         return [
             self.power,
             self.mode,
-            self.regulation,
+            self.regulation_mode,
             self.turn_ratio,
             self.run_state,
             self.tacho_limit,
         ]
 
     def __str__(self):
-        modes = []
-        if self.mode & MODE_MOTOR_ON:
-            modes.append("on")
-        if self.mode & MODE_BRAKE:
-            modes.append("brake")
-        if self.mode & MODE_REGULATED:
-            modes.append("regulated")
-        if not modes:
-            modes.append("idle")
-        mode = "&".join(modes)
-        regulations = {
-            REGULATION_IDLE: "idle",
-            REGULATION_MOTOR_SPEED: "speed",
-            REGULATION_MOTOR_SYNC: "sync",
-        }
-        regulation = "regulation: " + regulations[self.regulation]
-        run_states = {
-            RUN_STATE_IDLE: "idle",
-            RUN_STATE_RAMP_UP: "ramp_up",
-            RUN_STATE_RUNNING: "running",
-            RUN_STATE_RAMP_DOWN: "ramp_down",
-        }
-        run_state = "run state: " + run_states[self.run_state]
         return ", ".join(
-            [mode, regulation, str(self.turn_ratio), run_state, str(self.tacho_limit)]
+            [
+                str(self.mode),
+                str(self.regulation_mode),
+                str(self.turn_ratio),
+                str(self.run_state),
+                str(self.tacho_limit),
+            ]
         )
 
 
@@ -300,13 +313,13 @@ class Motor(BaseMotor):
     def _get_new_state(self):
         state = self._get_state()
         if self.sync:
-            state.mode = MODE_MOTOR_ON | MODE_REGULATED
-            state.regulation = REGULATION_MOTOR_SYNC
+            state.mode = Mode.ON | Mode.REGULATED
+            state.regulation_mode = RegulationMode.SYNC
             state.turn_ratio = self.turn_ratio
         else:
-            state.mode = MODE_MOTOR_ON | MODE_REGULATED
-            state.regulation = REGULATION_MOTOR_SPEED
-        state.run_state = RUN_STATE_RUNNING
+            state.mode = Mode.ON | Mode.REGULATED
+            state.regulation_mode = RegulationMode.SPEED
+        state.run_state = RunState.RUNNING
         state.tacho_limit = LIMIT_RUN_FOREVER
         return state
 
@@ -326,37 +339,37 @@ class Motor(BaseMotor):
         state = self._get_new_state()
         state.power = power
         if not regulated:
-            state.mode = MODE_MOTOR_ON
+            state.mode = Mode.ON
         self._set_state(state)
 
     def brake(self):
         """Holds the motor in place"""
         state = self._get_new_state()
         state.power = 0
-        state.mode = MODE_MOTOR_ON | MODE_BRAKE | MODE_REGULATED
+        state.mode = Mode.ON | Mode.BRAKE | Mode.REGULATED
         self._set_state(state)
 
     def idle(self):
         """Tells the motor to stop whatever it's doing. It also desyncs it."""
         state = self._get_new_state()
         state.power = 0
-        state.mode = MODE_IDLE
-        state.regulation = REGULATION_IDLE
-        state.run_state = RUN_STATE_IDLE
+        state.mode = Mode.IDLE
+        state.regulation_mode = RegulationMode.IDLE
+        state.run_state = RunState.IDLE
         self._set_state(state)
 
     def weak_turn(self, power, tacho_units):
         """Tries to turn a motor for the specified distance. This function
         returns immediately, and it's not guaranteed that the motor turns that
         distance. This is an interface to use tacho_limit without
-        REGULATION_MOTOR_SPEED
+        RegulationMode.SPEED
         """
         tacho_limit = tacho_units
         state = self._get_new_state()
 
         # Update modifiers even if they aren't used, might have been changed
-        state.mode = MODE_MOTOR_ON
-        state.regulation = REGULATION_IDLE
+        state.mode = Mode.ON
+        state.regulation_mode = RegulationMode.IDLE
         state.power = power
         state.tacho_limit = tacho_limit
 
@@ -396,7 +409,7 @@ class SynchronizedMotors(BaseMotor):
 
         if self.leader.port == self.follower.port:
             raise ValueError("The same motor passed twice")
-        elif self.leader.port > self.follower.port:
+        elif self.leader.port.value > self.follower.port.value:
             self.turn_ratio = turn_ratio
         else:
             logger.debug("reversed")

@@ -38,6 +38,7 @@ Brick
 
    This part is still a work in progress.
 
+   .. automethod:: Brick.get_motor
    .. automethod:: Brick.get_sensor
 
    Programs

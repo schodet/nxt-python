@@ -19,6 +19,7 @@ import threading
 import time
 
 import nxt.error
+import nxt.motor
 import nxt.sensor
 from nxt.telegram import Opcode, Telegram
 
@@ -272,6 +273,15 @@ class Brick:
 
     get_sensor = nxt.sensor.get_sensor
 
+    def get_motor(self, port):
+        """Return a motor object connected to one of the brick output port.
+
+        :param nxt.motor.Port port: Output port identifier.
+        :return: The motor object.
+        :rtype: nxt.motor.Motor
+        """
+        return nxt.motor.Motor(self, port)
+
     def _cmd(self, tgram):
         """Send a message to the NXT brick and read reply.
 
@@ -332,27 +342,30 @@ class Brick:
         self._cmd(tgram)
 
     def set_output_state(
-        self, port, power, mode, regulation, turn_ratio, run_state, tacho_limit
+        self, port, power, mode, regulation_mode, turn_ratio, run_state, tacho_limit
     ):
         """Set output port state on the brick.
 
-        :param int port: Output port constant.
+        :param nxt.motor.Port port: Output port identifier.
         :param int power: Motor speed or power level (-100 to 100).
-        :param int mode: Motor power mode.
-        :param int regulation: Motor regulation mode.
+        :param nxt.motor.Mode mode: Motor power mode.
+        :param nxt.motor.RegulationMode regulation_mode: Motor regulation mode.
         :param int turn_ratio: Turn ratio (-100 to 100). Negative value shift power to
            the left motor.
-        :param int run_state: Motor run state.
+        :param nxt.motor.RunState run_state: Motor run state.
         :param int tacho_limit: Number of degrees the motor should rotate relative to
            the current position.
+
+        .. warning:: This is a low level function, prefer to use
+           :meth:`nxt.motor.Motor`, you can get one from :meth:`get_motor`.
         """
         tgram = Telegram(Opcode.DIRECT_SET_OUT_STATE, reply_req=False)
-        tgram.add_u8(port)
+        tgram.add_u8(port.value)
         tgram.add_s8(power)
-        tgram.add_u8(mode)
-        tgram.add_u8(regulation)
+        tgram.add_u8(mode.value)
+        tgram.add_u8(regulation_mode.value)
         tgram.add_s8(turn_ratio)
-        tgram.add_u8(run_state)
+        tgram.add_u8(run_state.value)
         tgram.add_u32(tacho_limit)
         self._cmd(tgram)
 
@@ -372,18 +385,19 @@ class Brick:
     def get_output_state(self, port):
         """Get output port state from the brick.
 
-        :param int port: Output port constant.
-        :return: A tuple with `port`, `power`, `mode`, `regulation`, `turn_ratio`,
+        :param nxt.motor.Port port: Output port identifier.
+        :return: A tuple with `port`, `power`, `mode`, `regulation_mode`, `turn_ratio`,
            `run_state`, `tacho_limit`, `tacho_count`, `block_tacho_count`, and
            `rotation_count`.
-        :rtype: (int, int, int, int, int, int, int, int, int, int)
+        :rtype: (nxt.motor.Port, int, nxt.motor.Mode, nxt.motor.RegulationMode, int,
+           nxt.motor.RunState, int, int, int, int)
 
         Return value details:
 
-        - **port** Output port constant.
+        - **port** Output port identifier.
         - **power** Motor speed or power level (-100 to 100).
         - **mode** Motor power mode.
-        - **regulation** Motor regulation mode.
+        - **regulation_mode** Motor regulation mode.
         - **turn_ratio** Turn ratio (-100 to 100). Negative value shift power to the
           left motor.
         - **run_state** Motor run state.
@@ -392,16 +406,19 @@ class Brick:
           "block" start.
         - **rotation_count** Number of degrees the motor rotated relative to the program
           start.
+
+        .. warning:: This is a low level function, prefer to use
+           :meth:`nxt.motor.Motor`, you can get one from :meth:`get_motor`.
         """
         tgram = Telegram(Opcode.DIRECT_GET_OUT_STATE)
-        tgram.add_u8(port)
+        tgram.add_u8(port.value)
         tgram = self._cmd(tgram)
-        port = tgram.parse_u8()
+        port = nxt.motor.Port(tgram.parse_u8())
         power = tgram.parse_s8()
-        mode = tgram.parse_u8()
-        regulation = tgram.parse_u8()
+        mode = nxt.motor.Mode(tgram.parse_u8())
+        regulation_mode = nxt.motor.RegulationMode(tgram.parse_u8())
         turn_ratio = tgram.parse_s8()
-        run_state = tgram.parse_u8()
+        run_state = nxt.motor.RunState(tgram.parse_u8())
         tacho_limit = tgram.parse_u32()
         tacho_count = tgram.parse_s32()
         block_tacho_count = tgram.parse_s32()
@@ -410,7 +427,7 @@ class Brick:
             port,
             power,
             mode,
-            regulation,
+            regulation_mode,
             turn_ratio,
             run_state,
             tacho_limit,
@@ -494,12 +511,15 @@ class Brick:
     def reset_motor_position(self, port, relative):
         """Reset block or program motor position for a brick output port.
 
-        :param int port: Output port constant.
+        :param nxt.motor.Port port: Output port identifier.
         :param bool relative: If ``True``, reset block position, if ``False``, reset
            program position.
+
+        .. warning:: This is a low level function, prefer to use
+           :meth:`nxt.motor.Motor`, you can get one from :meth:`get_motor`.
         """
         tgram = Telegram(Opcode.DIRECT_RESET_POSITION)
-        tgram.add_u8(port)
+        tgram.add_u8(port.value)
         tgram.add_bool(relative)
         self._cmd(tgram)
 

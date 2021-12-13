@@ -30,9 +30,9 @@ def msg(x):
 
 
 def test_cmd(mbrick, mtime, mc):
-    mc.cmd(nxt.motor.PORT_B, -100, 1000, speedreg=1, smoothstart=0, brake=0)
+    mc.cmd(nxt.motor.Port.B, -100, 1000, speedreg=1, smoothstart=0, brake=0)
     # Using the same port yield a delay.
-    mc.cmd(nxt.motor.PORT_B, 10, 0, speedreg=0, smoothstart=1, brake=1)
+    mc.cmd(nxt.motor.Port.B, 10, 0, speedreg=0, smoothstart=1, brake=1)
     assert mbrick.mock_calls == [
         call.message_write(1, msg("1 1 200 001000 2")),
         call.message_write(1, msg("1 1 010 000000 5")),
@@ -43,9 +43,9 @@ def test_cmd(mbrick, mtime, mc):
 
 
 def test_cmd_nosleep(mbrick, mtime, mc):
-    mc.cmd(nxt.motor.PORT_B, -100, 1000, speedreg=1, smoothstart=0, brake=0)
+    mc.cmd(nxt.motor.Port.B, -100, 1000, speedreg=1, smoothstart=0, brake=0)
     # Using a different port yield no delay.
-    mc.cmd(nxt.motor.PORT_C, 10, 0, speedreg=0, smoothstart=1, brake=1)
+    mc.cmd(nxt.motor.Port.C, 10, 0, speedreg=0, smoothstart=1, brake=1)
     assert mbrick.mock_calls == [
         call.message_write(1, msg("1 1 200 001000 2")),
         call.message_write(1, msg("1 2 010 000000 5")),
@@ -54,10 +54,10 @@ def test_cmd_nosleep(mbrick, mtime, mc):
 
 
 def test_cmd_twomotors(mbrick, mtime, mc):
-    mc.cmd(nxt.motor.PORT_B, -100, 1000, speedreg=1, smoothstart=0, brake=0)
+    mc.cmd(nxt.motor.Port.B, -100, 1000, speedreg=1, smoothstart=0, brake=0)
     # When using two motors, there should be a delay as the same motor is used again.
     mc.cmd(
-        (nxt.motor.PORT_B, nxt.motor.PORT_C), 10, 0, speedreg=0, smoothstart=1, brake=1
+        (nxt.motor.Port.B, nxt.motor.Port.C), 10, 0, speedreg=0, smoothstart=1, brake=1
     )
     assert mbrick.mock_calls == [
         call.message_write(1, msg("1 1 200 001000 2")),
@@ -71,7 +71,7 @@ def test_cmd_twomotors(mbrick, mtime, mc):
 def test_cmd_threemotors(mbrick, mtime, mc):
     with pytest.raises(ValueError):
         mc.cmd(
-            (nxt.motor.PORT_A, nxt.motor.PORT_B, nxt.motor.PORT_C),
+            (nxt.motor.Port.A, nxt.motor.Port.B, nxt.motor.Port.C),
             -100,
             1000,
             speedreg=1,
@@ -81,14 +81,14 @@ def test_cmd_threemotors(mbrick, mtime, mc):
 
 
 def test_reset_tacho(mbrick, mc):
-    mc.reset_tacho(nxt.motor.PORT_B)
+    mc.reset_tacho(nxt.motor.Port.B)
     assert mbrick.mock_calls == [call.message_write(1, msg("2 1"))]
 
 
 def test_is_ready(mbrick, mtime, mc):
     mbrick.message_read.side_effect = [(1, msg("1 1")), (1, msg("2 0"))]
-    ready = mc.is_ready(nxt.motor.PORT_B)
-    not_ready = mc.is_ready(nxt.motor.PORT_C)
+    ready = mc.is_ready(nxt.motor.Port.B)
+    not_ready = mc.is_ready(nxt.motor.Port.C)
     assert mtime.sleep.called
     assert mbrick.mock_calls == [
         call.message_write(1, msg("3 1")),
@@ -103,12 +103,12 @@ def test_is_ready(mbrick, mtime, mc):
 def test_is_ready_error(mbrick, mc):
     mbrick.message_read.return_value = (1, msg("0 1"))
     with pytest.raises(nxt.error.ProtocolError):
-        mc.is_ready(nxt.motor.PORT_B)
+        mc.is_ready(nxt.motor.Port.B)
 
 
 def test_set_output_state(mbrick, mc):
-    mc.set_output_state(nxt.motor.PORT_C, -100, 1000, speedreg=1)
-    mc.set_output_state(nxt.motor.PORT_C, 10, 0, speedreg=0)
+    mc.set_output_state(nxt.motor.Port.C, -100, 1000, speedreg=1)
+    mc.set_output_state(nxt.motor.Port.C, 10, 0, speedreg=0)
     assert mbrick.mock_calls == [
         call.message_write(1, msg("4 2 200 001000 1")),
         call.message_write(1, msg("4 2 010 000000 0")),

@@ -45,6 +45,33 @@ use this code before calling any NXT-Python function::
 The :mod:`!nxt` module no longer exports name from sub-modules. In general,
 NXT-Python now avoids to have two names for the same object.
 
+Output port constants are replaced by enumerations, using the :mod:`enum`
+module:
+
+.. py:currentmodule:: nxt.motor
+
+===============================  ============================
+NXT-Python 2                     NXT-Python 3
+===============================  ============================
+:data:`!PORT_A`                  :attr:`Port.A`
+:data:`!PORT_B`                  :attr:`Port.B`
+:data:`!PORT_C`                  :attr:`Port.C`
+:data:`!MODE_IDLE`               :attr:`Mode.IDLE`
+:data:`!MODE_MOTOR_ON`           :attr:`Mode.ON`
+:data:`!MODE_BRAKE`              :attr:`Mode.BRAKE`
+:data:`!MODE_REGULATED`          :attr:`Mode.REGULATED`
+:data:`!REGULATION_IDLE`         :attr:`RegulationMode.IDLE`
+:data:`!REGULATION_MOTOR_SPEED`  :attr:`RegulationMode.SPEED`
+:data:`!REGULATION_MOTOR_SYNC`   :attr:`RegulationMode.SYNC`
+:data:`!RUN_STATE_IDLE`          :attr:`RunState.IDLE`
+:data:`!RUN_STATE_RAMP_UP`       :attr:`RunState.RAMP_UP`
+:data:`!RUN_STATE_RUNNING`       :attr:`RunState.RUNNING`
+:data:`!RUN_STATE_RAMP_DOWN`     :attr:`RunState.RAMP_DOWN`
+===============================  ============================
+
+You can now create :class:`nxt.motor.Motor` objects using
+:meth:`nxt.brick.Brick.get_motor`, however direct creation still works.
+
 
 Text String or Binary String
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^

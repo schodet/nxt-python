@@ -89,13 +89,13 @@ class MotCont:
         except TypeError:
             ports = frozenset((ports,))
         mapping = {
-            frozenset((nxt.motor.PORT_A,)): "0",
-            frozenset((nxt.motor.PORT_B,)): "1",
-            frozenset((nxt.motor.PORT_C,)): "2",
-            frozenset((nxt.motor.PORT_A, nxt.motor.PORT_B)): "3",
-            frozenset((nxt.motor.PORT_A, nxt.motor.PORT_C)): "4",
-            frozenset((nxt.motor.PORT_B, nxt.motor.PORT_C)): "5",
-            frozenset((nxt.motor.PORT_A, nxt.motor.PORT_B, nxt.motor.PORT_C)): "6",
+            frozenset((nxt.motor.Port.A,)): "0",
+            frozenset((nxt.motor.Port.B,)): "1",
+            frozenset((nxt.motor.Port.C,)): "2",
+            frozenset((nxt.motor.Port.A, nxt.motor.Port.B)): "3",
+            frozenset((nxt.motor.Port.A, nxt.motor.Port.C)): "4",
+            frozenset((nxt.motor.Port.B, nxt.motor.Port.C)): "5",
+            frozenset((nxt.motor.Port.A, nxt.motor.Port.B, nxt.motor.Port.C)): "6",
         }
         if ports not in mapping or len(ports) > max_ports:
             raise ValueError("invalid combination of ports")
@@ -106,9 +106,9 @@ class MotCont:
     ):
         """Send a CONTROLLED_MOTORCMD to MotorControl.
 
-        :param ports: Port or ports to control, use one of the port constant of
-            :mod:`nxt.motor`, or a tuple with one or two of them.
-        :type ports: int or Iterable[int]
+        :param ports: Port or ports to control, use one of the port identifiers, or
+           an iterable returning one or two of them.
+        :type ports: nxt.motor.Port or Iterable[nxt.motor.Port]
         :param int power: Speed or power, -100 to 100.
         :param int tacholimit: Position to drive to, 1 to 999999, or 0 for unlimited.
         :param bool speedreg: ``True`` to enable regulation.
@@ -126,9 +126,9 @@ class MotCont:
     def reset_tacho(self, ports):
         """Reset NXT tacho count.
 
-        :param ports: Port or ports to control, use one of the port constant of
-            :mod:`nxt.motor`, or a tuple with one to three of them.
-        :type ports: int or Iterable[int]
+        :param ports: Port or ports to control, use one of the port identifiers, or
+           an iterable returning one to three of them.
+        :type ports: nxt.motor.Port or Iterable[nxt.motor.Port]
         """
         self._interval_is_ready()
         ports, strports = self._decode_ports(ports, 3)
@@ -139,9 +139,9 @@ class MotCont:
     def is_ready(self, port):
         """Determine the state of a single motor.
 
-        :param port: Port to control, use one of the port constant of :mod:`nxt.motor`.
-           or a tuple with one of them.
-        :type port: int or Iterable[int]
+        :param port: Port to control, use one of the port identifiers, or an iterable
+           returning one of them.
+        :type port: nxt.motor.Port or Iterable[nxt.motor.Port]
         :return: ``True`` if the motor is ready to accept new commands.
         :rtype: bool
         """
@@ -160,9 +160,9 @@ class MotCont:
     def set_output_state(self, ports, power, tacholimit, speedreg=True):
         """Send a CLASSIC_MOTORCMD to MotorControl.
 
-        :param ports: Port or ports to control, use one of the port constant of
-            :mod:`nxt.motor`, or a tuple with one or two of them.
-        :type ports: int or Iterable[int]
+        :param ports: Port or ports to control, use one of the port identifiers, or
+           an iterable returning one or two of them.
+        :type ports: nxt.motor.Port or Iterable[nxt.motor.Port]
         :param int power: Speed or power, -100 to 100.
         :param int tacholimit: Position to drive to, 1 to 999999, or 0 for unlimited.
         :param bool speedreg: ``True`` to enable regulation.

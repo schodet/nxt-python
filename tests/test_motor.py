@@ -15,26 +15,25 @@ from unittest.mock import call
 import pytest
 
 import nxt.motor
-from nxt.motor import (
-    MODE_BRAKE,
-    MODE_IDLE,
-    MODE_MOTOR_ON,
-    MODE_REGULATED,
-    PORT_A,
-    PORT_B,
-    REGULATION_IDLE,
-    REGULATION_MOTOR_SPEED,
-    REGULATION_MOTOR_SYNC,
-    RUN_STATE_IDLE,
-    RUN_STATE_RUNNING,
-)
+from nxt.motor import Mode, Port, RegulationMode, RunState
 
 
 @pytest.fixture
 def mmotor_factory(mbrick):
     def factory(port):
-        mbrick.get_output_state.return_value = (port, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-        m = nxt.motor.Motor(mbrick, port)
+        mbrick.get_output_state.return_value = (
+            port,
+            0,
+            Mode.IDLE,
+            RegulationMode.IDLE,
+            0,
+            RunState.IDLE,
+            0,
+            0,
+            0,
+            0,
+        )
+        m = mbrick.get_motor(port)
         assert mbrick.mock_calls == [call.get_output_state(port)]
         mbrick.reset_mock()
         return m
@@ -44,12 +43,12 @@ def mmotor_factory(mbrick):
 
 @pytest.fixture
 def mmotor(mmotor_factory):
-    return mmotor_factory(PORT_A)
+    return mmotor_factory(Port.A)
 
 
 @pytest.fixture
 def mmotorb(mmotor_factory):
-    return mmotor_factory(PORT_B)
+    return mmotor_factory(Port.B)
 
 
 @pytest.fixture
@@ -62,17 +61,17 @@ def test_reset_position(mbrick, mmotor):
     mmotor.reset_position(True)
     mmotor.reset_position(False)
     assert mbrick.mock_calls == [
-        call.reset_motor_position(PORT_A, True),
-        call.reset_motor_position(PORT_A, False),
+        call.reset_motor_position(Port.A, True),
+        call.reset_motor_position(Port.A, False),
     ]
 
 
 def test_run(mbrick, mmotor):
     mmotor.run()
     assert mbrick.mock_calls == [
-        # TODO: should be REGULATION_IDLE.
+        # TODO: should be RegulationMode.IDLE.
         call.set_output_state(
-            PORT_A, 100, MODE_MOTOR_ON, REGULATION_MOTOR_SPEED, 0, RUN_STATE_RUNNING, 0
+            Port.A, 100, Mode.ON, RegulationMode.SPEED, 0, RunState.RUNNING, 0
         ),
     ]
 
@@ -81,12 +80,12 @@ def test_run_regulated(mbrick, mmotor):
     mmotor.run(50, regulated=True)
     assert mbrick.mock_calls == [
         call.set_output_state(
-            PORT_A,
+            Port.A,
             50,
-            MODE_MOTOR_ON | MODE_REGULATED,
-            REGULATION_MOTOR_SPEED,
+            Mode.ON | Mode.REGULATED,
+            RegulationMode.SPEED,
             0,
-            RUN_STATE_RUNNING,
+            RunState.RUNNING,
             0,
         ),
     ]
@@ -96,12 +95,12 @@ def test_brake(mbrick, mmotor):
     mmotor.brake()
     assert mbrick.mock_calls == [
         call.set_output_state(
-            PORT_A,
+            Port.A,
             0,
-            MODE_MOTOR_ON | MODE_BRAKE | MODE_REGULATED,
-            REGULATION_MOTOR_SPEED,
+            Mode.ON | Mode.BRAKE | Mode.REGULATED,
+            RegulationMode.SPEED,
             0,
-            RUN_STATE_RUNNING,
+            RunState.RUNNING,
             0,
         ),
     ]
@@ -111,7 +110,7 @@ def test_idle(mbrick, mmotor):
     mmotor.idle()
     assert mbrick.mock_calls == [
         call.set_output_state(
-            PORT_A, 0, MODE_IDLE, REGULATION_IDLE, 0, RUN_STATE_IDLE, 0
+            Port.A, 0, Mode.IDLE, RegulationMode.IDLE, 0, RunState.IDLE, 0
         ),
     ]
 
@@ -120,22 +119,22 @@ def test_weak_turn(mbrick, mmotor):
     mmotor.weak_turn(50, 360)
     assert mbrick.mock_calls == [
         call.set_output_state(
-            PORT_A, 50, MODE_MOTOR_ON, REGULATION_IDLE, 0, RUN_STATE_RUNNING, 360
+            Port.A, 50, Mode.ON, RegulationMode.IDLE, 0, RunState.RUNNING, 360
         ),
     ]
 
 
 def test_turn(mbrick, mmotor, mtime):
     mbrick.get_output_state.side_effect = [
-        (PORT_A, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+        (Port.A, 0, Mode.IDLE, RegulationMode.IDLE, 0, RunState.IDLE, 0, 0, 0, 0),
         # Test overshoot.
         (
-            PORT_A,
+            Port.A,
             50,
-            MODE_MOTOR_ON | MODE_REGULATED,
-            REGULATION_MOTOR_SPEED,
+            Mode.ON | Mode.REGULATED,
+            RegulationMode.SPEED,
             0,
-            RUN_STATE_RUNNING,
+            RunState.RUNNING,
             0,
             720,
             720,
@@ -144,24 +143,24 @@ def test_turn(mbrick, mmotor, mtime):
     ]
     mmotor.turn(50, 360)
     assert mbrick.mock_calls == [
-        call.get_output_state(PORT_A),
+        call.get_output_state(Port.A),
         call.set_output_state(
-            PORT_A,
+            Port.A,
             50,
-            MODE_MOTOR_ON | MODE_REGULATED,
-            REGULATION_MOTOR_SPEED,
+            Mode.ON | Mode.REGULATED,
+            RegulationMode.SPEED,
             0,
-            RUN_STATE_RUNNING,
+            RunState.RUNNING,
             0,
         ),
-        call.get_output_state(PORT_A),
+        call.get_output_state(Port.A),
         call.set_output_state(
-            PORT_A,
+            Port.A,
             0,
-            MODE_MOTOR_ON | MODE_REGULATED | MODE_BRAKE,
-            REGULATION_MOTOR_SPEED,
+            Mode.ON | Mode.REGULATED | Mode.BRAKE,
+            RegulationMode.SPEED,
             0,
-            RUN_STATE_RUNNING,
+            RunState.RUNNING,
             0,
         ),
     ]
@@ -172,19 +171,19 @@ def test_turn_blocked(mbrick, mmotor, mtime):
     with pytest.raises(nxt.motor.BlockedException):
         mmotor.turn(50, 360, brake=False, timeout=0.1, emulate=False)
     assert mbrick.mock_calls == [
-        call.get_output_state(PORT_A),
+        call.get_output_state(Port.A),
         call.set_output_state(
-            PORT_A,
+            Port.A,
             50,
-            MODE_MOTOR_ON | MODE_REGULATED,
-            REGULATION_MOTOR_SPEED,
+            Mode.ON | Mode.REGULATED,
+            RegulationMode.SPEED,
             0,
-            RUN_STATE_RUNNING,
+            RunState.RUNNING,
             360,
         ),
-        call.get_output_state(PORT_A),
+        call.get_output_state(Port.A),
         call.set_output_state(
-            PORT_A, 0, MODE_IDLE, REGULATION_IDLE, 0, RUN_STATE_IDLE, 0
+            Port.A, 0, Mode.IDLE, RegulationMode.IDLE, 0, RunState.IDLE, 0
         ),
     ]
 
@@ -192,25 +191,25 @@ def test_turn_blocked(mbrick, mmotor, mtime):
 def test_sync_run(mbrick, msyncmotor):
     msyncmotor.run(50)
     assert mbrick.mock_calls == [
-        call.reset_motor_position(PORT_A, True),
-        call.reset_motor_position(PORT_B, True),
+        call.reset_motor_position(Port.A, True),
+        call.reset_motor_position(Port.B, True),
         call.set_output_state(
-            PORT_A,
+            Port.A,
             50,
-            MODE_MOTOR_ON | MODE_REGULATED,
-            REGULATION_MOTOR_SYNC,
+            Mode.ON | Mode.REGULATED,
+            RegulationMode.SYNC,
             # TODO: why reversed? This does not seems right.
             -50,
-            RUN_STATE_RUNNING,
+            RunState.RUNNING,
             0,
         ),
         call.set_output_state(
-            PORT_B,
+            Port.B,
             50,
-            MODE_MOTOR_ON | MODE_REGULATED,
-            REGULATION_MOTOR_SYNC,
+            Mode.ON | Mode.REGULATED,
+            RegulationMode.SYNC,
             -50,
-            RUN_STATE_RUNNING,
+            RunState.RUNNING,
             0,
         ),
     ]
@@ -221,53 +220,53 @@ def test_sync_brake(mbrick, msyncmotor):
     assert mbrick.mock_calls == [
         # TODO: this should be possible to make it simpler.
         call.set_output_state(
-            PORT_A, 0, MODE_IDLE, REGULATION_IDLE, 0, RUN_STATE_IDLE, 0
+            Port.A, 0, Mode.IDLE, RegulationMode.IDLE, 0, RunState.IDLE, 0
         ),
         call.set_output_state(
-            PORT_B, 0, MODE_IDLE, REGULATION_IDLE, 0, RUN_STATE_IDLE, 0
+            Port.B, 0, Mode.IDLE, RegulationMode.IDLE, 0, RunState.IDLE, 0
         ),
-        call.reset_motor_position(PORT_A, True),
-        call.reset_motor_position(PORT_B, True),
+        call.reset_motor_position(Port.A, True),
+        call.reset_motor_position(Port.B, True),
         call.set_output_state(
-            PORT_A,
+            Port.A,
             0,
-            MODE_MOTOR_ON | MODE_BRAKE | MODE_REGULATED,
-            REGULATION_MOTOR_SYNC,
+            Mode.ON | Mode.BRAKE | Mode.REGULATED,
+            RegulationMode.SYNC,
             -50,
-            RUN_STATE_RUNNING,
+            RunState.RUNNING,
             0,
         ),
         call.set_output_state(
-            PORT_B,
+            Port.B,
             0,
-            MODE_MOTOR_ON | MODE_BRAKE | MODE_REGULATED,
-            REGULATION_MOTOR_SYNC,
+            Mode.ON | Mode.BRAKE | Mode.REGULATED,
+            RegulationMode.SYNC,
             -50,
-            RUN_STATE_RUNNING,
+            RunState.RUNNING,
             0,
         ),
         call.set_output_state(
-            PORT_A, 0, MODE_IDLE, REGULATION_IDLE, -50, RUN_STATE_IDLE, 0
+            Port.A, 0, Mode.IDLE, RegulationMode.IDLE, -50, RunState.IDLE, 0
         ),
         call.set_output_state(
-            PORT_B, 0, MODE_IDLE, REGULATION_IDLE, -50, RUN_STATE_IDLE, 0
+            Port.B, 0, Mode.IDLE, RegulationMode.IDLE, -50, RunState.IDLE, 0
         ),
         call.set_output_state(
-            PORT_A,
+            Port.A,
             0,
-            MODE_MOTOR_ON | MODE_BRAKE | MODE_REGULATED,
-            REGULATION_MOTOR_SPEED,
+            Mode.ON | Mode.BRAKE | Mode.REGULATED,
+            RegulationMode.SPEED,
             -50,
-            RUN_STATE_RUNNING,
+            RunState.RUNNING,
             0,
         ),
         call.set_output_state(
-            PORT_B,
+            Port.B,
             0,
-            MODE_MOTOR_ON | MODE_BRAKE | MODE_REGULATED,
-            REGULATION_MOTOR_SPEED,
+            Mode.ON | Mode.BRAKE | Mode.REGULATED,
+            RegulationMode.SPEED,
             -50,
-            RUN_STATE_RUNNING,
+            RunState.RUNNING,
             0,
         ),
     ]
@@ -277,38 +276,38 @@ def test_sync_idle(mbrick, msyncmotor):
     msyncmotor.idle()
     assert mbrick.mock_calls == [
         call.set_output_state(
-            PORT_A, 0, MODE_IDLE, REGULATION_IDLE, 0, RUN_STATE_IDLE, 0
+            Port.A, 0, Mode.IDLE, RegulationMode.IDLE, 0, RunState.IDLE, 0
         ),
         call.set_output_state(
-            PORT_B, 0, MODE_IDLE, REGULATION_IDLE, 0, RUN_STATE_IDLE, 0
+            Port.B, 0, Mode.IDLE, RegulationMode.IDLE, 0, RunState.IDLE, 0
         ),
     ]
 
 
 def test_sync_turn(mbrick, msyncmotor):
     mbrick.get_output_state.side_effect = [
-        (PORT_A, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-        (PORT_B, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+        (Port.A, 0, Mode.IDLE, RegulationMode.IDLE, 0, RunState.IDLE, 0, 0, 0, 0),
+        (Port.B, 0, Mode.IDLE, RegulationMode.IDLE, 0, RunState.IDLE, 0, 0, 0, 0),
         # Test overshoot.
         (
-            PORT_A,
+            Port.A,
             50,
-            MODE_MOTOR_ON | MODE_REGULATED,
-            REGULATION_MOTOR_SYNC,
+            Mode.ON | Mode.REGULATED,
+            RegulationMode.SYNC,
             0,
-            RUN_STATE_RUNNING,
+            RunState.RUNNING,
             0,
             720,
             720,
             720,
         ),
         (
-            PORT_B,
+            Port.B,
             0,
-            MODE_MOTOR_ON | MODE_REGULATED,
-            REGULATION_MOTOR_SYNC,
+            Mode.ON | Mode.REGULATED,
+            RegulationMode.SYNC,
             0,
-            RUN_STATE_RUNNING,
+            RunState.RUNNING,
             0,
             0,
             0,
@@ -317,34 +316,34 @@ def test_sync_turn(mbrick, msyncmotor):
     ]
     msyncmotor.turn(50, 360, brake=False)
     assert mbrick.mock_calls == [
-        call.reset_motor_position(PORT_A, True),
-        call.reset_motor_position(PORT_B, True),
-        call.get_output_state(PORT_A),
-        call.get_output_state(PORT_B),
+        call.reset_motor_position(Port.A, True),
+        call.reset_motor_position(Port.B, True),
+        call.get_output_state(Port.A),
+        call.get_output_state(Port.B),
         call.set_output_state(
-            PORT_A,
+            Port.A,
             50,
-            MODE_MOTOR_ON | MODE_REGULATED,
-            REGULATION_MOTOR_SYNC,
+            Mode.ON | Mode.REGULATED,
+            RegulationMode.SYNC,
             -50,
-            RUN_STATE_RUNNING,
+            RunState.RUNNING,
             0,
         ),
         call.set_output_state(
-            PORT_B,
+            Port.B,
             50,
-            MODE_MOTOR_ON | MODE_REGULATED,
-            REGULATION_MOTOR_SYNC,
+            Mode.ON | Mode.REGULATED,
+            RegulationMode.SYNC,
             -50,
-            RUN_STATE_RUNNING,
+            RunState.RUNNING,
             0,
         ),
-        call.get_output_state(PORT_A),
-        call.get_output_state(PORT_B),
+        call.get_output_state(Port.A),
+        call.get_output_state(Port.B),
         call.set_output_state(
-            PORT_A, 0, MODE_IDLE, REGULATION_IDLE, 0, RUN_STATE_IDLE, 0
+            Port.A, 0, Mode.IDLE, RegulationMode.IDLE, 0, RunState.IDLE, 0
         ),
         call.set_output_state(
-            PORT_B, 0, MODE_IDLE, REGULATION_IDLE, 0, RUN_STATE_IDLE, 0
+            Port.B, 0, Mode.IDLE, RegulationMode.IDLE, 0, RunState.IDLE, 0
         ),
     ]
