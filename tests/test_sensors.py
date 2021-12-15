@@ -15,6 +15,11 @@ from unittest.mock import Mock, call
 import pytest
 
 import nxt.sensor
+import nxt.sensor.analog
+import nxt.sensor.digital
+import nxt.sensor.generic
+import nxt.sensor.hitechnic
+import nxt.sensor.mindsensors
 from nxt.sensor import Mode, Port, Type
 
 
