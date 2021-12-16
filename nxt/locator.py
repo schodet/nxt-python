@@ -126,7 +126,7 @@ def find(
     :type host: str or None
     :param filters: Additional filter keywords or backends parameters.
     :return: The found brick, or an iterator if `find_all` is ``True``
-    :rtype: nxt.brick.Brick or Iterator[Brick]
+    :rtype: nxt.brick.Brick or Iterator[nxt.brick.Brick]
     :raises BrickNotFoundError: if no brick is found and `find_all` is ``False``.
 
     Use this function to find a NXT brick. You can pass arguments to match a specific
@@ -267,7 +267,7 @@ def find_with_options(options, *, find_all=False):
        :meth:`argparse.ArgumentParser.parse_args`
     :param bool find_all: ``True`` to return an iterator over all bricks found.
     :return: The found brick or ``None``, or an iterator if `find_all` is ``True``.
-    :rtype: nxt.brick.Brick or None or Iterator[Brick]
+    :rtype: nxt.brick.Brick or None or Iterator[nxt.brick.Brick]
 
     This is to be used together with :func:`add_arguments`. It calls :func:`find` with
     options received on the command line.
