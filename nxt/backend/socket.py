@@ -64,7 +64,7 @@ class SocketSock:
 
         :param bytes data: Data to send.
         """
-        logger.debug("send: %s", data.hex(":"))
+        logger.debug("send: %s", data.hex())
         self._sock.send(data)
 
     def recv(self):
@@ -74,7 +74,7 @@ class SocketSock:
         :rtype: bytes
         """
         data = self._sock.recv(1024)
-        logger.debug("recv: %s", data.hex(":"))
+        logger.debug("recv: %s", data.hex())
         return data
 
 

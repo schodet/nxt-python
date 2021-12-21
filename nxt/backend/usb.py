@@ -71,7 +71,7 @@ class USBSock:
 
         :param bytes data: Data to send.
         """
-        logger.debug("send: %s", data.hex(":"))
+        logger.debug("send: %s", data.hex())
         self._epout.write(data)
 
     def recv(self):
@@ -81,7 +81,7 @@ class USBSock:
         :rtype: bytes
         """
         data = self._epin.read(64).tobytes()
-        logger.debug("recv: %s", data.hex(":"))
+        logger.debug("recv: %s", data.hex())
         return data
 
 

@@ -66,7 +66,7 @@ class BluetoothSock:
         :param bytes data: Data to send.
         """
         data = struct.pack("<H", len(data)) + data
-        logger.debug("send: %s", data.hex(":"))
+        logger.debug("send: %s", data.hex())
         self._sock.send(data)
 
     def recv(self):
@@ -76,10 +76,10 @@ class BluetoothSock:
         :rtype: bytes
         """
         data = self._sock.recv(2)
-        logger.debug("recv: %s", data.hex(":"))
+        logger.debug("recv: %s", data.hex())
         (plen,) = struct.unpack("<H", data)
         data = self._sock.recv(plen)
-        logger.debug("recv: %s", data.hex(":"))
+        logger.debug("recv: %s", data.hex())
         return data
 
 

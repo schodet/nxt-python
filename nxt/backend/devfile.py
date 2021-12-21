@@ -62,7 +62,7 @@ class DevFileSock:
         :param bytes data: Data to send.
         """
         data = struct.pack("<H", len(data)) + data
-        logger.debug("send: %s", data.hex(":"))
+        logger.debug("send: %s", data.hex())
         self._device.write(data)
 
     def recv(self):
@@ -72,10 +72,10 @@ class DevFileSock:
         :rtype: bytes
         """
         data = self._device.read(2)
-        logger.debug("recv: %s", data.hex(":"))
+        logger.debug("recv: %s", data.hex())
         (plen,) = struct.unpack("<H", data)
         data = self._device.read(plen)
-        logger.debug("recv: %s", data.hex(":"))
+        logger.debug("recv: %s", data.hex())
         return data
 
 
