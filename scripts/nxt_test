@@ -7,8 +7,8 @@ import sys
 import nxt.locator
 
 p = argparse.ArgumentParser(description="Test the nxt-python setup")
-p.add_argument("--sound", action=argparse.BooleanOptionalAction, default=True,
-               help="enable or disable sound test")
+p.add_argument("--no-sound", action="store_false", dest="sound",
+               default=True, help="disable sound test")
 nxt.locator.add_arguments(p)
 levels = ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL')
 p.add_argument("--log-level", type=str.upper, choices=levels, help="set log level")
