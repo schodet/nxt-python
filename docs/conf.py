@@ -23,7 +23,7 @@ copyright = "2021, Nicolas Schodet"
 author = "Nicolas Schodet"
 
 # The full version, including alpha/beta/rc tags
-release = "3.0.0a1"
+release = "3.0.0a3"
 version = release
 
 
