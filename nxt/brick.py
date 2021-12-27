@@ -272,20 +272,6 @@ class Brick:
         finally:
             self.module_close(handle)
 
-    def get_sensor(self, port):
-        """Tries to detect the sensor type and return the correct sensor object.
-
-        :param nxt.sensor.Port port: Input port identifier.
-        :return: A sensor object.
-        :rtype: nxt.sensor.Sensor
-        :raises nxt.sensor.digital.SearchError: When sensor can not be identified.
-
-        Only work for digital sensors with identification information.
-        """
-        base_sensor = nxt.sensor.digital.BaseDigitalSensor(self, port, False)
-        info = base_sensor.get_sensor_info()
-        return nxt.sensor.digital.find_class(info)(self, port, check_compatible=False)
-
     def get_motor(self, port):
         """Return a motor object connected to one of the brick output port.
 
@@ -294,6 +280,38 @@ class Brick:
         :rtype: nxt.motor.Motor
         """
         return nxt.motor.Motor(self, port)
+
+    def get_sensor(self, port, cls=None, *args, **kwargs):
+        """Return a sensor object connected to one of the brick input port.
+
+        :param nxt.sensor.Port port: Input port identifier.
+        :param cls: Sensor class, or None to autodetect.
+        :type cls: typing.Type[nxt.sensor.Sensor] or None
+        :param args: Additional constructor positional arguments when `cls` is given.
+        :param kwargs: Additional constructor keyword arguments when `cls` is given.
+        :return: A sensor object.
+        :rtype: nxt.sensor.Sensor
+        :raises nxt.sensor.digital.SearchError: When sensor can not be identified.
+
+        When `cls` is not given or ``None``, try to detect the sensor type and return
+        the correct sensor object. This only works for digital sensors with
+        identification information.
+
+        For autodetection to work, the module containing the sensor class must be
+        imported at least once. See modules in :mod:`nxt.sensor`.
+        """
+        if cls is None:
+            if args or kwargs:
+                raise ValueError("extra arguments with autodetect")
+            base_sensor = nxt.sensor.digital.BaseDigitalSensor(
+                self, port, check_compatible=False
+            )
+            info = base_sensor.get_sensor_info()
+            return nxt.sensor.digital.find_class(info)(
+                self, port, check_compatible=False
+            )
+        else:
+            return cls(self, port, *args, **kwargs)
 
     def _cmd(self, tgram):
         """Send a message to the NXT brick and read reply.

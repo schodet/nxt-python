@@ -117,6 +117,12 @@ NXT-Python 2                     NXT-Python 3
 :attr:`!Mode.MASK_SLOPE`         Removed
 ===============================  ============================
 
+You can now create :mod:`~nxt.sensor` objects using
+:meth:`nxt.brick.Brick.get_sensor`, however direct creation still works. For
+digital sensors with identification information, this can automatically detect
+the sensor type as with previous version. The new `cls` argument allows
+creating a sensor object using another class.
+
 
 Text String or Binary String
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
