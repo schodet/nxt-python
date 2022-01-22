@@ -26,6 +26,17 @@ USB support is provided by PyUSB which is installed automatically with
 NXT-Python. You can also use the package from your Linux distribution if you
 wish, in this case, install it before installing NXT-Python.
 
+PyUSB requires libusb or OpenUSB running on your system.
+
+- For Linux users, you can install it from your package manager if not
+  installed yet.
+- For MacOS users, you can use ``brew install libusb`` to install it using
+  Homebrew.
+- For Windows users, libusb 1.0 DLLs are provided in the releases. Check the
+  `libusb website`_.
+
+.. _libusb website: http://www.libusb.info
+
 
 Bluetooth
 ---------
