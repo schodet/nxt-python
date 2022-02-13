@@ -3,9 +3,6 @@
 NXT-Python is a package for controlling a LEGO NXT robot using the Python
 programming language. It can communicate using either USB or Bluetooth.
 
-NXT-Python for Python 3 is still alpha version, please report any problem you
-run into.
-
 NXT-Python for Python 2 is no longer supported.
 
 NXT-Python repository is on [Github][] with a mirror on [sourcehut][].
@@ -25,11 +22,7 @@ NXT-Python repository is on [Github][] with a mirror on [sourcehut][].
 
 Install NXT-Python with pip:
 
-    python3 -m pip install --upgrade --pre nxt-python
-
-As there is only pre-releases for the moment, you need the `--pre` option.
-Without this option, an old NXT-Python version would be installed for
-Python 2, which is no longer supported.
+    python3 -m pip install --upgrade nxt-python
 
 See [installation][] instructions in the documentation for more informations.
 
