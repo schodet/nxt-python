@@ -1,0 +1,3 @@
+# Allow access to the NXT brick.
+SUBSYSTEM=="usb", ACTION=="add", ATTR{idVendor}=="0694", ATTR{idProduct}=="0002", \
+    MODE="0660", GROUP="plugdev", TAG+="uaccess"

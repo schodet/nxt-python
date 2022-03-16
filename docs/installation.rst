@@ -34,6 +34,21 @@ PyUSB requires libusb or OpenUSB running on your system.
 .. _libusb website: http://www.libusb.info
 
 
+USB access permissions for Linux
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You need to allow connection to the NXT brick for your user. If you install
+any package interacting with the NXT brick from your distribution, this is
+usually already done for you (for example, nbc, or libnxt).
+
+In other cases, copy `contrib/60-libnxt.rules` from the NXT-Python source
+distribution to your `/etc/udev/rules.d` directory, then make sure that udev
+see the change: restart your computer or use the following commands::
+
+    sudo udevadm control --reload
+    sudo udevadm trigger
+
+
 Bluetooth
 ---------
 
