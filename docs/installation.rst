@@ -29,9 +29,9 @@ PyUSB requires libusb or OpenUSB running on your system.
 - For MacOS users, you can use ``brew install libusb`` to install it using
   Homebrew.
 - For Windows users, libusb 1.0 DLLs are provided in the releases. Check the
-  `libusb website`_.
+  `PyUSB FAQ`_.
 
-.. _libusb website: http://www.libusb.info
+.. _PyUSB FAQ: https://github.com/pyusb/pyusb/blob/master/docs/faq.rst#how-do-i-install-libusb-on-windows
 
 
 USB access permissions for Linux
