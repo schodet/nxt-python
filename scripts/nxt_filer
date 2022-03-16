@@ -57,7 +57,6 @@ import nxt.locator
 from usb.core import USBError
 from nxt.locator import BrickNotFoundError
 from nxt.error import FileExistsError, SystemProtocolError
-from nxt.telegram import OPCODES, Telegram
 
 
 def play_soundfile(b, fname):
@@ -382,9 +381,7 @@ class AboutDialog(Gtk.AboutDialog):
 
 class Application(Gtk.Application):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args,
-                         flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE,
-                         **kwargs)
+        super().__init__(*args, **kwargs)
         self.window = None
 
         self.set_option_context_summary(
