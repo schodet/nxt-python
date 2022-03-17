@@ -1,6 +1,7 @@
 include logo.svg
 include tests/*.py
 include scripts/python-nxt-filer.desktop
+include contrib/60-libnxt.rules
 include docs/Makefile
 include docs/conf.py
 include docs/favicon.ico
