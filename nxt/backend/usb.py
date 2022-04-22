@@ -15,6 +15,7 @@
 # GNU General Public License for more details.
 
 import logging
+import os
 
 import usb.core
 
@@ -53,7 +54,11 @@ class USBSock:
         :rtype: Brick
         """
         logger.info("connecting via %s", self)
-        self._dev.reset()
+        if os.name != "nt":
+            # Do not reset device on Windows, see
+            # https://github.com/schodet/nxt-python/issues/182 and
+            # https://github.com/schodet/nxt-python/issues/33
+            self._dev.reset()
         self._dev.set_configuration()
         intf = self._dev.get_active_configuration()[(0, 0)]
         self._epout, self._epin = intf
