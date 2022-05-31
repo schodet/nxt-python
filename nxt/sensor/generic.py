@@ -22,7 +22,7 @@ class Touch(BaseAnalogSensor):
     """The LEGO touch sensor"""
 
     def __init__(self, brick, port):
-        super(Touch, self).__init__(brick, port)
+        super().__init__(brick, port)
         self.set_input_mode(Type.SWITCH, Mode.BOOL)
 
     def is_pressed(self):
@@ -36,7 +36,7 @@ class Light(BaseAnalogSensor):
     used.
     """
     def __init__(self, brick, port, illuminated=True):
-        super(Light, self).__init__(brick, port)
+        super().__init__(brick, port)
         self.set_illuminated(illuminated)
 
     def set_illuminated(self, active):
@@ -56,7 +56,7 @@ class Sound(BaseAnalogSensor):
     'Object for sound sensors'
 
     def __init__(self, brick, port, adjusted=True):
-        super(Sound, self).__init__(brick, port)
+        super().__init__(brick, port)
         self.set_adjusted(adjusted)
 
     def set_adjusted(self, active):
@@ -100,7 +100,7 @@ class Ultrasonic(BaseDigitalSensor):
         REQUEST_WARM_RESET = 0x04
 
     def __init__(self, brick, port, check_compatible=True):
-        super(Ultrasonic, self).__init__(brick, port, check_compatible)
+        super().__init__(brick, port, check_compatible)
 
     def get_distance(self):
         'Function to get data from the ultrasonic sensor'
@@ -135,7 +135,7 @@ Ultrasonic.add_compatible_sensor(None, 'LEGO', 'Sonar') #Tested with version 'V1
 
 class Color(BaseAnalogSensor):
     def __init__(self, brick, port):
-        super(Color, self).__init__(brick, port)
+        super().__init__(brick, port)
         self.set_light_color(Type.COLOR_FULL)
 
     def set_light_color(self, color):
@@ -167,7 +167,7 @@ class Temperature(BaseDigitalSensor):
         # This sensor does not follow the convention of having version/vendor/
         # product at I2C registers 0x00/0x08/0x10, so check_compatible is
         # always False
-        super(Temperature, self).__init__(brick, port, False)
+        super().__init__(brick, port, False)
 
     def _get_raw_value(self):
         """Returns raw unscaled value"""

@@ -98,7 +98,7 @@ class Accelerometer(BaseDigitalSensor):
             self.x, self.y, self.z = x, y, z
     
     def __init__(self, brick, port, check_compatible=True):
-        super(Accelerometer, self).__init__(brick, port, check_compatible)
+        super().__init__(brick, port, check_compatible)
 
     def get_acceleration(self):
         """Returns the acceleration along x, y, z axes. 200 => 1g.
@@ -142,7 +142,7 @@ whether this worked for you or not!
             self.channel_4 = (m4A, m4B)
     
     def __init__(self, brick, port, check_compatible=True):
-        super(IRReceiver, self).__init__(brick, port, check_compatible)
+        super().__init__(brick, port, check_compatible)
 
     def get_speeds(self):
         """Returns the motor speeds for motors A and B on channels 1-4.
@@ -209,7 +209,7 @@ but not tested. Please report whether this worked for you or not!
             
     
     def __init__(self, brick, port, check_compatible=True):
-        super(IRSeekerv2, self).__init__(brick, port, check_compatible)
+        super().__init__(brick, port, check_compatible)
 
     def get_dc_values(self):
         """Returns the unmodulated (DC) values.
@@ -247,7 +247,7 @@ class EOPD(BaseAnalogSensor):
     _MAX_DISTANCE = 1023
 
     def __init__(self, brick, port):
-        super(EOPD, self).__init__(brick, port)
+        super().__init__(brick, port)
         from math import sqrt
         self.sqrt = sqrt
 
@@ -338,7 +338,7 @@ but not tested. Please report whether this worked for you or not!"""
             self.red, self.green, self.blue, self.white = red, green, blue, white
     
     def __init__(self, brick, port, check_compatible=True):
-        super(Colorv2, self).__init__(brick, port, check_compatible)
+        super().__init__(brick, port, check_compatible)
 
     def get_active_color(self):
         """Returns color values when in active mode.
@@ -374,7 +374,7 @@ class Gyro(BaseAnalogSensor):
 #takes the currect value and uses it to offset subsequesnt ones.
 
     def __init__(self, brick, port):
-        super(Gyro, self).__init__(brick, port)
+        super().__init__(brick, port)
         self.set_input_mode(Type.ANGLE, Mode.RAW)
         self.offset = 0
     
@@ -483,7 +483,7 @@ the sensor but not tested. Please report whether this worked for you or not!"""
         RUNNING = 0x01 #motor(s) moving
 
     def __init__(self, brick, port, check_compatible=True):
-        super(ServoCon, self).__init__(brick, port, check_compatible)
+        super().__init__(brick, port, check_compatible)
 
     def get_status(self):
         """Returns the status of the motors. 0 for all stopped, 1 for
@@ -541,7 +541,7 @@ class MotorCon(BaseDigitalSensor):
             self.p, self.i, self.d = p, i, d
     
     def __init__(self, brick, port, check_compatible=True):
-        super(MotorCon, self).__init__(brick, port, check_compatible)
+        super().__init__(brick, port, check_compatible)
     
     def set_enc_target(self, mot, val):
         """Set the encoder target (-2147483648-2147483647) for a motor

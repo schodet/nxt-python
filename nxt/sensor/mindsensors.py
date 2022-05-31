@@ -44,7 +44,7 @@ class SumoEyes(BaseAnalogSensor):
             return '(left: ' + str(self.left) + ', right: ' + str(self.right) + ')'
 
     def __init__(self, brick, port, long_range=False):
-        super(SumoEyes, self).__init__(brick, port)
+        super().__init__(brick, port)
         self.set_long_range(long_range)
         
     def set_long_range(self, val):
@@ -91,7 +91,7 @@ To determine your sensor's version, use get_sensor_info().version"""
         LOAD_USER_CALIBRATION = 'L' # load user calibration value
     
     def __init__(self, brick, port, check_compatible=True):
-        super(Compassv2, self).__init__(brick, port, check_compatible)
+        super().__init__(brick, port, check_compatible)
         self.command(self.Commands.MAP_HEADING_INTEGER)
 
     def command(self, command):
@@ -169,7 +169,7 @@ class RTC(BaseDigitalSensor):
     I2C_DEV = 0xD0
 
     def __init__(self, brick, port):
-        super(RTC, self).__init__(brick, port, check_compatible=False)
+        super().__init__(brick, port, check_compatible=False)
 
     def get_seconds(self):  
         gs = self.read_value('seconds')[0]
@@ -302,7 +302,7 @@ class ACCL(BaseDigitalSensor):
         ADPA_OFF = 'O' #Set ADPA mode Off (default)
     
     def __init__(self, brick, port, check_compatible=True):
-        super(ACCL, self).__init__(brick, port, check_compatible)
+        super().__init__(brick, port, check_compatible)
 
     def command(self, command):
         value = ord(command)
@@ -368,7 +368,7 @@ class MTRMUX(BaseDigitalSensor):
         BRAKE = 0x03    
     
     def __init__(self, brick, port, check_compatible=True):
-        super(MTRMUX, self).__init__(brick, port, check_compatible)
+        super().__init__(brick, port, check_compatible)
 
     def command(self, command):
         self.write_value('command', (command, )) 
@@ -447,7 +447,7 @@ class LineLeader(BaseDigitalSensor):
         SNAPSHOT = 'S'
     
     def __init__(self, brick, port, check_compatible=True):
-        super(LineLeader, self).__init__(brick, port, check_compatible)
+        super().__init__(brick, port, check_compatible)
 
     def command(self, command):
         value = ord(command)
@@ -563,7 +563,7 @@ class Servo(BaseDigitalSensor):
         PAUSE_MACRO = 'P'
     
     def __init__(self, brick, port, check_compatible=True):
-        super(Servo, self).__init__(brick, port, check_compatible)
+        super().__init__(brick, port, check_compatible)
         
     def command(self, command):
         value = self.COMMANDVALUES[command]
@@ -641,7 +641,7 @@ class MMX(BaseDigitalSensor):
         MOTOR_2_ENC_RESET = 's'
     
     def __init__(self, brick, port, check_compatible=True):
-        super(MMX, self).__init__(brick, port, check_compatible)
+        super().__init__(brick, port, check_compatible)
     
     def command(self, command):
         value = ord(command)
@@ -729,7 +729,7 @@ These are connected to a computer and look like a keyboard to it."""
         DIRECT_MODE = 'D'
     
     def __init__(self, brick, port, check_compatible=True):
-        super(HID, self).__init__(brick, port, check_compatible)
+        super().__init__(brick, port, check_compatible)
     
     def command(self, command):
         value = ord(command)
@@ -789,7 +789,7 @@ class PS2(BaseDigitalSensor):
         ADPA_OFF = 'O'
     
     def __init__(self, brick, port, check_compatible=True):
-        super(PS2, self).__init__(brick, port, check_compatible)
+        super().__init__(brick, port, check_compatible)
     
     def command(self, command):
         value = ord(command)

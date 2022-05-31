@@ -64,7 +64,7 @@ class BaseDigitalSensor(nxt.sensor.Sensor):
         the sensor for its name, and if a wrong sensor class was used, prints
         a warning.
         """
-        super(BaseDigitalSensor, self).__init__(brick, port)
+        super().__init__(brick, port)
         self.set_input_mode(nxt.sensor.Type.LOW_SPEED_9V, nxt.sensor.Mode.RAW)
         self.last_poll = time.time()
         self.poll_delay = 0.01
