@@ -10,6 +10,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+import struct
 from unittest.mock import Mock, call
 
 import pytest
@@ -354,10 +355,16 @@ class TestGenericDigital:
             is nxt.sensor.generic.Temperature.get_deg_c
         )
         s = mbrick.get_sensor(Port.S1, nxt.sensor.generic.Temperature)
-        mdigital.read_value.return_value = (1600 * 16,)
+        mdigital.read_value.side_effect = [
+            (1600 * 16,),
+            (1600 * 16,),
+            struct.unpack(">h", b"\xff\x80"),
+        ]
         assert s.get_deg_c() == 100
         assert s.get_deg_f() == 212
+        assert s.get_deg_c() == -0.5
         assert mdigital.mock_calls == [
+            call.read_value("raw_value"),
             call.read_value("raw_value"),
             call.read_value("raw_value"),
         ]
