@@ -129,7 +129,9 @@ class TestGeneric:
             (Port.S1, True, False, Type.COLOR_RED, Mode.RAW, 114, 46, 46, 46),
             (Port.S1, True, False, Type.COLOR_RED, Mode.RAW, 114, 46, 46, 46),
         ]
-        assert s.get_color() == 4
+        color = s.get_color()
+        assert color == 4
+        assert color == s.DetectedColor.YELLOW
         assert s.get_reflected_light(Type.COLOR_RED) == 46
         assert s.get_light_color() == Type.COLOR_RED
         assert mbrick.mock_calls == [

@@ -225,6 +225,30 @@ class Color(BaseAnalogSensor):
     light sensor included in the first version or in the Education set.
     """
 
+    class DetectedColor(enum.IntEnum):
+        """Color detected by the sensor.
+
+        This is an :class:`enum.IntEnum` for backward compatibility.
+        """
+
+        BLACK = 1
+        """Black or low intensity."""
+
+        BLUE = 2
+        """Blue."""
+
+        GREEN = 3
+        """Green."""
+
+        YELLOW = 4
+        """Yellow."""
+
+        RED = 5
+        """Red."""
+
+        WHITE = 6
+        """White."""
+
     def __init__(self, brick, port):
         super().__init__(brick, port)
         self.set_light_color(Type.COLOR_FULL)
@@ -258,13 +282,13 @@ class Color(BaseAnalogSensor):
         """Get detected color.
 
         :return: Detected color.
-        :rtype: int
+        :rtype: DetectedColor
 
         This also sets the sensor mode to color detection (light is cycling quickly to
         determine color).
         """
         self.get_reflected_light(Type.COLOR_FULL)
-        return self.get_input_values().scaled_value
+        return self.DetectedColor(self.get_input_values().scaled_value)
 
     get_sample = get_color
 
