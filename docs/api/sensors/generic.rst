@@ -1,8 +1,5 @@
-LEGO Mindstorms Sensors
-=======================
-
-Work in progress...
+LEGO Mindstorms NXT Sensors
+===========================
 
 .. automodule:: nxt.sensor.generic
    :members:
-   :undoc-members:

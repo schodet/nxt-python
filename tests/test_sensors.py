@@ -336,7 +336,7 @@ class TestGenericDigital:
         assert s.get_measurement_units() == "10E-2m"
         assert s.get_all_measurements() == (1, 2, 3, 4, 5, 6, 7, 8)
         assert s.get_measurement_no(3) == 4
-        s.command(s.Commands.OFF)
+        s.command(s.Command.OFF)
         assert s.get_interval() == 43
         s.set_interval(44)
         assert mdigital.mock_calls == [
