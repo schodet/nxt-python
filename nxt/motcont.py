@@ -180,7 +180,7 @@ class MotCont:
         :param int version: Version to start, default to 22 (version 2.2).
 
         It needs to already be present on the brick's flash and named
-        ``MotorControlXX.rxc``, where `XX` is the version number passed as the version
+        ``MotorControlXX.rxe``, where `XX` is the version number passed as the version
         argument.
         """
         try:
