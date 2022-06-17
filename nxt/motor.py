@@ -257,14 +257,16 @@ class BaseMotor:
 
         try:
             while not stop_turn():
-                current_time = time.time()
+                time.sleep(0.1)
 
                 if current_time - last_time < sleep_time:
+                    current_time = time.time()
                     continue
                 else:
                     if not blocked:  # if still blocked, don't reset the counter
                         last_tacho = tacho
                         last_time = current_time
+                    current_time = time.time()
 
                 tacho = self.get_tacho()
                 blocked = self._is_blocked(tacho, last_tacho, direction)
