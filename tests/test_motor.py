@@ -10,7 +10,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-from unittest.mock import call
+from unittest.mock import MagicMock, call
 
 import pytest
 
@@ -167,7 +167,7 @@ def test_turn(mbrick, mmotor, mtime):
 
 
 def test_turn_blocked(mbrick, mmotor, mtime):
-    mtime.time.side_effect = [0, 1]
+    mtime.time.side_effect = [0, 0, 1, 2]
     with pytest.raises(nxt.motor.BlockedException):
         mmotor.turn(50, 360, brake=False, timeout=0.1, emulate=False)
     assert mbrick.mock_calls == [
@@ -184,6 +184,55 @@ def test_turn_blocked(mbrick, mmotor, mtime):
         call.get_output_state(Port.A),
         call.set_output_state(
             Port.A, 0, Mode.IDLE, RegulationMode.IDLE, 0, RunState.IDLE, 0
+        ),
+    ]
+
+
+def test_turn_stopped(mbrick, mmotor, mtime):
+    # Test if skipping get_tacho() while not "slept enough"
+    # Test motor gets stopped once stop_turn is set to True
+    mbrick.get_output_state.side_effect = [
+        (Port.A, 0, Mode.IDLE, RegulationMode.IDLE, 0, RunState.IDLE, 0, 0, 0, 0),
+        (
+            Port.A,
+            50,
+            Mode.ON | Mode.REGULATED,
+            RegulationMode.SPEED,
+            0,
+            RunState.RUNNING,
+            0,
+            90,
+            90,
+            90,
+        ),
+    ]
+    mtime.time.side_effect = [0, 0, 0.1, 0.2, 0.8, 0.9]
+
+    stop_motor_mock = MagicMock(side_effect=lambda: False)
+    stop_motor_mock.side_effect = [False, False, False, False, True]
+
+    mmotor.turn(50, 360, stop_turn=stop_motor_mock)
+
+    assert mbrick.mock_calls == [
+        call.get_output_state(Port.A),
+        call.set_output_state(
+            Port.A,
+            50,
+            Mode.ON | Mode.REGULATED,
+            RegulationMode.SPEED,
+            0,
+            RunState.RUNNING,
+            0,
+        ),
+        call.get_output_state(Port.A),
+        call.set_output_state(
+            Port.A,
+            0,
+            Mode.ON | Mode.REGULATED | Mode.BRAKE,
+            RegulationMode.SPEED,
+            0,
+            RunState.RUNNING,
+            0,
         ),
     ]
 
