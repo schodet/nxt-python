@@ -197,7 +197,7 @@ def get_tacho_and_state(values):
 class BaseMotor:
     """Base class for motors"""
 
-    def turn(self, power, tacho_units, brake=True, timeout=1, emulate=True):
+    def turn(self, power, tacho_units, brake=True, timeout=1, emulate=True, stop_turn=lambda: False):
         """Use this to turn a motor.
 
         :param int power: Value between -127 and 128 (an absolute value greater than 64
@@ -212,9 +212,11 @@ class BaseMotor:
            If ``True``, a run() function equivalent is used. Warning: motors remember
            their positions and not using emulate may lead to strange behavior,
            especially with synced motors
+        :param lambda: bool stop_turn: If stop_turn returns ``True`` the motor stops turning. 
+           Depending on ``brake`` it stops by holding or not holding the motor.
 
-        The motor will not stop until it turns the desired distance. Accuracy is much
-        better over a USB connection than with bluetooth...
+        The motor will not stop until it turns the desired distance or stop_turn is set to True. 
+        Accuracy is much better over a USB connection than with bluetooth...
         """
 
         tacho_limit = tacho_units
@@ -246,20 +248,27 @@ class BaseMotor:
 
         direction = 1 if power > 0 else -1
         logger.debug("tachocount: %s", tacho)
+
         current_time = time.time()
+        last_time = time.time()
         tacho_target = tacho.get_target(tacho_limit, direction)
-
         blocked = False
-        try:
-            while True:
-                time.sleep(self._eta(tacho, tacho_target, power) / 2)
+        sleep_time = self._eta(tacho, tacho_target, power) / 2
 
-                if not blocked:  # if still blocked, don't reset the counter
-                    last_tacho = tacho
-                    last_time = current_time
+        try:
+            while not stop_turn():
+                time.sleep(0.1)
+
+                if current_time - last_time < sleep_time:
+                    current_time = time.time()
+                    continue
+                else:
+                    if not blocked:  # if still blocked, don't reset the counter
+                        last_tacho = tacho
+                        last_time = current_time
+                    current_time = time.time()
 
                 tacho = self.get_tacho()
-                current_time = time.time()
                 blocked = self._is_blocked(tacho, last_tacho, direction)
                 if blocked:
                     logger.debug("not advancing: %s %s", last_tacho, tacho)
@@ -272,10 +281,13 @@ class BaseMotor:
                             raise BlockedException("Blocked!")
                 else:
                     logger.debug("advancing: %s %s", last_tacho, tacho)
+
                 if tacho.is_near(tacho_target, threshold) or tacho.is_greater(
                     tacho_target, direction
                 ):
                     break
+
+                sleep_time = self._eta(tacho, tacho_target, power) / 2
         finally:
             if brake:
                 self.brake()
