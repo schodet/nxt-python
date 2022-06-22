@@ -84,3 +84,20 @@ this is not the case.
 Try this::
 
     python3 -m pip install PyBluez
+
+
+On MacOS::
+
+The current PyPi version of pybluez does not work with nxt-python. You will need to a more recent version from GitHub.
+
+Download and install Xcode from App Store or Apple Developer site
+
+Then activate the Xcode installation::
+
+    xcode-select -s /Applications/Xcode.app/Contents/Developer
+
+Then install pybluez from GitHub::
+
+    pip3 install https://github.com/pybluez/pybluez/tarball/07ebef044195331a48bbb90a3acb911922048ba0
+
+As of 06/18/2022, commit 07ebef044195331a48bbb90a3acb911922048ba0 works with nxt-python 3.1.0.
