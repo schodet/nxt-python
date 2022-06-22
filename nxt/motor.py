@@ -197,7 +197,15 @@ def get_tacho_and_state(values):
 class BaseMotor:
     """Base class for motors"""
 
-    def turn(self, power, tacho_units, brake=True, timeout=1, emulate=True, stop_turn=lambda: False):
+    def turn(
+        self,
+        power,
+        tacho_units,
+        brake=True,
+        timeout=1,
+        emulate=True,
+        stop_turn=lambda: False,
+    ):
         """Use this to turn a motor.
 
         :param int power: Value between -127 and 128 (an absolute value greater than 64
@@ -212,11 +220,11 @@ class BaseMotor:
            If ``True``, a run() function equivalent is used. Warning: motors remember
            their positions and not using emulate may lead to strange behavior,
            especially with synced motors
-        :param lambda: bool stop_turn: If stop_turn returns ``True`` the motor stops turning. 
-           Depending on ``brake`` it stops by holding or not holding the motor.
+        :param lambda: bool stop_turn: If stop_turn returns ``True`` the motor stops
+           turning. Depending on ``brake`` it stops by holding or not holding the motor.
 
-        The motor will not stop until it turns the desired distance or stop_turn is set to True. 
-        Accuracy is much better over a USB connection than with bluetooth...
+        The motor will not stop until it turns the desired distance or stop_turn returns
+        True. Accuracy is much better over a USB connection than with bluetooth...
         """
 
         tacho_limit = tacho_units
