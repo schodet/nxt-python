@@ -85,7 +85,7 @@ def test_bluetooth(mbluetooth, mbluetooth_import, msock):
     backend = nxt.backend.bluetooth.get_backend()
     # Find brick.
     mbluetooth.discover_devices.return_value = [
-        "00:01:02:03:04:05",
+        b"00:01:02:03:04:05",
     ]
     bricks = list(backend.find(blah="blah"))
     assert len(bricks) == 1
