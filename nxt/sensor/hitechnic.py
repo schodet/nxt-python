@@ -17,6 +17,7 @@
 from nxt.sensor import Type, Mode
 from .digital import BaseDigitalSensor
 from .analog import BaseAnalogSensor
+from enum import IntEnum
 
 
 class Compass(BaseDigitalSensor):
@@ -457,7 +458,236 @@ and can be converted into a list of bools or an integer."""
         """Sets input/output mode of digital pins. Can take a Digital_Data() object."""
         self.write_value('digital_cont', (int(modes), ))
 
+
 Prototype.add_compatible_sensor(None, 'HiTechnc', 'Proto   ')
+
+
+class SuperPro(BaseDigitalSensor):
+    """
+    Object for HiTechnic sensor SuperPro boards.
+    """
+    I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
+    I2C_ADDRESS.update({
+        "version": (0x00, "8s"),
+        "manufacturer": (0x08, "8s"),
+        "sensor_type": (0x10, "8s"),
+        "analog_a0": (0x42, "<H"),
+        "analog_a1": (0x44, "<H"),
+        "analog_a2": (0x46, "<H"),
+        "analog_a3": (0x48, "<H"),
+        "digital_in": (0x4C, "<B"),
+        "digital_out": (0x4D, "<B"),
+        "digital_dir": (0x4E, "<B"),
+        "strobe_out": (0x50, "B"),
+        "led_out": (0x51, "B"),
+        "analog_out0_mode": (0x52, "B"),
+        "analog_out0_freq": (0x53, "<H"),
+        "analog_out0_volts": (0x55, "H"),
+        "analog_out1_mode": (0x57, "B"),
+        "analog_out1_freq": (0x58, "<H"),
+        "analog_out1_volts": (0x5A, "H")
+    })
+
+    """
+    Some users online report that this I2C device address is 0x08, the documentation states that it's 0x10.
+    Let us know if this value doesn't work for you and 0x08 does. 0x10 works in testing with my hardware.
+    """
+    I2C_DEV = 0x10
+
+    # Used for converting ADC bits into percent signal
+    ANALOG_LSB = 1 / 1023
+
+    class AnalogOutputMode(IntEnum):
+        DC = 0
+        SINE = 1
+        SQUARE = 2
+        UPWARDS_SAWTOOTH = 3
+        DOWNWARDS_SAWTOOTH = 4
+        TRIANGLE = 5
+        # There's supposed to be a PWM type, but it doesn't seem to function.
+
+    def get_analog(self) -> dict[str, int]:
+        """
+        Get analog input pins (A0-A3) result in raw bits
+        :return: Map of pin name, pin value (bits)
+        """
+        analog_in_pin_name_map = [("analog_a0", "a0"), ("analog_a1", "a1"), ("analog_a2", "a2"), ("analog_a3", "a3")]
+        analog_raw_map = {}
+        for pin in analog_in_pin_name_map:
+            raw = self.read_value(pin[0])[0]
+            # Not 100% sure about this logic but seems to work.
+            low = (raw & 0xFF00) >> 8
+            high = raw & 0x00FF
+            analog_input = low + high * 4
+            """
+            Debug printouts, in case you need them
+            print("raw {0:#016b}".format(raw))
+            print("low {0:#016b}".format(low))
+            print("high {0:#016b}".format(high))
+            print("{0}: {1} {1:#016b}".format(pin, analog_input))
+            """
+            analog_raw_map[pin[1]] = analog_input
+        return analog_raw_map
+
+    def get_analog_volts(self, voltage_reference: float = 3.3) -> dict[str, float]:
+        """
+        Get analog input pins (A0-A3) results in volts. Resolution to ~3mV (voltage reference * (1/1023) volts)
+        :param voltage_reference: optionally provide measured voltage from 3.3V regulator for more accurate calculations
+        :return: Map of pin name, pin voltage (in volts)
+        """
+        analog_raw_map = self.get_analog()
+        analog_voltage_map = {}
+        for item in analog_raw_map:
+            analog_voltage_map[item] = analog_raw_map[item] * self.ANALOG_LSB * voltage_reference
+        return analog_voltage_map
+
+    @staticmethod
+    def _byte_to_boolean_list(integer: int, reverse=False) -> list[bool]:
+        # Converts byte to boolean string, inverts string to correct bit order if needed, converts chars to boolean list
+        if reverse:
+            return [bit == "1" for bit in "{0:08b}".format(integer)[::-1]]
+        return [bit == "1" for bit in "{0:08b}".format(integer)]
+
+    @staticmethod
+    def _boolean_list_to_byte(boolean_list: list[bool], reverse=False) -> int:
+        if len(boolean_list) != 8:
+            raise RuntimeError("List must be 8 booleans in length")
+        if reverse:
+            boolean_list.reverse()
+        output_byte = 0
+        for bit in range(0, 8):
+            output = (2 ** bit) * boolean_list[bit]
+            """
+            Debug prints
+            print("bit: {}".format(boolean_list[bit]))
+            print("value: {}".format(2 ** bit))
+            print("output: {}".format(output))
+            """
+            output_byte += output
+        return output_byte
+
+    def get_digital(self) -> dict[str, bool]:
+        """
+        Get digital input pins (D0-D7)
+        :return: Boolean list, LSB first.
+        """
+        digital_in = self.read_value("digital_in")[0]
+        boolean_list = self._byte_to_boolean_list(digital_in, reverse=True)
+        digital_in_map = {}
+        for x in range(0, 8):
+            digital_in_map["b{}".format(x)] = boolean_list[x]
+        return digital_in_map
+
+    def set_digital(self, pins: list[bool]):
+        """
+        Set digital output pins (D0-D7)
+        :param pins: boolean list (LSB first)
+        """
+        if len(pins) != 8:
+            raise RuntimeError("Need to specify list of 8 boolean values")
+        self.write_value("digital_out", [self._boolean_list_to_byte(pins)])
+
+    def set_digital_byte(self, integer: int, lsb=True):
+        """
+        Set digital output pins (D0-D7) from byte
+        :param integer: Byte (0-255 inclusive)
+        :param lsb: Whether to output in LSB order (0x01 = pin B0)
+        """
+        if not (0 <= integer <= 255):
+            raise RuntimeError("Integer must be in range of 0 to 255 inclusive")
+        self.set_digital(self._byte_to_boolean_list(integer, reverse=lsb))
+
+    def set_digital_modes(self, modes: list[bool]):
+        """
+        Set digital pin mode (D0-D7)
+        :param modes: boolean list (LSB first, True = Output, False = Input)
+        """
+        if len(modes) != 8:
+            raise RuntimeError("Need to specify list of 8 boolean values")
+        self.write_value("digital_dir", [self._boolean_list_to_byte(modes)])
+
+    def set_digital_modes_byte(self, mode_int: int, lsb=True):
+        """
+        Set digital output pins mode (D0-D7) from byte
+        :param mode mode_int: Byte (0-255 inclusive)
+        :param lsb: Whether to output in LSB order (0x01 = pin B0)
+        """
+        if not (0 <= mode_int <= 255):
+            raise RuntimeError("Integer must be in range of 0 to 255 inclusive")
+        self.set_digital_modes(self._byte_to_boolean_list(mode_int, reverse=lsb))
+
+    def set_strobe_output(self, mode_int: int):
+        """
+        Strobe output ??
+        It's unclear what the Strobe output does. It appears to just output like the output pins do.
+        S0 = 1, S1 = 2 S2 = 4 S3 = 8 RD = 16 WR = 32 (64 and 128 have seemingly no meaning??)
+        :param mode_int: mode_int: Byte (0-63 inclusive)
+        """
+        if not (0 <= mode_int <= 255):
+            raise RuntimeError("Integer must be in range of 0 to 255 inclusive")
+        self.write_value("strobe_out", [mode_int])
+
+    def set_led_output(self, red=False, blue=False):
+        """
+        Set LED output. True = On, False = Off
+        :param red: Boolean for Red LED
+        :param blue: Boolean for Blue LED
+        """
+        output_byte = (red * 0x01) + (blue * 0x02)
+        self.write_value("led_out", [output_byte])
+
+    def analog_out(self, pin: int, mode: AnalogOutputMode | int, freq: int, voltage_bits: int):
+        """
+        Analog Output Pins
+        :param pin: 0 for O0, 1 for O1
+        :param mode: 0-5 for various modes, see AnalogOutputMode class
+        :param freq: 0 to 2^13Hz (~8kHz) Note: if 0 provided for wave, will get 1Hz.
+        :param voltage_bits: 0-1023 for 0V to 3.3V (ish)
+        """
+        if not 0 <= pin <= 1:
+            raise RuntimeError("Pin must be 0 or 1")
+        if not 0 <= voltage_bits <= ((2 ** 10) - 1):
+            raise RuntimeError("Integer must be in range of 0 and (2^10)-1 inclusive")
+        low = voltage_bits & 0b0000000000000011
+        low_shifted = low << 8
+        high = voltage_bits & 0b0000001111111100
+        high_shifted = high >> 2
+        actual_voltage_bits = low_shifted | high_shifted
+        """
+        Debug prints (these were really useful to make sure that the bits were moved correctly for the DAC)
+        print("b  {0:016b}".format(voltage_bits))
+        print("l  {0:016b}".format(low))
+        print("ls {0:016b}".format(low_shifted))
+        print("h  {0:016b}".format(high))
+        print("hs {0:016b}".format(high_shifted))
+        print("a  {0:016b}".format(actual_voltage_bits))
+        """
+        if pin != 0:
+            self.write_value("analog_out1_mode", [mode])
+            self.write_value("analog_out1_freq", [freq])
+            self.write_value("analog_out1_volts", [actual_voltage_bits])
+        else:
+            self.write_value("analog_out0_mode", [mode])
+            self.write_value("analog_out0_freq", [freq])
+            self.write_value("analog_out0_volts", [actual_voltage_bits])
+
+    def analog_out_voltage(self, pin: int, mode: AnalogOutputMode | int, freq: int, voltage: float, voltage_reference=3.3):
+        """
+        Analog Output Pins
+        :param pin: 0 for O0, 1 for O1
+        :param mode: 0-5 for various modes, see AnalogOutputMode class
+        :param freq: 0 to 2^13Hz (~8kHz) Note: if 0 provided for wave, will get 1Hz.
+        :param voltage: The desired voltage (between 0 and the voltage reference)
+        :param voltage_reference: Output 1023 in the analog_out mode to find the maximum voltage, enter it here.
+        """
+        if not 0 <= pin <= 1:
+            raise RuntimeError("Pin must be 0 or 1")
+        voltage_percentile = voltage / voltage_reference
+        voltage_bits = int(voltage_percentile * 1023)
+        self.analog_out(pin, mode, freq, voltage_bits)
+
+
+SuperPro.add_compatible_sensor(None, 'HiTechnc', 'SuperPro')
 
 
 class ServoCon(BaseDigitalSensor):
