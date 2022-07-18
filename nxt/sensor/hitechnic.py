@@ -391,16 +391,14 @@ class Gyro(BaseAnalogSensor):
 
 
 class Prototype(BaseDigitalSensor):
-    """Object for HiTechnic sensor prototype boards. Coded to HiTechnic's specs but not
-tested. Please report whether this worked for you or not!
-    """
+    """Object for HiTechnic sensor prototype boards."""
     I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
     I2C_ADDRESS.update({
         'A0': (0x42, '<H'),
-        'A0': (0x44, '<H'),
-        'A0': (0x46, '<H'),
-        'A0': (0x48, '<H'),
-        'A0': (0x4A, '<H'),
+        'A1': (0x44, '<H'),
+        'A2': (0x46, '<H'),
+        'A3': (0x48, '<H'),
+        'A4': (0x4A, '<H'),
         'all_analog': (0x42, '<5H'),
         'digital_in': (0x4C, 'B'),
         'digital_out': (0x4D, 'B'),
