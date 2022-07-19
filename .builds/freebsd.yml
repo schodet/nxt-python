@@ -3,13 +3,13 @@ packages:
   - python3
   - python37
   - python38
-  - py38-pytest
-  - py38-pyusb
   - python39
   - python310
   - python311
-  - py38-pip
-  - py38-tox
+  - py39-pytest
+  - py39-pyusb
+  - py39-pip
+  - py39-tox
 sources:
   - https://git.sr.ht/~ni/nxt-python
 tasks:
