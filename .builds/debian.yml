@@ -24,4 +24,8 @@ tasks:
       cd nxt-python
       python3 setup.py install --user
   - upload: |
-      acurl -f https://pages.sr.ht/publish/$site/nxt-python -Fcontent=@nxt-python.tar.gz
+      cd nxt-python
+      # Only on master branch.
+      if [ "$(git rev-parse master)" = "$(git rev-parse HEAD)" ]; then \
+        acurl -f https://pages.sr.ht/publish/$site/nxt-python -Fcontent=@../nxt-python.tar.gz; \
+      fi
