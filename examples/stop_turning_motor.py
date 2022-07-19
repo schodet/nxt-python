@@ -1,4 +1,5 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
+"""NXT-Python example to use thread to stop a motor."""
 import threading
 import time
 
@@ -7,9 +8,9 @@ import nxt.motor
 
 with nxt.locator.find() as b:
     # Get the motor connected to the port A.
-    mymotor: nxt.motor.BaseMotor = b.get_motor(nxt.motor.Port.A)
+    mymotor = b.get_motor(nxt.motor.Port.A)
 
-    stop_motor = False  # controls wether the motor should stop turning
+    stop_motor = False  # controls whether the motor should stop turning
 
     # create thread that turns the motor
     t = threading.Thread(
