@@ -6,5 +6,6 @@ include contrib/60-libnxt.rules
 include docs/Makefile
 include docs/conf.py
 include docs/favicon.ico
+include .pre-commit-config.yaml
 recursive-include docs *.rst
 recursive-include examples *.py

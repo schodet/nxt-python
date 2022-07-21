@@ -1,0 +1,48 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: fix-byte-order-marker
+      - id: trailing-whitespace
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+  - repo: https://github.com/psf/black
+    rev: 23.1.0
+    hooks:
+      - id: black
+        # Exclude files not cleaned up yet.
+        exclude: |
+          (?x)^(
+            nxt/sensor/digital\.py|
+            nxt/sensor/hitechnic\.py|
+            nxt/sensor/mindsensors\.py|
+          )$
+  - repo: https://github.com/pycqa/flake8
+    rev: 5.0.4
+    hooks:
+      - id: flake8
+        # Exclude files not cleaned up yet.
+        exclude: |
+          (?x)^(
+            nxt/sensor/digital\.py|
+            nxt/sensor/hitechnic\.py|
+            nxt/sensor/mindsensors\.py|
+          )$
+  - repo: local
+    hooks:
+      - id: pytest
+        name: pytest
+        language: system
+        entry: python3 -m pytest
+        types: [python]
+        pass_filenames: false
+  - repo: https://github.com/mgedmin/check-manifest
+    rev: "0.49"
+    hooks:
+      - id: check-manifest
+        stages: [push, manual]
