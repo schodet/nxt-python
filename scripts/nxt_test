@@ -2,37 +2,41 @@
 
 import argparse
 import logging
-import sys
 
 import nxt.locator
 
 p = argparse.ArgumentParser(description="Test the nxt-python setup")
-p.add_argument("--no-sound", action="store_false", dest="sound",
-               default=True, help="disable sound test")
+p.add_argument(
+    "--no-sound",
+    action="store_false",
+    dest="sound",
+    default=True,
+    help="disable sound test",
+)
 nxt.locator.add_arguments(p)
-levels = ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL')
+levels = ("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL")
 p.add_argument("--log-level", type=str.upper, choices=levels, help="set log level")
 options = p.parse_args()
 
 if options.log_level:
     logging.basicConfig(level=options.log_level)
 
-print('Find brick...', flush=True)
+print("Find brick...", flush=True)
 with nxt.locator.find_with_options(options) as b:
     name, host, signal_strengths, user_flash = b.get_device_info()
-    print('NXT brick name: %s' % name)
-    print('Host address: %s' % host)
-    print('Bluetooth signal strengths: %r' % (signal_strengths,))
-    print('Free user flash: %s' % user_flash)
+    print("NXT brick name: %s" % name)
+    print("Host address: %s" % host)
+    print("Bluetooth signal strengths: %r" % (signal_strengths,))
+    print("Free user flash: %s" % user_flash)
     prot_version, fw_version = b.get_firmware_version()
-    print('Protocol version %s.%s' % prot_version)
-    print('Firmware version %s.%s' % fw_version)
+    print("Protocol version %s.%s" % prot_version)
+    print("Firmware version %s.%s" % fw_version)
     millivolts = b.get_battery_level()
-    print('Battery level %s mV' % millivolts)
+    print("Battery level %s mV" % millivolts)
     if options.sound:
-        print('Play test sound...', end='', flush=True)
+        print("Play test sound...", end="", flush=True)
         b.play_tone_and_wait(300, 50)
         b.play_tone_and_wait(400, 50)
         b.play_tone_and_wait(500, 50)
         b.play_tone_and_wait(600, 50)
-        print('done')
+        print("done")

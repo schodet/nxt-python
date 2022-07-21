@@ -17,6 +17,24 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+import os.path
+import shutil
+import sys
+import urllib.request
+
+import gi
+from usb.core import USBError
+
+import nxt.locator
+from nxt.error import FileExistsError, SystemProtocolError
+from nxt.locator import BrickNotFoundError
+
+gi.require_version("GLib", "2.0")
+gi.require_version("Gio", "2.0")
+gi.require_version("Gtk", "3.0")
+
+from gi.repository import Gio, GLib, Gtk  # noqa: E402
+
 VERSION = "2.0"
 PROTOCOL_VER = (1, 124)
 
@@ -37,67 +55,59 @@ WIN_HEIGHT = 600
 FILELIST_MINWIDTH = 1.0 * WIN_WIDTH
 FILELIST_MAXWIDTH = 1.0 * WIN_WIDTH
 
-import gi
-gi.require_version("GLib", "2.0")
-from gi.repository import GLib
-gi.require_version("GObject", "2.0")
-from gi.repository import GObject
-gi.require_version("Gio", "2.0")
-from gi.repository import Gio
-gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
-
-import os.path
-import urllib.request
-import shutil
-import sys
-
-import nxt.locator
-
-from usb.core import USBError
-from nxt.locator import BrickNotFoundError
-from nxt.error import FileExistsError, SystemProtocolError
-
 
 def play_soundfile(b, fname):
-    b.play_sound_file(0,fname)
+    b.play_sound_file(0, fname)
+
 
 def run_program(b, fname):
     b.start_program(fname)
 
+
 def delete_file(b, fname):
     b.file_delete(fname)
 
+
 def read_file(b, fname):
-    with b.open_file(fname, 'rb') as r:
-        with open(fname, 'wb') as f:
+    with b.open_file(fname, "rb") as r:
+        with open(fname, "wb") as f:
             shutil.copyfileobj(r, f)
+
 
 def file_exists_dialog(win, fname):
     fileexists_str = "Cannot add %s!" % fname
-    dialog = Gtk.MessageDialog(win, 0, Gtk.MessageType.INFO,
-        Gtk.ButtonsType.OK, "File Exsts")
+    dialog = Gtk.MessageDialog(
+        win, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "File Exists"
+    )
     dialog.format_secondary_text(fileexists_str)
     dialog.run()
     dialog.destroy()
 
+
 def system_error_dialog(win):
-    dialog = Gtk.MessageDialog(win, 0, Gtk.MessageType.INFO,
-        Gtk.ButtonsType.OK, "System Error")
-    dialog.format_secondary_text("Insufficient Contiguous Space!\n\nPlease delete files to create contiguous space.")
+    dialog = Gtk.MessageDialog(
+        win, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "System Error"
+    )
+    dialog.format_secondary_text(
+        "Insufficient Contiguous Space!\n\n"
+        "Please delete files to create contiguous space."
+    )
     dialog.run()
     dialog.destroy()
 
+
 def usb_error_dialog(win):
-    dialog = Gtk.MessageDialog(win, 0, Gtk.MessageType.INFO,
-        Gtk.ButtonsType.OK, "USB Error")
+    dialog = Gtk.MessageDialog(
+        win, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "USB Error"
+    )
     dialog.format_secondary_text("Can't connect to NXT!\n\nIs the NXT powered off?")
     dialog.run()
     dialog.destroy()
 
+
 def write_file(win, b, fname, data):
     try:
-        with b.open_file(fname, 'wb', len(data)) as w:
+        with b.open_file(fname, "wb", len(data)) as w:
             w.write(data)
     except FileExistsError:
         file_exists_dialog(win, fname)
@@ -106,8 +116,9 @@ def write_file(win, b, fname, data):
     except USBError:
         raise
 
+
 def write_files(win, b, names):
-    for fname in names.split('\r\n'):
+    for fname in names.split("\r\n"):
         if fname:
             bname = os.path.basename(fname)
             url = urllib.request.urlopen(fname)
@@ -117,15 +128,15 @@ def write_files(win, b, names):
                 url.close()
             write_file(win, b, bname, data)
 
-class NXTListing(Gtk.ListStore):
 
+class NXTListing(Gtk.ListStore):
     def __init__(self):
-        'Create an empty file list'
+        "Create an empty file list"
         Gtk.ListStore.__init__(self, str, str)
         self.set_sort_column_id(0, Gtk.SortType(Gtk.SortType.ASCENDING))
 
     def populate(self, brick, pattern):
-        for (fname, size) in brick.find_files(pattern):
+        for fname, size in brick.find_files(pattern):
             self.append((fname, str(size)))
 
 
@@ -144,7 +155,7 @@ class ApplicationWindow(Gtk.ApplicationWindow):
         self.nxt_filelist = NXTListing()
 
         self.status_bar = Gtk.Statusbar()
-        self.connect_status_id = self.status_bar.get_context_id('connect')
+        self.connect_status_id = self.status_bar.get_context_id("connect")
         self.connect_msg_id = None
 
         h = Gtk.Box.new(Gtk.Orientation.VERTICAL, 6)
@@ -161,9 +172,9 @@ class ApplicationWindow(Gtk.ApplicationWindow):
     def make_file_view(self):
         tv = Gtk.TreeView()
         tv.set_headers_visible(True)
-        tv.set_property('fixed_height_mode', True)
+        tv.set_property("fixed_height_mode", True)
         r = Gtk.CellRendererText()
-        c = Gtk.TreeViewColumn('File name', r, text=0)
+        c = Gtk.TreeViewColumn("File name", r, text=0)
         c.set_fixed_width(FILENAME_WIDTH)
         c.set_min_width(FILENAME_MINWIDTH)
         c.set_max_width(FILENAME_MAXWIDTH)
@@ -171,7 +182,7 @@ class ApplicationWindow(Gtk.ApplicationWindow):
         c.set_sizing(Gtk.TreeViewColumnSizing.FIXED)
         tv.append_column(c)
         r = Gtk.CellRendererText()
-        c = Gtk.TreeViewColumn('Bytes', r, text=1)
+        c = Gtk.TreeViewColumn("Bytes", r, text=1)
         c.set_resizable(True)
         c.set_fixed_width(FILESIZE_WIDTH)
         c.set_min_width(FILESIZE_MINWIDTH)
@@ -179,11 +190,11 @@ class ApplicationWindow(Gtk.ApplicationWindow):
         c.set_sizing(Gtk.TreeViewColumnSizing.FIXED)
         tv.append_column(c)
 
-### FIXME
-#        tv.enable_model_drag_source(Gtk.gdk.BUTTON1_MASK, self.TARGETS,
-#        Gtk.gdk.ACTION_DEFAULT | Gtk.gdk.ACTION_MOVE)
-#        tv.enable_model_drag_dest(self.TARGETS, Gtk.gdk.ACTION_COPY)
-#        tv.connect("drag_data_get", self.drag_data_get_data)
+        # FIXME
+        # tv.enable_model_drag_source(Gtk.gdk.BUTTON1_MASK, self.TARGETS,
+        # Gtk.gdk.ACTION_DEFAULT | Gtk.gdk.ACTION_MOVE)
+        # tv.enable_model_drag_dest(self.TARGETS, Gtk.gdk.ACTION_COPY)
+        # tv.connect("drag_data_get", self.drag_data_get_data)
 
         tv.connect("drag_data_received", self.drag_data_received_data)
         tv.connect("row_activated", self.row_activated_action)
@@ -241,13 +252,14 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 
     def update_view(self):
         self.get_brick_info()
-        if (self.connect_msg_id):
+        if self.connect_msg_id:
             self.status_bar.remove(self.connect_status_id, self.connect_msg_id)
-        self.connect_msg_id = self.status_bar.push(self.connect_status_id,
-                                                   self.brick_info_str)
+        self.connect_msg_id = self.status_bar.push(
+            self.connect_status_id, self.brick_info_str
+        )
         self.nxt_filelist.clear()
         if self.brick:
-            self.nxt_filelist.populate(self.brick, '*.*')
+            self.nxt_filelist.populate(self.brick, "*.*")
 
     def get_brick_info(self):
         if self.brick:
@@ -255,10 +267,24 @@ class ApplicationWindow(Gtk.ApplicationWindow):
             prot_version, fw_version = self.brick.get_firmware_version()
             print("Protocol version: %s.%s" % prot_version)
             if prot_version == PROTOCOL_VER:
-                brick_name, brick_hostid, brick_signal_strengths, brick_user_flash = self.brick.get_device_info()
+                (
+                    brick_name,
+                    brick_hostid,
+                    brick_signal_strengths,
+                    brick_user_flash,
+                ) = self.brick.get_device_info()
                 connection_type = str(self.brick._sock)
-                self.brick_info_str = "Connected via %s to %s [%s]\tFirmware: v%s.%s\tFree space: %s" % (
-                    connection_type, brick_name, brick_hostid, fw_version[0], fw_version[1], brick_user_flash)
+                self.brick_info_str = (
+                    "Connected via %s to %s [%s]\tFirmware: v%s.%s\tFree space: %s"
+                    % (
+                        connection_type,
+                        brick_name,
+                        brick_hostid,
+                        fw_version[0],
+                        fw_version[1],
+                        brick_user_flash,
+                    )
+                )
             else:
                 print("Invalid Protocol version! Closing connection.")
                 self.do_housekeeping()
@@ -290,16 +316,14 @@ class ApplicationWindow(Gtk.ApplicationWindow):
         else:
             self.selected_file = None
 
-    def drag_data_get_data(self, treeview, context, selection, target_id,
-                           etime):
+    def drag_data_get_data(self, treeview, context, selection, target_id, etime):
         treeselection = treeview.get_selection()
         model, iter = treeselection.get_selected()
         data = model.get_value(iter, 0)
         print(data)
         selection.set(selection.target, 8, data)
 
-    def drag_data_received_data(self, treeview, context, x, y, selection,
-                                info, etime):
+    def drag_data_received_data(self, treeview, context, x, y, selection, info, etime):
         if context.action == Gtk.gdk.ACTION_COPY:
             write_files(self, self.brick, selection.data)
         # FIXME: update file listing after writing files
@@ -310,14 +334,14 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 
     def execute_file(self, widget):
         if self.selected_file:
-            name = ''
-            ext = ''
+            name = ""
+            ext = ""
             try:
-                name, ext = self.selected_file.split('.')
-                if ext == 'rso':
-                    play_soundfile(self.brick,self.selected_file)
-                elif ext == 'rxe':
-                    run_program(self.brick,self.selected_file)
+                name, ext = self.selected_file.split(".")
+                if ext == "rso":
+                    play_soundfile(self.brick, self.selected_file)
+                elif ext == "rxe":
+                    run_program(self.brick, self.selected_file)
                     self.do_housekeeping()
                     self.update_view()
                 else:
@@ -333,14 +357,19 @@ class ApplicationWindow(Gtk.ApplicationWindow):
     def remove_file(self, widget):
         if self.selected_file:
             warning_str = "Do you really want to remove %s?" % self.selected_file
-            dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING,
-                Gtk.ButtonsType.OK_CANCEL, "Remove File")
+            dialog = Gtk.MessageDialog(
+                self,
+                0,
+                Gtk.MessageType.WARNING,
+                Gtk.ButtonsType.OK_CANCEL,
+                "Remove File",
+            )
             dialog.format_secondary_text(warning_str)
             response = dialog.run()
             dialog.destroy()
             if response == Gtk.ResponseType.OK:
                 try:
-                    delete_file(self.brick,self.selected_file)
+                    delete_file(self.brick, self.selected_file)
                 except USBError:
                     # Cannot recover, close connection
                     usb_error_dialog(self)
@@ -367,7 +396,9 @@ class AboutDialog(Gtk.AboutDialog):
         self.set_authors(AUTHORS)
 
         markup = "<span size='x-small'>{}</span>".format(
-            "LEGO® is a trademark of the LEGO Group of companies which does not sponsor, authorize or endorse this software.")
+            "LEGO® is a trademark of the LEGO Group of companies which does not "
+            "sponsor, authorize or endorse this software."
+        )
         disclaimer = Gtk.Label()
         disclaimer.set_line_wrap(True)
         disclaimer.set_max_width_chars(10)
@@ -385,7 +416,8 @@ class Application(Gtk.Application):
         self.window = None
 
         self.set_option_context_summary(
-                "Simple GUI to manage files on a LEGO MINDSTORMS NXT")
+            "Simple GUI to manage files on a LEGO MINDSTORMS NXT"
+        )
 
     def do_startup(self):
         Gtk.Application.do_startup(self)
@@ -426,8 +458,8 @@ class Application(Gtk.Application):
         self.quit()
 
 
-if __name__ == '__main__':
-    GLib.set_prgname('nxt_filer')
+if __name__ == "__main__":
+    GLib.set_prgname("nxt_filer")
     GLib.set_application_name("NXT File Manager")
     app = Application()
     app.run(sys.argv)

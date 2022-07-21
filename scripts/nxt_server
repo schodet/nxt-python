@@ -17,7 +17,6 @@
 import argparse
 import logging
 import socket
-import sys
 import traceback
 
 import nxt.locator
@@ -25,7 +24,7 @@ import nxt.locator
 
 def serve(brick, channel, details):
     """Handles serving the client."""
-    print("Connection started (" + details[0] + ')')
+    print("Connection started (" + details[0] + ")")
     run = True
     try:
         while run:
@@ -45,17 +44,18 @@ def serve(brick, channel, details):
                 run = False
             else:
                 raise RuntimeError("Bad protocol")
-    except:
+    except:  # noqa: E722
         traceback.print_exc()
     finally:
         channel.close()
         print("Connection Finished")
 
+
 if __name__ == "__main__":
     p = argparse.ArgumentParser(description="Command server for NXT brick")
     p.add_argument("-p", "--port", type=int, default=2727, help="bind port")
     nxt.locator.add_arguments(p)
-    levels = ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL')
+    levels = ("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL")
     p.add_argument("--log-level", type=str.upper, choices=levels, help="set log level")
     options = p.parse_args()
 
