@@ -14,11 +14,12 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from nxt.sensor import Type, Mode
-from .digital import BaseDigitalSensor
-from .analog import BaseAnalogSensor
 from enum import Enum
 from typing import Dict, List
+
+from nxt.sensor import Mode, Type
+from nxt.sensor.analog import BaseAnalogSensor
+from nxt.sensor.digital import BaseDigitalSensor
 
 
 class Compass(BaseDigitalSensor):
@@ -28,12 +29,12 @@ class Compass(BaseDigitalSensor):
                         'heading': (0x42, 'B'),
                         'adder': (0x43, 'B'),
                         })
-    
+
     class Modes:
         MEASUREMENT = 0x00
         CALIBRATION = 0x43
         CALIBRATION_FAILED = 0x02
-    
+
     def get_heading(self):
         """Returns heading from North in degrees."""
 
@@ -42,7 +43,7 @@ class Compass(BaseDigitalSensor):
         heading = two_degree_heading * 2 + adder
 
         return heading
-    
+
     get_sample = get_heading
 
     def get_relative_heading(self, target=0):
@@ -52,7 +53,7 @@ class Compass(BaseDigitalSensor):
         elif rheading < -180:
             rheading += 360
         return rheading	
-    
+
     def is_in_range(self, minval, maxval):
         """
         This deserves a little explanation:
@@ -73,11 +74,11 @@ class Compass(BaseDigitalSensor):
         if !reversed return in_range
         if reversed return !in_range
         """
-        return bool(inverted) ^ bool(in_range) 
+        return bool(inverted) ^ bool(in_range)
 
     def get_mode(self):
         return self.read_value('mode')[0]
-    
+
     def set_mode(self, mode):
         if mode != self.Modes.MEASUREMENT and mode != self.Modes.CALIBRATION:
             raise ValueError('Invalid mode specified: ' + str(mode))
@@ -99,11 +100,11 @@ class Accelerometer(BaseDigitalSensor):
                         'xyz_short': (0x42, '3b'),
                         'all_data': (0x42, '3b3B')
                         })
-    
+
     class Acceleration:
         def __init__(self, x, y, z):
             self.x, self.y, self.z = x, y, z
-    
+
     def __init__(self, brick, port, check_compatible=True):
         super().__init__(brick, port, check_compatible)
 
@@ -116,7 +117,7 @@ class Accelerometer(BaseDigitalSensor):
         y = yh << 2 | yl
         z = zh << 2 | zl
         return self.Acceleration(x, y, z)
-    
+
     get_sample = get_acceleration
 
 
@@ -153,7 +154,7 @@ class IRReceiver(BaseDigitalSensor):
             self.channel_2 = (m2A, m2B)
             self.channel_3 = (m3A, m3B)
             self.channel_4 = (m4A, m4B)
-    
+
     def __init__(self, brick, port, check_compatible=True):
         super().__init__(brick, port, check_compatible)
 
@@ -166,7 +167,7 @@ class IRReceiver(BaseDigitalSensor):
         """
         m1A, m1B, m2A, m2B, m3A, m3B, m4A, m4B = self.read_value('all_data')
         return self.SpeedReading(m1A, m1B, m2A, m2B, m3A, m3B, m4A, m4B)
-    
+
     get_sample = get_speeds
 
 
@@ -199,7 +200,7 @@ class IRSeekerv2(BaseDigitalSensor):
         'all_AC': (0x49, '6B')
     })
     I2C_DEV = 0x10  # different from standard 0x02
-    
+
     class DSPModes:
         # Modes for modulated (AC) data.
         AC_DSP_1200Hz = 0x00
@@ -215,12 +216,12 @@ class IRSeekerv2(BaseDigitalSensor):
                 val = (getattr(self, f"sensor_{direction // 2}")
                        + getattr(self, f"sensor_{direction // 2 + 1}")) / 2
             return val
-    
+
     class DCData(_data):
         def __init__(self, direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5, sensor_mean):
             self.direction, self.sensor_1, self.sensor_2, self.sensor_3, self.sensor_4, self.sensor_5, self.sensor_mean\
                 = direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5, sensor_mean
-    
+
     class ACData(_data):
         def __init__(self, direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5):
             self.direction, self.sensor_1, self.sensor_2, self.sensor_3, self.sensor_4, self.sensor_5 =\
@@ -235,7 +236,7 @@ class IRSeekerv2(BaseDigitalSensor):
         """
         direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5, sensor_mean = self.read_value('all_DC')
         return self.DCData(direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5, sensor_mean)
-    
+
     def get_ac_values(self):
         """
         Returns the modulated (AC) values. 600Hz and 1200Hz modes can be selected
@@ -243,13 +244,13 @@ class IRSeekerv2(BaseDigitalSensor):
         """
         direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5 = self.read_value('all_AC')
         return self.ACData(direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5)
-    
+
     def get_dsp_mode(self):
         return self.read_value('dspmode')[0]
-    
+
     def set_dsp_mode(self, mode):
         self.write_value('dspmode', (mode, ))
-    
+
     get_sample = get_ac_values
 
 
@@ -261,7 +262,7 @@ class EOPD(BaseAnalogSensor):
     """
     Object for HiTechnic Electro-Optical Proximity Detection sensors.
     """
-    
+
     # To be divided by processed value.
     _SCALE_CONSTANT = 250
 
@@ -289,12 +290,12 @@ class EOPD(BaseAnalogSensor):
         """
 
         self.set_input_mode(Type.LIGHT_INACTIVE, Mode.RAW)
-    
+
     def get_raw_value(self):
         """Unscaled value read from sensor."""
 
         return self._MAX_DISTANCE - self.get_input_values().raw_value
-    
+
     def get_processed_value(self):
         """Derived from the square root of the raw value."""
 
@@ -313,7 +314,7 @@ class EOPD(BaseAnalogSensor):
 
         except ZeroDivisionError:
             return self._SCALE_CONSTANT
-    
+
     get_sample = get_scaled_value
 
 
@@ -341,7 +342,7 @@ class Colorv2(BaseDigitalSensor):
         'rawwhite': (0x48, '<H'),
         'all_raw_data': (0x42, '<4H')
     })
-    
+
     class Modes:
         ACTIVE = 0x00  # get measurements using get_active_color
         PASSIVE = 0x01  # get measurements using get_passive_color
@@ -364,7 +365,7 @@ class Colorv2(BaseDigitalSensor):
         # also holds raw mode data
         def __init__(self, red, green, blue, white):
             self.red, self.green, self.blue, self.white = red, green, blue, white
-    
+
     def __init__(self, brick, port, check_compatible=True):
         super().__init__(brick, port, check_compatible)
 
@@ -372,17 +373,17 @@ class Colorv2(BaseDigitalSensor):
         """Returns color values when in active mode."""
         number, red, green, blue, white, index, normred, normgreen, normblue = self.read_value('all_data')
         return self.ActiveData(number, red, green, blue, white, index, normred, normgreen, normblue)
-    
+
     get_sample = get_active_color
-    
+
     def get_passive_color(self):
         """Returns color values when in passive or raw mode."""
         red, green, blue, white = self.read_value('all_raw_data')
         return self.PassiveData(red, green, blue, white)
-    
+
     def get_mode(self):
         return self.read_value('mode')[0]
-    
+
     def set_mode(self, mode):
         self.write_value('mode', (mode, ))
 
@@ -407,16 +408,16 @@ class Gyro(BaseAnalogSensor):
         super().__init__(brick, port)
         self.set_input_mode(Type.ANGLE, Mode.RAW)
         self.offset = 0
-    
+
     def get_rotation_speed(self):
         return self.get_input_values().scaled_value - self.offset
-    
+
     def set_zero(self, value):
         self.offset = value
-    
+
     def calibrate(self):
         self.set_zero(self.get_rotation_speed())
-    
+
     get_sample = get_rotation_speed
 
 
@@ -464,13 +465,13 @@ class Prototype(BaseDigitalSensor):
             for i in range(6):
                 val += int(bool(lst[i])) * (2**i)
             return val
-        
+
         def __int__(self):
             return self.dataint
-        
+
         def __iter__(self):
             return iter(self.datalst)
-        
+
         def __getitem__(self, i):
             return self.datalst[i]
 
@@ -478,17 +479,17 @@ class Prototype(BaseDigitalSensor):
     class Analog_Data:
         def __init__(self, a0, a1, a2, a3, a4):
             self.a0, self.a1, self.a2, self.a3, self.a4 = a0, a1, a2, a3, a4
-    
+
     def get_analog(self):
         return self.Analog_Data(*self.read_value('all_analog'))
-    
+
     def get_digital(self):
         return self.Digital_Data(self.read_value('digital_in')[0])
-    
+
     def set_digital(self, pins):
         """Can take a Digital_Data() object"""
         self.write_value('digital_out', (int(pins), ))
-    
+
     def set_digital_modes(self, modes):
         """Sets input/output mode of digital pins. Can take a Digital_Data() object."""
         self.write_value('digital_cont', (int(modes), ))
@@ -730,7 +731,7 @@ class ServoCon(BaseDigitalSensor):
         's6pos': (0x47, 'B'),
         'pwm': (0x48, 'B'),
     })
-    
+
     class Status:
         STOPPED = 0x00  # all motors stopped
         RUNNING = 0x01  # motor(s) moving
@@ -744,25 +745,25 @@ class ServoCon(BaseDigitalSensor):
         some running.
         """
         return self.read_value('status')[0]
-    
+
     def set_step_time(self, time):
         """Sets the step time (0-15)."""
         self.write_value('steptime', (time, ))
-    
+
     def set_pos(self, num, pos):
         """
         Sets the position of a server. num is the servo number (1-6),
         pos is the position (0-255).
         """
         self.write_value('s%dpos' % num, (pos, ))
-    
+
     def get_pwm(self):
         """
         Gets the "PWM enable" value. The function of this value is
         nontrivial and can be found in the documentation for the sensor.
         """
         return self.read_value('pwm')[0]
-    
+
     def set_pwm(self, pwm):
         """
         Sets the "PWM enable" value. The function of this value is
@@ -797,66 +798,66 @@ class MotorCon(BaseDigitalSensor):
     class PID_Data:
         def __init__(self, p, i, d):
             self.p, self.i, self.d = p, i, d
-    
+
     def __init__(self, brick, port, check_compatible=True):
         super().__init__(brick, port, check_compatible)
-    
+
     def set_enc_target(self, mot, val):
         """Set the encoder target (-2147483648-2147483647) for a motor"""
         self.write_value('m%denctarget' % mot, (val, ))
-    
+
     def get_enc_target(self, mot):
         """Get the encoder target for a motor"""
         return self.read_value('m%denctarget' % mot)[0]
-    
+
     def get_enc_current(self, mot):
         """Get the current encoder value for a motor"""
         return self.read_value('m%denccurrent' % mot)[0]
-    
+
     def set_mode(self, mot, mode):
         """
         Set the mode for a motor. This value is a bit mask, and you can
         find details about it in the sensor's documentation.
         """
         self.write_value('m%dmode' % mot, (mode, ))
-    
+
     def get_mode(self, mot):
         """
         Get the mode for a motor. This value is a bit mask, and you can
         find details about it in the sensor's documentation.
         """
         return self.read_value('m%dmode' % mot)[0]
-    
+
     def set_power(self, mot, power):
         """Set the power (-100-100) for a motor"""
         self.write_value('m%dpower' % mot, (power, ))
-    
+
     def get_power(self, mot):
         """Get the power for a motor"""
         return self.read_value('m%dpower' % mot)[0]
-    
+
     def set_gear_ratio(self, mot, ratio):
         """Set the gear ratio for a motor"""
         self.write_value('m%dgearratio' % mot, (ratio, ))
-    
+
     def get_gear_ratio(self, mot):
         """Get the gear ratio for a motor"""
         return self.read_value('m%dgearratio' % mot)[0]
-    
+
     def set_pid(self, mot, piddata):
         """
         Set the PID coefficients for a motor. Takes data in
         MotorCon.PID_Data(p, i, d) format.
         """
         self.write_value('m%dpid' % mot, (piddata.p, piddata.i, piddata.d))
-    
+
     def get_pid(self, mot):
         """
         Get the PID coefficients for a motor. Returns a PID_Data() object.
         """
         p, i, d = self.read_value('m%dpid' % mot)
         return self.PID_Data(p, i, d)
-    
+
     def get_battery_voltage(self):
         """
         Gets the battery voltage (in millivolts/20)

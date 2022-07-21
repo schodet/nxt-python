@@ -17,8 +17,8 @@ import logging
 import struct
 import time
 
-from nxt.error import I2CError, I2CPendingError, DirectProtocolError
 import nxt.sensor
+from nxt.error import DirectProtocolError, I2CError, I2CPendingError
 
 logger = logging.getLogger(__name__)
 
