@@ -11,4 +11,3 @@ assignees: ''
 - Python version:
 - NXT-Python version:
 - Connection method: USB? Bluetooth?
-
