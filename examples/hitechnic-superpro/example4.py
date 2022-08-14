@@ -16,18 +16,18 @@ with natural light levels in my workspace being around 1.9-2.0V
 """
 
 # Find NXT, configure sensor
-brick = nxt.locator.find()
-pro = SuperPro(brick, nxt.sensor.Port.S1)
+with nxt.locator.find() as brick:
+    pro = SuperPro(brick, nxt.sensor.Port.S1)
 
-while True:
-    try:
-        # Get brightness (measured in volts)
-        analog_value = pro.get_analog_volts()["a0"]
-        print("Analog 0: {}V".format(analog_value))
-        # Sleep 0.1s to allow console to be read.
-        sleep(0.1)
-    except KeyboardInterrupt:
-        break
+    while True:
+        try:
+            # Get brightness (measured in volts)
+            analog_value = pro.get_analog_volts()["a0"]
+            print("Analog 0: {}V".format(analog_value))
+            # Sleep 0.1s to allow console to be read.
+            sleep(0.1)
+        except KeyboardInterrupt:
+            break
 
-# When program stopped, turn off outputs
-pro.set_digital_byte(0x00)
+    # When program stopped, turn off outputs
+    pro.set_digital_byte(0x00)
