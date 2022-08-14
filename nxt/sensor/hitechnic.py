@@ -18,6 +18,7 @@ from nxt.sensor import Type, Mode
 from .digital import BaseDigitalSensor
 from .analog import BaseAnalogSensor
 from enum import Enum
+from typing import Dict, List
 
 
 class Compass(BaseDigitalSensor):
@@ -488,10 +489,6 @@ class SuperPro(BaseDigitalSensor):
         "analog_out1_volts": (0x5A, "H")
     })
 
-    """
-    Some users online report that this I2C device address is 0x08, the documentation states that it's 0x10.
-    Let us know if this value doesn't work for you and 0x08 does. 0x10 works in testing with my hardware.
-    """
     I2C_DEV = 0x10
 
     # Used for converting ADC bits into percent signal
@@ -504,9 +501,9 @@ class SuperPro(BaseDigitalSensor):
         UPWARDS_SAWTOOTH = 3
         DOWNWARDS_SAWTOOTH = 4
         TRIANGLE = 5
-        PWM = 6 # TODO: Test.
+        PWM = 6  # TODO: Test. Documentation seems to imply this should work, but it wasn't for me.
 
-    def get_analog(self) -> dict[str, int]:
+    def get_analog(self) -> Dict[str, int]:
         """
         Get analog input pins (A0-A3) result in raw bits
 
@@ -520,17 +517,10 @@ class SuperPro(BaseDigitalSensor):
             low = (raw & 0xFF00) >> 8
             high = raw & 0x00FF
             analog_input = low + high * 4
-            """
-            Debug printouts, in case you need them
-            print("raw {0:#016b}".format(raw))
-            print("low {0:#016b}".format(low))
-            print("high {0:#016b}".format(high))
-            print("{0}: {1} {1:#016b}".format(pin, analog_input))
-            """
             analog_raw_map[pin[1]] = analog_input
         return analog_raw_map
 
-    def get_analog_volts(self, voltage_reference: float = 3.3) -> dict[str, float]:
+    def get_analog_volts(self, voltage_reference: float = 3.3) -> Dict[str, float]:
         """
         Get analog input pins (A0-A3) results in volts. Resolution to ~3mV (voltage reference * (1/1023) volts)
 
@@ -544,14 +534,14 @@ class SuperPro(BaseDigitalSensor):
         return analog_voltage_map
 
     @staticmethod
-    def _byte_to_boolean_list(integer: int, reverse=False) -> list[bool]:
+    def _byte_to_boolean_list(integer: int, reverse=False) -> List[bool]:
         # Converts byte to boolean string, inverts string to correct bit order if needed, converts chars to boolean list
         if reverse:
             return [bit == "1" for bit in "{0:08b}".format(integer)[::-1]]
         return [bit == "1" for bit in "{0:08b}".format(integer)]
 
     @staticmethod
-    def _boolean_list_to_byte(boolean_list: list[bool], reverse=False) -> int:
+    def _boolean_list_to_byte(boolean_list: List[bool], reverse=False) -> int:
         if len(boolean_list) != 8:
             raise RuntimeError("List must be 8 booleans in length")
         if reverse:
@@ -559,16 +549,10 @@ class SuperPro(BaseDigitalSensor):
         output_byte = 0
         for bit in range(0, 8):
             output = (2 ** bit) * boolean_list[bit]
-            """
-            Debug prints
-            print("bit: {}".format(boolean_list[bit]))
-            print("value: {}".format(2 ** bit))
-            print("output: {}".format(output))
-            """
             output_byte += output
         return output_byte
 
-    def get_digital(self) -> dict[str, bool]:
+    def get_digital(self) -> Dict[str, bool]:
         """
         Get digital input pins (D0-D7)
 
@@ -581,7 +565,7 @@ class SuperPro(BaseDigitalSensor):
             digital_in_map["b{}".format(x)] = boolean_list[x]
         return digital_in_map
 
-    def set_digital(self, pins: list[bool]):
+    def set_digital(self, pins: List[bool]):
         """
         Set digital output pins (D0-D7)
 
@@ -602,7 +586,7 @@ class SuperPro(BaseDigitalSensor):
             raise RuntimeError("Integer must be in range of 0 to 255 inclusive")
         self.set_digital(self._byte_to_boolean_list(integer, reverse=lsb))
 
-    def set_digital_modes(self, modes: list[bool]):
+    def set_digital_modes(self, modes: List[bool]):
         """
         Set digital pin mode (D0-D7)
 
@@ -625,9 +609,11 @@ class SuperPro(BaseDigitalSensor):
 
     def set_strobe_output(self, mode_int: int):
         """
-        Strobe output ??
-        It's unclear what the Strobe output does. It appears to just output like the output pins do.
-        S0 = 1, S1 = 2 S2 = 4 S3 = 8 RD = 16 WR = 32 (64 and 128 have seemingly no meaning??)
+        Strobe output - behaves like any other output, but has strobe signal sent whenever a digital read/write sent.
+        When a digital read is done, it will send a spike on RD (inverse of the current RD pin state),
+        when a digital write is done, it will send a spike on WR (inverse of the current WR pin state)
+        This 'digital read' and 'digital write' actions causing a spike applies to the B0-7 pins
+        Bits to write: S0 = 1, S1 = 2 S2 = 4 S3 = 8 RD = 16 WR = 32
 
         :param mode_int: mode_int: Byte (0-63 inclusive)
         """
@@ -665,16 +651,6 @@ class SuperPro(BaseDigitalSensor):
         actual_voltage_bits = low_shifted | high_shifted
         freq_swapped = (0xFF00 & freq) >> 8
         freq_swapped += (0x00FF & freq) << 8
-
-        """
-        Debug prints (these were really useful to make sure that the bits were moved correctly for the DAC)
-        print("b  {0:016b}".format(voltage_bits))
-        print("l  {0:016b}".format(low))
-        print("ls {0:016b}".format(low_shifted))
-        print("h  {0:016b}".format(high))
-        print("hs {0:016b}".format(high_shifted))
-        print("a  {0:016b}".format(actual_voltage_bits))
-        """
         if pin != 0:
             self.write_value("analog_out1_mode", [mode.value])
             self.write_value("analog_out1_freq", [freq_swapped])
