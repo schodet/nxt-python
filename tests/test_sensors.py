@@ -290,6 +290,7 @@ class TestDigital:
         test(("Vx.xx", "HITECHNC", "ColorPD"), nxt.sensor.hitechnic.Colorv2)
         test(("Vx.xx", "HITECHNC", "ColorPD "), nxt.sensor.hitechnic.Colorv2)
         test(("Vx.xx", "HiTechnc", "Proto   "), nxt.sensor.hitechnic.Prototype)
+        test(("Vx.xx", "HiTechnc", "SuperPro"), nxt.sensor.hitechnic.SuperPro)
         test(("Vx.xx", "HiTechnc", "ServoCon"), nxt.sensor.hitechnic.ServoCon)
         test(("Vx.xx", "HiTechnc", "MotorCon"), nxt.sensor.hitechnic.MotorCon)
 
@@ -898,6 +899,23 @@ class TestHitechnic:
             call.write_value("digital_out", (0x15,)),
             call.write_value("digital_cont", (0x2A,)),
         ]
+
+    def test_superpro(self, mbrick, mdigital):
+        s = mbrick.get_sensor(Port.S1, nxt.sensor.hitechnic.SuperPro, False)
+        mdigital.read_value.side_effect = [[0x00], [0x00], [0x00], [0x00]]
+        s.get_analog()
+        mdigital.read_value.side_effect = [[0x00], [0x00], [0x00], [0x00]]
+        s.get_analog_volts()
+        mdigital.read_value.side_effect = [[0x00]]
+        s.get_digital()
+        s.set_digital([0, 1, 0, 1, 0, 1, 0, 1])
+        s.set_digital_byte(0x00)
+        s.set_digital_modes([0, 1, 0, 1, 0, 1, 0, 1])
+        s.set_digital_modes_byte(0x00)
+        s.set_strobe_output(0x00)
+        s.set_led_output(0x00)
+        s.analog_out(0, nxt.sensor.hitechnic.SuperPro.AnalogOutputMode.SQUARE, 1, 1023)
+        s.analog_out_voltage(0, nxt.sensor.hitechnic.SuperPro.AnalogOutputMode.SQUARE, 1, 3.3)
 
     def test_servocon(self, mbrick, mdigital):
         assert not hasattr(nxt.sensor.hitechnic.ServoCon, "get_sample")
