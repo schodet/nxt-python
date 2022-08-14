@@ -26,8 +26,8 @@ class Compass(BaseDigitalSensor):
     I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
     I2C_ADDRESS.update({'mode': (0x41, 'B'),
                         'heading': (0x42, 'B'),
-                        'adder' : (0x43, 'B'),
-    })
+                        'adder': (0x43, 'B'),
+                        })
     
     class Modes:
         MEASUREMENT = 0x00
@@ -45,7 +45,7 @@ class Compass(BaseDigitalSensor):
     
     get_sample = get_heading
 
-    def get_relative_heading(self,target=0):
+    def get_relative_heading(self, target=0):
         rheading = self.get_sample()-target
         if rheading > 180:
             rheading -= 360
@@ -53,47 +53,52 @@ class Compass(BaseDigitalSensor):
             rheading += 360
         return rheading	
     
-    def is_in_range(self,minval,maxval):
-        """This deserves a little explanation:
-if max > min, it's straightforward, but
-if min > max, it switches the values of max and min
-and returns true if heading is NOT between the new max and min
+    def is_in_range(self, minval, maxval):
+        """
+        This deserves a little explanation:
+        if max > min, it's straightforward, but
+        if min > max, it switches the values of max and min
+        and returns true if heading is NOT between the new max and min
         """
         if minval > maxval:
-            (maxval,minval) = (minval,maxval)
+            (maxval, minval) = (minval, maxval)
             inverted = True
         else:
             inverted = False
         heading = self.get_sample()
         in_range = (heading > minval) and (heading < maxval)
-        #an xor handles the reversal
-        #a faster, more compact way of saying
-        #if !reversed return in_range
-        #if reversed return !in_range
+        """
+        an xor handles the reversal
+        a faster, more compact way of saying
+        if !reversed return in_range
+        if reversed return !in_range
+        """
         return bool(inverted) ^ bool(in_range) 
 
     def get_mode(self):
         return self.read_value('mode')[0]
     
     def set_mode(self, mode):
-         if mode != self.Modes.MEASUREMENT and \
-                 mode != self.Modes.CALIBRATION:
-             raise ValueError('Invalid mode specified: ' + str(mode))
-         self.write_value('mode', (mode, ))
-         
-Compass.add_compatible_sensor(None, 'HiTechnc', 'Compass ') #Tested with version '\xfdV1.23  '
-Compass.add_compatible_sensor(None, 'HITECHNC', 'Compass ') #Tested with version '\xfdV2.1   '
+        if mode != self.Modes.MEASUREMENT and mode != self.Modes.CALIBRATION:
+            raise ValueError('Invalid mode specified: ' + str(mode))
+        self.write_value('mode', (mode, ))
+
+
+Compass.add_compatible_sensor(None, 'HiTechnc', 'Compass ')  # Tested with version '\xfdV1.23  '
+Compass.add_compatible_sensor(None, 'HITECHNC', 'Compass ')  # Tested with version '\xfdV2.1   '
 
 
 class Accelerometer(BaseDigitalSensor):
-    'Object for Accelerometer sensors. Thanks to Paulo Vieira.'
+    """
+    Object for Accelerometer sensors. Thanks to Paulo Vieira.
+    """
     I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
     I2C_ADDRESS.update({'x_axis_high': (0x42, 'b'),
-        'y_axis_high': (0x43, 'b'),
-        'z_axis_high': (0x44, 'b'),
-        'xyz_short': (0x42, '3b'),
-        'all_data': (0x42, '3b3B')
-    })
+                        'y_axis_high': (0x43, 'b'),
+                        'z_axis_high': (0x44, 'b'),
+                        'xyz_short': (0x42, '3b'),
+                        'all_data': (0x42, '3b3B')
+                        })
     
     class Acceleration:
         def __init__(self, x, y, z):
@@ -103,7 +108,8 @@ class Accelerometer(BaseDigitalSensor):
         super().__init__(brick, port, check_compatible)
 
     def get_acceleration(self):
-        """Returns the acceleration along x, y, z axes. 200 => 1g.
+        """
+        Returns the acceleration along x, y, z axes. 200 => 1g.
         """
         xh, yh, zh, xl, yl, zl = self.read_value('all_data')
         x = xh << 2 | xl
@@ -113,14 +119,17 @@ class Accelerometer(BaseDigitalSensor):
     
     get_sample = get_acceleration
 
+
 Accelerometer.add_compatible_sensor(None, 'HiTechnc', 'Accel.  ')
-Accelerometer.add_compatible_sensor(None, 'HITECHNC', 'Accel.  ') #Tested with version '\xfdV1.1   '
+Accelerometer.add_compatible_sensor(None, 'HITECHNC', 'Accel.  ')  # Tested with version '\xfdV1.1   '
 
 
+# noinspection PyPep8Naming
 class IRReceiver(BaseDigitalSensor):
-    """Object for HiTechnic IRReceiver sensors for use with LEGO Power Functions IR
-Remotes. Coded to HiTechnic's specs for the sensor but not tested. Please report
-whether this worked for you or not!
+    """
+    Object for HiTechnic IRReceiver sensors for use with LEGO Power Functions IR
+    Remotes. Coded to HiTechnic's specs for the sensor but not tested. Please report
+    whether this worked for you or not!
     """
     I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
     I2C_ADDRESS.update({
@@ -135,9 +144,11 @@ whether this worked for you or not!
         'all_data': (0x42, '8b')
     })
 
+    # noinspection PyPep8Naming
     class SpeedReading:
         def __init__(self, m1A, m1B, m2A, m2B, m3A, m3B, m4A, m4B):
-            self.m1A, self.m1B, self.m2A, self.m2B, self.m3A, self.m3B, self.m4A, self.m4B = m1A, m1B, m2A, m2B, m3A, m3B, m4A, m4B
+            self.m1A, self.m1B, self.m2A, self.m2B, self.m3A, self.m3B, self.m4A, self.m4B = \
+                m1A, m1B, m2A, m2B, m3A, m3B, m4A, m4B
             self.channel_1 = (m1A, m1B)
             self.channel_2 = (m2A, m2B)
             self.channel_3 = (m3A, m3B)
@@ -147,23 +158,26 @@ whether this worked for you or not!
         super().__init__(brick, port, check_compatible)
 
     def get_speeds(self):
-        """Returns the motor speeds for motors A and B on channels 1-4.
-Values are -128, -100, -86, -72, -58, -44, -30, -16, 0, 16, 30, 44, 58, 72, 86
-and 100. -128 specifies motor brake mode. Note that no motors are actually
-being controlled here!
+        """
+        Returns the motor speeds for motors A and B on channels 1-4.
+        Values are -128, -100, -86, -72, -58, -44, -30, -16, 0, 16, 30, 44, 58, 72, 86
+        and 100. -128 specifies motor brake mode. Note that no motors are actually
+        being controlled here!
         """
         m1A, m1B, m2A, m2B, m3A, m3B, m4A, m4B = self.read_value('all_data')
         return self.SpeedReading(m1A, m1B, m2A, m2B, m3A, m3B, m4A, m4B)
     
     get_sample = get_speeds
 
+
 IRReceiver.add_compatible_sensor(None, 'HiTechnc', 'IRRecv  ')
 IRReceiver.add_compatible_sensor(None, 'HITECHNC', 'IRRecv  ')
 
 
 class IRSeekerv2(BaseDigitalSensor):
-    """Object for HiTechnic IRSeeker sensors. Coded to HiTechnic's specs for the sensor
-but not tested. Please report whether this worked for you or not!
+    """
+    Object for HiTechnic IRSeeker sensors. Coded to HiTechnic's specs for the sensor
+    but not tested. Please report whether this worked for you or not!
     """
     I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
     I2C_ADDRESS.update({
@@ -184,17 +198,18 @@ but not tested. Please report whether this worked for you or not!
         'AC_sensor_5': (0x4E, 'B'),
         'all_AC': (0x49, '6B')
     })
-    I2C_DEV = 0x10 #different from standard 0x02
+    I2C_DEV = 0x10  # different from standard 0x02
     
     class DSPModes:
-        #Modes for modulated (AC) data.
+        # Modes for modulated (AC) data.
         AC_DSP_1200Hz = 0x00
         AC_DSP_600Hz = 0x01
-    
+
+    # noinspection PyPep8Naming
     class _data:
         def get_dir_brightness(self, direction):
-            "Gets the brightness of a given direction (1-9)."
-            if direction%2 == 1: #if it's an odd number
+            """Gets the brightness of a given direction (1-9)."""
+            if direction % 2 == 1:  # if it's an odd number
                 val = getattr(self, "sensor_%d" % ((direction-1)//2+1))
             else:
                 val = (getattr(self, f"sensor_{direction // 2}")
@@ -203,25 +218,28 @@ but not tested. Please report whether this worked for you or not!
     
     class DCData(_data):
         def __init__(self, direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5, sensor_mean):
-            self.direction, self.sensor_1, self.sensor_2, self.sensor_3, self.sensor_4, self.sensor_5, self.sensor_mean = direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5, sensor_mean
+            self.direction, self.sensor_1, self.sensor_2, self.sensor_3, self.sensor_4, self.sensor_5, self.sensor_mean\
+                = direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5, sensor_mean
     
     class ACData(_data):
         def __init__(self, direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5):
-            self.direction, self.sensor_1, self.sensor_2, self.sensor_3, self.sensor_4, self.sensor_5 = direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5
-            
-    
+            self.direction, self.sensor_1, self.sensor_2, self.sensor_3, self.sensor_4, self.sensor_5 =\
+                direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5
+
     def __init__(self, brick, port, check_compatible=True):
         super().__init__(brick, port, check_compatible)
 
     def get_dc_values(self):
-        """Returns the unmodulated (DC) values.
+        """
+        Returns the unmodulated (DC) values.
         """
         direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5, sensor_mean = self.read_value('all_DC')
         return self.DCData(direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5, sensor_mean)
     
     def get_ac_values(self):
-        """Returns the modulated (AC) values. 600Hz and 1200Hz modes can be selected
-between by using the set_dsp_mode() function.
+        """
+        Returns the modulated (AC) values. 600Hz and 1200Hz modes can be selected
+        between by using the set_dsp_mode() function.
         """
         direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5 = self.read_value('all_AC')
         return self.ACData(direction, sensor_1, sensor_2, sensor_3, sensor_4, sensor_5)
@@ -234,12 +252,14 @@ between by using the set_dsp_mode() function.
     
     get_sample = get_ac_values
 
+
 IRSeekerv2.add_compatible_sensor(None, 'HiTechnc', 'NewIRDir')
 IRSeekerv2.add_compatible_sensor(None, 'HITECHNC', 'NewIRDir')
 
 
 class EOPD(BaseAnalogSensor):
-    """Object for HiTechnic Electro-Optical Proximity Detection sensors.
+    """
+    Object for HiTechnic Electro-Optical Proximity Detection sensors.
     """
     
     # To be divided by processed value.
@@ -254,35 +274,38 @@ class EOPD(BaseAnalogSensor):
         self.sqrt = sqrt
 
     def set_range_long(self):
-        ''' Choose this mode to increase the sensitivity
-            of the EOPD sensor by approximately 4x. May
-            cause sensor overload.
-            '''
+        """
+        Choose this mode to increase the sensitivity
+        of the EOPD sensor by approximately 4x. May
+        cause sensor overload.
+        """
 
         self.set_input_mode(Type.LIGHT_ACTIVE, Mode.RAW)
 
     def set_range_short(self):
-        ''' Choose this mode to prevent the EOPD sensor from
-            being overloaded by white objects.
-           '''
+        """
+        Choose this mode to prevent the EOPD sensor from
+        being overloaded by white objects.
+        """
 
         self.set_input_mode(Type.LIGHT_INACTIVE, Mode.RAW)
     
     def get_raw_value(self):
-        '''Unscaled value read from sensor.'''
+        """Unscaled value read from sensor."""
 
         return self._MAX_DISTANCE - self.get_input_values().raw_value
     
     def get_processed_value(self):
-        '''Derived from the square root of the raw value.'''
+        """Derived from the square root of the raw value."""
 
         return self.sqrt(self.get_raw_value())
 
     def get_scaled_value(self):
-        ''' Returns a value that will scale linearly as distance
-            from target changes. This is the method that should
-            generally be called to get EOPD sensor data.
-            '''
+        """
+        Returns a value that will scale linearly as distance
+        from target changes. This is the method that should
+        generally be called to get EOPD sensor data.
+        """
 
         try:
             result = self._SCALE_CONSTANT / self.get_processed_value()
@@ -295,8 +318,10 @@ class EOPD(BaseAnalogSensor):
 
 
 class Colorv2(BaseDigitalSensor):
-    """Object for HiTechnic Color v2 Sensors. Coded to HiTechnic's specs for the sensor
-but not tested. Please report whether this worked for you or not!"""
+    """
+    Object for HiTechnic Color v2 Sensors. Coded to HiTechnic's specs for the sensor
+    but not tested. Please report whether this worked for you or not!
+    """
     I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
     I2C_ADDRESS.update({
         'mode': (0x41, 'B'),
@@ -318,24 +343,25 @@ but not tested. Please report whether this worked for you or not!"""
     })
     
     class Modes:
-        ACTIVE = 0x00 #get measurements using get_active_color
-        PASSIVE = 0x01 #get measurements using get_passive_color
-        RAW = 0x03 #get measurements using get_passive_color
-        BLACK_CALIBRATION = 0x42 #hold away from objects, results saved in EEPROM
-        WHITE_CALIBRATION = 0x43 #hold in front of white surface, results saved in EEPROM
-        LED_POWER_LOW = 0x4C #saved in EEPROM, must calibrate after using
-        LED_POWER_HIGH = 0x48 #saved in EEPROM, must calibrate after using
-        RANGE_NEAR = 0x4E #saved in EEPROM, only affects active mode
-        RANGE_FAR = 0x46 #saved in EEPROM, only affects active mode, more susceptable to noise
-        FREQ_50 = 0x35 #saved in EEPROM, use when local wall power is 50Hz
-        FREQ_60 = 0x36 #saved in EEPROM, use when local wall power is 60Hz
+        ACTIVE = 0x00  # get measurements using get_active_color
+        PASSIVE = 0x01  # get measurements using get_passive_color
+        RAW = 0x03  # get measurements using get_passive_color
+        BLACK_CALIBRATION = 0x42  # hold away from objects, results saved in EEPROM
+        WHITE_CALIBRATION = 0x43  # hold in front of white surface, results saved in EEPROM
+        LED_POWER_LOW = 0x4C  # saved in EEPROM, must calibrate after using
+        LED_POWER_HIGH = 0x48  # saved in EEPROM, must calibrate after using
+        RANGE_NEAR = 0x4E  # saved in EEPROM, only affects active mode
+        RANGE_FAR = 0x46  # saved in EEPROM, only affects active mode, more susceptible to noise
+        FREQ_50 = 0x35  # saved in EEPROM, use when local wall power is 50Hz
+        FREQ_60 = 0x36  # saved in EEPROM, use when local wall power is 60Hz
 
     class ActiveData:
         def __init__(self, number, red, green, blue, white, index, normred, normgreen, normblue):
-            self.number, self.red, self.green, self.blue, self.white, self.index, self.normred, self.normgreen, self.normblue = number, red, green, blue, white, index, normred, normgreen, normblue
+            self.number, self.red, self.green, self.blue, self.white, self.index, self.normred, self.normgreen, \
+                self.normblue = number, red, green, blue, white, index, normred, normgreen, normblue
 
     class PassiveData:
-        #also holds raw mode data
+        # also holds raw mode data
         def __init__(self, red, green, blue, white):
             self.red, self.green, self.blue, self.white = red, green, blue, white
     
@@ -343,16 +369,14 @@ but not tested. Please report whether this worked for you or not!"""
         super().__init__(brick, port, check_compatible)
 
     def get_active_color(self):
-        """Returns color values when in active mode.
-        """
+        """Returns color values when in active mode."""
         number, red, green, blue, white, index, normred, normgreen, normblue = self.read_value('all_data')
         return self.ActiveData(number, red, green, blue, white, index, normred, normgreen, normblue)
     
     get_sample = get_active_color
     
     def get_passive_color(self):
-        """Returns color values when in passive or raw mode.
-        """
+        """Returns color values when in passive or raw mode."""
         red, green, blue, white = self.read_value('all_raw_data')
         return self.PassiveData(red, green, blue, white)
     
@@ -362,6 +386,7 @@ but not tested. Please report whether this worked for you or not!"""
     def set_mode(self, mode):
         self.write_value('mode', (mode, ))
 
+
 Colorv2.add_compatible_sensor(None, 'HiTechnc', 'ColorPD')
 Colorv2.add_compatible_sensor(None, 'HITECHNC', 'ColorPD')
 Colorv2.add_compatible_sensor(None, 'HiTechnc', 'ColorPD ')
@@ -369,11 +394,14 @@ Colorv2.add_compatible_sensor(None, 'HITECHNC', 'ColorPD ')
 
 
 class Gyro(BaseAnalogSensor):
-    'Object for gyro sensors'
-#This class is for the hitechnic gryo sensor. When the gryo is not
-#moving there will be a constant offset that will change with 
-#temperature and other ambient factors. The calibrate() function
-#takes the currect value and uses it to offset subsequesnt ones.
+    """
+    Object for gyro sensors
+
+    This class is for the hitechnic gyro sensor. When the gyro is not
+    moving there will be a constant offset that will change with
+    temperature and other ambient factors. The `calibrate()` function
+    takes the current value and uses it to offset subsequent ones.
+    """
 
     def __init__(self, brick, port):
         super().__init__(brick, port)
@@ -407,10 +435,13 @@ class Prototype(BaseDigitalSensor):
         'digital_cont': (0x4E, 'B'),
         'sample_time': (0x4F, 'B'),
         })
-    
-    class Digital_Data():
-        """Container for 6 bits of digital data. Takes an integer or a list of six bools
-and can be converted into a list of bools or an integer."""
+
+    # noinspection PyPep8Naming
+    class Digital_Data:
+        """
+        Container for 6 bits of digital data. Takes an integer or a list of six bools
+        and can be converted into a list of bools or an integer.
+        """
         def __init__(self, pins):
             if isinstance(pins, int):
                 self.dataint = pins
@@ -419,13 +450,15 @@ and can be converted into a list of bools or an integer."""
                 self.dataint = self.toint(pins)
                 self.datalst = pins
             self.d0, self.d1, self.d2, self.d3, self.d4, self.d5 = self.datalst
-        
+
+        # noinspection PyMethodMayBeStatic
         def tolist(self, val):
             lst = []
             for i in range(6):
                 lst.append(bool(val & 2**i))
             return lst
 
+        # noinspection PyMethodMayBeStatic
         def toint(self, lst):
             val = 0
             for i in range(6):
@@ -440,8 +473,9 @@ and can be converted into a list of bools or an integer."""
         
         def __getitem__(self, i):
             return self.datalst[i]
-    
-    class Analog_Data():
+
+    # noinspection PyPep8Naming
+    class Analog_Data:
         def __init__(self, a0, a1, a2, a3, a4):
             self.a0, self.a1, self.a2, self.a3, self.a4 = a0, a1, a2, a3, a4
     
@@ -680,8 +714,10 @@ SuperPro.add_compatible_sensor(None, 'HiTechnc', 'SuperPro')
 
 
 class ServoCon(BaseDigitalSensor):
-    """Object for HiTechnic FIRST Servo Controllers. Coded to HiTechnic's specs for
-the sensor but not tested. Please report whether this worked for you or not!"""
+    """
+    Object for HiTechnic FIRST Servo Controllers. Coded to HiTechnic's specs for
+    the sensor but not tested. Please report whether this worked for you or not!
+    """
     I2C_ADDRESS = BaseDigitalSensor.I2C_ADDRESS.copy()
     I2C_ADDRESS.update({
         'status': (0x40, 'B'),
@@ -696,40 +732,44 @@ the sensor but not tested. Please report whether this worked for you or not!"""
     })
     
     class Status:
-        STOPPED = 0x00 #all motors stopped
-        RUNNING = 0x01 #motor(s) moving
+        STOPPED = 0x00  # all motors stopped
+        RUNNING = 0x01  # motor(s) moving
 
     def __init__(self, brick, port, check_compatible=True):
         super().__init__(brick, port, check_compatible)
 
     def get_status(self):
-        """Returns the status of the motors. 0 for all stopped, 1 for
-some running.
+        """
+        Returns the status of the motors. 0 for all stopped, 1 for
+        some running.
         """
         return self.read_value('status')[0]
     
     def set_step_time(self, time):
-        """Sets the step time (0-15).
-        """
+        """Sets the step time (0-15)."""
         self.write_value('steptime', (time, ))
     
     def set_pos(self, num, pos):
-        """Sets the position of a server. num is the servo number (1-6),
-pos is the position (0-255).
+        """
+        Sets the position of a server. num is the servo number (1-6),
+        pos is the position (0-255).
         """
         self.write_value('s%dpos' % num, (pos, ))
     
     def get_pwm(self):
-        """Gets the "PWM enable" value. The function of this value is
-nontrivial and can be found in the documentation for the sensor.
+        """
+        Gets the "PWM enable" value. The function of this value is
+        nontrivial and can be found in the documentation for the sensor.
         """
         return self.read_value('pwm')[0]
     
     def set_pwm(self, pwm):
-        """Sets the "PWM enable" value. The function of this value is
-nontrivial and can be found in the documentation for the sensor.
+        """
+        Sets the "PWM enable" value. The function of this value is
+        nontrivial and can be found in the documentation for the sensor.
         """
         self.write_value('pwm', (pwm, ))
+
 
 ServoCon.add_compatible_sensor(None, 'HiTechnc', 'ServoCon')
 
@@ -752,8 +792,9 @@ class MotorCon(BaseDigitalSensor):
         'm2gearratio': (0x5a, 'b'),
         'm2pid': (0x5b, '3B'),
     })
-    
-    class PID_Data():
+
+    # noinspection PyPep8Naming
+    class PID_Data:
         def __init__(self, p, i, d):
             self.p, self.i, self.d = p, i, d
     
@@ -761,71 +802,70 @@ class MotorCon(BaseDigitalSensor):
         super().__init__(brick, port, check_compatible)
     
     def set_enc_target(self, mot, val):
-        """Set the encoder target (-2147483648-2147483647) for a motor
-        """
-        self.write_value('m%denctarget'%mot, (val, ))
+        """Set the encoder target (-2147483648-2147483647) for a motor"""
+        self.write_value('m%denctarget' % mot, (val, ))
     
     def get_enc_target(self, mot):
-        """Get the encoder target for a motor
-        """
-        return self.read_value('m%denctarget'%mot)[0]
+        """Get the encoder target for a motor"""
+        return self.read_value('m%denctarget' % mot)[0]
     
     def get_enc_current(self, mot):
-        """Get the current encoder value for a motor
-        """
-        return self.read_value('m%denccurrent'%mot)[0]
+        """Get the current encoder value for a motor"""
+        return self.read_value('m%denccurrent' % mot)[0]
     
     def set_mode(self, mot, mode):
-        """Set the mode for a motor. This value is a bit mask and you can
-find details about it in the sensor's documentation.
         """
-        self.write_value('m%dmode'%mot, (mode, ))
+        Set the mode for a motor. This value is a bit mask, and you can
+        find details about it in the sensor's documentation.
+        """
+        self.write_value('m%dmode' % mot, (mode, ))
     
     def get_mode(self, mot):
-        """Get the mode for a motor. This value is a bit mask and you can
-find details about it in the sensor's documentation.
         """
-        return self.read_value('m%dmode'%mot)[0]
+        Get the mode for a motor. This value is a bit mask, and you can
+        find details about it in the sensor's documentation.
+        """
+        return self.read_value('m%dmode' % mot)[0]
     
     def set_power(self, mot, power):
-        """Set the power (-100-100) for a motor
-        """
-        self.write_value('m%dpower'%mot, (power, ))
+        """Set the power (-100-100) for a motor"""
+        self.write_value('m%dpower' % mot, (power, ))
     
     def get_power(self, mot):
-        """Get the power for a motor
-        """
-        return self.read_value('m%dpower'%mot)[0]
+        """Get the power for a motor"""
+        return self.read_value('m%dpower' % mot)[0]
     
     def set_gear_ratio(self, mot, ratio):
-        """Set the gear ratio for a motor
-        """
-        self.write_value('m%dgearratio'%mot, (ratio, ))
+        """Set the gear ratio for a motor"""
+        self.write_value('m%dgearratio' % mot, (ratio, ))
     
     def get_gear_ratio(self, mot):
-        """Get the gear ratio for a motor
-        """
-        return self.read_value('m%dgearratio'%mot)[0]
+        """Get the gear ratio for a motor"""
+        return self.read_value('m%dgearratio' % mot)[0]
     
     def set_pid(self, mot, piddata):
-        """Set the PID coefficients for a motor. Takes data in
-MotorCon.PID_Data(p, i, d) format.
         """
-        self.write_value('m%dpid'%mot, (piddata.p, piddata.i, piddata.d))
+        Set the PID coefficients for a motor. Takes data in
+        MotorCon.PID_Data(p, i, d) format.
+        """
+        self.write_value('m%dpid' % mot, (piddata.p, piddata.i, piddata.d))
     
     def get_pid(self, mot):
-        """Get the PID coefficients for a motor. Returns a PID_Data() object.
         """
-        p, i, d = self.read_value('m%dpid'%mot)
+        Get the PID coefficients for a motor. Returns a PID_Data() object.
+        """
+        p, i, d = self.read_value('m%dpid' % mot)
         return self.PID_Data(p, i, d)
     
     def get_battery_voltage(self):
-        """Gets the battery voltage (in millivolts/20)
+        """
+        Gets the battery voltage (in millivolts/20)
         """
         data = self.read_value('batteryvoltage')
         high = data[0]
         low = data[1]
         return high << 2 | low
+
 
 MotorCon.add_compatible_sensor(None, 'HiTechnc', 'MotorCon')
 
@@ -852,8 +892,8 @@ class Angle(BaseDigitalSensor):
     def get_rpm(self):
         return self.read_value("rpm")[0]
 
-    def calibrate(self):  #Current angle will be zero degrees written in EEPROM
+    def calibrate(self):  # Current angle will be zero degrees written in EEPROM
         self.write_value('mode', b'C')
 
-    def reset(self):    #Reset accumulated angle
+    def reset(self):  # Reset accumulated angle
         self.write_value('mode', b'R')
