@@ -86,7 +86,7 @@ Try this::
     python3 -m pip install PyBluez
 
 
-On MacOS::
+On MacOS:
 
 The current PyPi version of pybluez does not work with nxt-python. You will need to a more recent version from GitHub.
 
