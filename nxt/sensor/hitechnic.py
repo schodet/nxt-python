@@ -17,7 +17,7 @@
 from nxt.sensor import Type, Mode
 from .digital import BaseDigitalSensor
 from .analog import BaseAnalogSensor
-from enum import IntEnum
+from enum import Enum
 
 
 class Compass(BaseDigitalSensor):
@@ -497,14 +497,14 @@ class SuperPro(BaseDigitalSensor):
     # Used for converting ADC bits into percent signal
     ANALOG_LSB = 1 / 1023
 
-    class AnalogOutputMode(IntEnum):
+    class AnalogOutputMode(Enum):
         DC = 0
         SINE = 1
         SQUARE = 2
         UPWARDS_SAWTOOTH = 3
         DOWNWARDS_SAWTOOTH = 4
         TRIANGLE = 5
-        # There's supposed to be a PWM type, but it doesn't seem to function.
+        PWM = 6 # TODO: Test.
 
     def get_analog(self) -> dict[str, int]:
         """
@@ -636,7 +636,7 @@ class SuperPro(BaseDigitalSensor):
         output_byte = (red * 0x01) + (blue * 0x02)
         self.write_value("led_out", [output_byte])
 
-    def analog_out(self, pin: int, mode: AnalogOutputMode | int, freq: int, voltage_bits: int):
+    def analog_out(self, pin: int, mode: AnalogOutputMode, freq: int, voltage_bits: int):
         """
         Analog Output Pins
         :param pin: 0 for O0, 1 for O1
@@ -653,6 +653,9 @@ class SuperPro(BaseDigitalSensor):
         high = voltage_bits & 0b0000001111111100
         high_shifted = high >> 2
         actual_voltage_bits = low_shifted | high_shifted
+        freq_swapped = (0xFF00 & freq) >> 8
+        freq_swapped += (0x00FF & freq) << 8
+
         """
         Debug prints (these were really useful to make sure that the bits were moved correctly for the DAC)
         print("b  {0:016b}".format(voltage_bits))
@@ -663,20 +666,20 @@ class SuperPro(BaseDigitalSensor):
         print("a  {0:016b}".format(actual_voltage_bits))
         """
         if pin != 0:
-            self.write_value("analog_out1_mode", [mode])
-            self.write_value("analog_out1_freq", [freq])
+            self.write_value("analog_out1_mode", [mode.value])
+            self.write_value("analog_out1_freq", [freq_swapped])
             self.write_value("analog_out1_volts", [actual_voltage_bits])
         else:
-            self.write_value("analog_out0_mode", [mode])
-            self.write_value("analog_out0_freq", [freq])
+            self.write_value("analog_out0_mode", [mode.value])
+            self.write_value("analog_out0_freq", [freq_swapped])
             self.write_value("analog_out0_volts", [actual_voltage_bits])
 
-    def analog_out_voltage(self, pin: int, mode: AnalogOutputMode | int, freq: int, voltage: float, voltage_reference=3.3):
+    def analog_out_voltage(self, pin: int, mode: AnalogOutputMode, freq: int, voltage: float, voltage_reference=3.3):
         """
         Analog Output Pins
         :param pin: 0 for O0, 1 for O1
         :param mode: 0-5 for various modes, see AnalogOutputMode class
-        :param freq: 0 to 2^13Hz (~8kHz) Note: if 0 provided for wave, will get 1Hz.
+        :param freq: 0 to 2^13Hz (~8kHz) Note: if 0 provided for wave, will get 1Hz
         :param voltage: The desired voltage (between 0 and the voltage reference)
         :param voltage_reference: Output 1023 in the analog_out mode to find the maximum voltage, enter it here.
         """
