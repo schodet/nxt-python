@@ -513,7 +513,6 @@ class SuperPro(BaseDigitalSensor):
         analog_raw_map = {}
         for pin in analog_in_pin_name_map:
             raw = self.read_value(pin[0])[0]
-            # Not 100% sure about this logic but seems to work.
             low = (raw & 0xFF00) >> 8
             high = raw & 0x00FF
             analog_input = low + high * 4
