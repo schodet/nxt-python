@@ -39,6 +39,7 @@ needs_sphinx = "3.4"
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
+    "sphinx_autodoc_typehints"
 ]
 
 intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}

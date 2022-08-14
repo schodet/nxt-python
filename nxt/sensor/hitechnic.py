@@ -509,6 +509,7 @@ class SuperPro(BaseDigitalSensor):
     def get_analog(self) -> dict[str, int]:
         """
         Get analog input pins (A0-A3) result in raw bits
+
         :return: Map of pin name, pin value (bits)
         """
         analog_in_pin_name_map = [("analog_a0", "a0"), ("analog_a1", "a1"), ("analog_a2", "a2"), ("analog_a3", "a3")]
@@ -532,6 +533,7 @@ class SuperPro(BaseDigitalSensor):
     def get_analog_volts(self, voltage_reference: float = 3.3) -> dict[str, float]:
         """
         Get analog input pins (A0-A3) results in volts. Resolution to ~3mV (voltage reference * (1/1023) volts)
+
         :param voltage_reference: optionally provide measured voltage from 3.3V regulator for more accurate calculations
         :return: Map of pin name, pin voltage (in volts)
         """
@@ -569,6 +571,7 @@ class SuperPro(BaseDigitalSensor):
     def get_digital(self) -> dict[str, bool]:
         """
         Get digital input pins (D0-D7)
+
         :return: Boolean list, LSB first.
         """
         digital_in = self.read_value("digital_in")[0]
@@ -581,6 +584,7 @@ class SuperPro(BaseDigitalSensor):
     def set_digital(self, pins: list[bool]):
         """
         Set digital output pins (D0-D7)
+
         :param pins: boolean list (LSB first)
         """
         if len(pins) != 8:
@@ -590,6 +594,7 @@ class SuperPro(BaseDigitalSensor):
     def set_digital_byte(self, integer: int, lsb=True):
         """
         Set digital output pins (D0-D7) from byte
+
         :param integer: Byte (0-255 inclusive)
         :param lsb: Whether to output in LSB order (0x01 = pin B0)
         """
@@ -600,6 +605,7 @@ class SuperPro(BaseDigitalSensor):
     def set_digital_modes(self, modes: list[bool]):
         """
         Set digital pin mode (D0-D7)
+
         :param modes: boolean list (LSB first, True = Output, False = Input)
         """
         if len(modes) != 8:
@@ -609,7 +615,8 @@ class SuperPro(BaseDigitalSensor):
     def set_digital_modes_byte(self, mode_int: int, lsb=True):
         """
         Set digital output pins mode (D0-D7) from byte
-        :param mode mode_int: Byte (0-255 inclusive)
+
+        :param mode_int: Byte (0-255 inclusive)
         :param lsb: Whether to output in LSB order (0x01 = pin B0)
         """
         if not (0 <= mode_int <= 255):
@@ -621,6 +628,7 @@ class SuperPro(BaseDigitalSensor):
         Strobe output ??
         It's unclear what the Strobe output does. It appears to just output like the output pins do.
         S0 = 1, S1 = 2 S2 = 4 S3 = 8 RD = 16 WR = 32 (64 and 128 have seemingly no meaning??)
+
         :param mode_int: mode_int: Byte (0-63 inclusive)
         """
         if not (0 <= mode_int <= 255):
@@ -630,6 +638,7 @@ class SuperPro(BaseDigitalSensor):
     def set_led_output(self, red=False, blue=False):
         """
         Set LED output. True = On, False = Off
+
         :param red: Boolean for Red LED
         :param blue: Boolean for Blue LED
         """
@@ -639,6 +648,7 @@ class SuperPro(BaseDigitalSensor):
     def analog_out(self, pin: int, mode: AnalogOutputMode, freq: int, voltage_bits: int):
         """
         Analog Output Pins
+
         :param pin: 0 for O0, 1 for O1
         :param mode: 0-5 for various modes, see AnalogOutputMode class
         :param freq: 0 to 2^13Hz (~8kHz) Note: if 0 provided for wave, will get 1Hz.
@@ -677,6 +687,7 @@ class SuperPro(BaseDigitalSensor):
     def analog_out_voltage(self, pin: int, mode: AnalogOutputMode, freq: int, voltage: float, voltage_reference=3.3):
         """
         Analog Output Pins
+
         :param pin: 0 for O0, 1 for O1
         :param mode: 0-5 for various modes, see AnalogOutputMode class
         :param freq: 0 to 2^13Hz (~8kHz) Note: if 0 provided for wave, will get 1Hz
