@@ -11,28 +11,27 @@ When you change the distance, the LED's will roughly indicate the distance in 10
 """
 
 # Find NXT, configure sensor
-brick = nxt.locator.find()
-pro = SuperPro(brick, nxt.sensor.Port.S1)
-ultrasonic = Ultrasonic(brick, nxt.sensor.Port.S4)
+with nxt.locator.find() as brick:
+    pro = SuperPro(brick, nxt.sensor.Port.S1)
+    ultrasonic = Ultrasonic(brick, nxt.sensor.Port.S4)
 
-# Configure B0-5 as output
-pro.set_digital_modes_byte(0x3F)
+    # Configure B0-5 as output
+    pro.set_digital_modes_byte(0x3F)
 
-while True:
-    try:
-        # Get distance (cm)
-        distance_cm = ultrasonic.get_distance()
-        print("Distance: {}cm".format(distance_cm))
-        # Convert distance to 6 divisions
-        segmented = int(distance_cm / 10.0)
-        # This prevents longer distances from turning off the LED
-        if segmented > 6:
-            segmented = 5
-        # Set the corresponding bit
-        pro.set_digital_byte(2 ** segmented)
-    except KeyboardInterrupt:
-        break
+    while True:
+        try:
+            # Get distance (cm)
+            distance_cm = ultrasonic.get_distance()
+            print("Distance: {}cm".format(distance_cm))
+            # Convert distance to 6 divisions
+            segmented = int(distance_cm / 10.0)
+            # This prevents longer distances from turning off the LED
+            if segmented > 6:
+                segmented = 5
+            # Set the corresponding bit
+            pro.set_digital_byte(2 ** segmented)
+        except KeyboardInterrupt:
+            break
 
-# When program stopped, turn off outputs
-pro.set_digital_byte(0x00)
-
+    # When program stopped, turn off outputs
+    pro.set_digital_byte(0x00)

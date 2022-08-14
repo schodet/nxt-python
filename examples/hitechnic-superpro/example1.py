@@ -10,23 +10,23 @@ When you press the button, it will turn on the LED.
 """
 
 # Find NXT, configure sensor
-brick = nxt.locator.find()
-pro = SuperPro(brick, nxt.sensor.Port.S1)
+with nxt.locator.find() as brick:
+    pro = SuperPro(brick, nxt.sensor.Port.S1)
 
-# Configure B0 as output
-pro.set_digital_modes_byte(0x01)
+    # Configure B0 as output
+    pro.set_digital_modes_byte(0x01)
 
-while True:
-    try:
-        # The original demo doesn't convert to volts, but I think displaying volts to the user is better than ADC bits.
-        analog_value = pro.get_analog_volts()["a0"]
-        print("Analog 0: {}V".format(analog_value))
-        if analog_value > 3.3/2.0:
-            pro.set_digital_byte(0x01)
-        else:
-            pro.set_digital_byte(0x00)
-    except KeyboardInterrupt:
-        break
+    while True:
+        try:
+            # The original demo doesn't convert to volts, but I think displaying volts to the user is better than bits.
+            analog_value = pro.get_analog_volts()["a0"]
+            print("Analog 0: {}V".format(analog_value))
+            if analog_value > 3.3/2.0:
+                pro.set_digital_byte(0x01)
+            else:
+                pro.set_digital_byte(0x00)
+        except KeyboardInterrupt:
+            break
 
-# When program stopped, turn off outputs
-pro.set_digital_byte(0x00)
+    # When program stopped, turn off outputs
+    pro.set_digital_byte(0x00)
