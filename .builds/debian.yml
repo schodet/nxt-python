@@ -9,6 +9,7 @@ packages:
   - python3-sphinx-rtd-theme
   - python3-pytest
   - python3-setuptools
+  - python3-sphinx-autodoc-typehints
 sources:
   - https://git.sr.ht/~ni/nxt-python
 tasks:
