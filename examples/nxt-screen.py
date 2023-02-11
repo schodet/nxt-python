@@ -84,12 +84,17 @@ def main_loop():
                     pygame.quit()
                     sys.exit()
 
+        # beep to let the user know that a screen refresh happended
         b.play_tone(440, 25)
+
         p = NXT_get_display_data(b)
         draw(p)
 
         pygame.display.update()
 
+        # keep the refresh rate low, to not interfere with the NXP too much
+        # since usb-commands keep the command processor busy, which might tripp
+        # up the more timing critical bluetooth handling parts
         FPS_CLOCK.tick(1)
 
 if __name__ == '__main__':
