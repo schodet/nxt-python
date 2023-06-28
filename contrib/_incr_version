@@ -1,0 +1,5 @@
+#!/bin/sh -eux
+sed -i pyproject.toml -e "s/^version = \"${1}\"/version = \"${2}\"/"
+sed -i docs/conf.py -e "s/^release = \"${1}\"/release = \"${2}\"/"
+git add pyproject.toml docs/conf.py
+git commit -m "Update version to ${2}"
