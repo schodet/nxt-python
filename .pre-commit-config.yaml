@@ -15,24 +15,10 @@ repos:
     rev: 23.1.0
     hooks:
       - id: black
-        # Exclude files not cleaned up yet.
-        exclude: |
-          (?x)^(
-            nxt/sensor/digital\.py|
-            nxt/sensor/hitechnic\.py|
-            nxt/sensor/mindsensors\.py|
-          )$
   - repo: https://github.com/pycqa/flake8
     rev: 5.0.4
     hooks:
       - id: flake8
-        # Exclude files not cleaned up yet.
-        exclude: |
-          (?x)^(
-            nxt/sensor/digital\.py|
-            nxt/sensor/hitechnic\.py|
-            nxt/sensor/mindsensors\.py|
-          )$
   - repo: local
     hooks:
       - id: pytest
