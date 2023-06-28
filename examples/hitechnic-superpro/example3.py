@@ -1,13 +1,15 @@
 import nxt.locator
-from nxt.sensor.hitechnic import SuperPro
 from nxt.sensor.generic import Ultrasonic
+from nxt.sensor.hitechnic import SuperPro
 
 """
 Experiment 3, adapted from the SuperPro demo
 
-For this demo, attach LEDs between B0-B5 and GND, and connect an Ultrasonic to Sensor Port 4.
+For this demo, attach LEDs between B0-B5 and GND, and connect an Ultrasonic to Sensor
+Port 4.
 
-When you change the distance, the LED's will roughly indicate the distance in 10cm increments.
+When you change the distance, the LED's will roughly indicate the distance in 10cm
+increments.
 """
 
 # Find NXT, configure sensor
@@ -29,7 +31,7 @@ with nxt.locator.find() as brick:
             if segmented > 6:
                 segmented = 5
             # Set the corresponding bit
-            pro.set_digital_byte(2 ** segmented)
+            pro.set_digital_byte(2**segmented)
         except KeyboardInterrupt:
             break
 

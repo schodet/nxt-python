@@ -1,4 +1,5 @@
 from time import sleep
+
 import nxt.locator
 from nxt.sensor.hitechnic import SuperPro
 

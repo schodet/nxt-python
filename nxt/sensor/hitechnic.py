@@ -52,7 +52,7 @@ class Compass(BaseDigitalSensor):
             rheading -= 360
         elif rheading < -180:
             rheading += 360
-        return rheading	
+        return rheading
 
     def is_in_range(self, minval, maxval):
         """

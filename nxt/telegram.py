@@ -131,7 +131,6 @@ CODES = {
 
 
 class Telegram:
-
     TYPE_DIRECT = 0x00
     TYPE_SYSTEM = 0x01
     TYPE_REPLY = 0x02

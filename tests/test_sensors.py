@@ -915,7 +915,9 @@ class TestHitechnic:
         s.set_strobe_output(0x00)
         s.set_led_output(0x00)
         s.analog_out(0, nxt.sensor.hitechnic.SuperPro.AnalogOutputMode.SQUARE, 1, 1023)
-        s.analog_out_voltage(0, nxt.sensor.hitechnic.SuperPro.AnalogOutputMode.SQUARE, 1, 3.3)
+        s.analog_out_voltage(
+            0, nxt.sensor.hitechnic.SuperPro.AnalogOutputMode.SQUARE, 1, 3.3
+        )
 
     def test_servocon(self, mbrick, mdigital):
         assert not hasattr(nxt.sensor.hitechnic.ServoCon, "get_sample")
