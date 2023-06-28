@@ -1,3 +1,48 @@
+[tool.poetry]
+name = "nxt-python"
+version = "3.2.0"
+description = "LEGO Mindstorms NXT Control Package"
+authors = ["Nicolas Schodet <nico@ni.fr.eu.org>"]
+license = "GPL-3.0-or-later"
+readme = "README.md"
+homepage = "https://ni.srht.site/nxt-python/latest/"
+packages = [{ include = "nxt" }]
+include = [
+	{ path = "logo.svg", format = "sdist" },
+	{ path = "tox.ini", format = "sdist" },
+	{ path = "scripts/python-nxt-filer.desktop", format = "sdist" },
+	{ path = "scripts/nxt_*", format = "sdist" },
+	{ path = "contrib", format = "sdist" },
+	{ path = "docs/Makefile", format = "sdist" },
+	{ path = "docs/conf.py", format = "sdist" },
+	{ path = "docs/favicon.ico", format = "sdist" },
+	{ path = ".pre-commit-config.yaml", format = "sdist" },
+	{ path = "docs/**/*.rst", format = "sdist" },
+	{ path = "examples", format = "sdist" },
+	{ path = "setup.cfg", format = "sdist" },
+	{ path = "tests", format = "sdist" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+pyusb = "^1.2.1"
+pybluez = { version = "^0.23", optional = true }
+
+[tool.poetry.extras]
+bluetooth = ["pybluez"]
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.2.1"
+coverage = "^6.5.0"
+pre-commit = "^3.0.4"
+isort = "^5.12.0"
+black = "^23.1.0"
+flake8 = "^5.0.4"
+sphinx = "^5.3.0"
+sphinx-rtd-theme = "^1.2.0"
+sphinx-autodoc-typehints = "^1.12.0"
+tox = "^3.28.0"
+
 [build-system]
-requires = ["setuptools", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

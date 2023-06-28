@@ -3,6 +3,7 @@ repos:
     rev: v4.4.0
     hooks:
       - id: check-merge-conflict
+      - id: check-toml
       - id: check-yaml
       - id: end-of-file-fixer
       - id: fix-byte-order-marker
@@ -24,11 +25,6 @@ repos:
       - id: pytest
         name: pytest
         language: system
-        entry: python3 -m pytest
+        entry: poetry run pytest
         types: [python]
         pass_filenames: false
-  - repo: https://github.com/mgedmin/check-manifest
-    rev: "0.49"
-    hooks:
-      - id: check-manifest
-        stages: [push, manual]
