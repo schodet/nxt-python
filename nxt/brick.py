@@ -90,7 +90,7 @@ class Brick:
     Create an instance with :func:`nxt.locator.find`.
 
     The :class:`Brick` object implements the context manager interface, so you can use
-    it with the `with` syntax to close the connection when done with it.
+    it with the ``with`` syntax to close the connection when done with it.
     """
 
     def __init__(self, sock):
@@ -169,8 +169,8 @@ class Brick:
         meaning as the standard :func:`open` function, they must be given as keyword
         parameters.
 
-        When `encoding` is None or not given, it defaults to ``ascii`` as this is the
-        only encoding understood by the NXT brick.
+        When `encoding` is ``None`` or not given, it defaults to ``ascii`` as this is
+        the only encoding understood by the NXT brick.
         """
         rw = None
         tb = None
@@ -285,7 +285,7 @@ class Brick:
         """Return a sensor object connected to one of the brick input port.
 
         :param nxt.sensor.Port port: Input port identifier.
-        :param cls: Sensor class, or None to autodetect.
+        :param cls: Sensor class, or ``None`` to autodetect.
         :type cls: typing.Type[nxt.sensor.Sensor] or None
         :param args: Additional constructor positional arguments when `cls` is given.
         :param kwargs: Additional constructor keyword arguments when `cls` is given.
@@ -317,7 +317,7 @@ class Brick:
         """Send a message to the NXT brick and read reply.
 
         :param nxt.telegram.Telegram tgram: Message to send.
-        :return: Reply message after status has been checked, or None if no reply
+        :return: Reply message after status has been checked, or ``None`` if no reply
            requested.
         :rtype: nxt.telegram.Telegram or None
         """
