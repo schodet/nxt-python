@@ -3,6 +3,8 @@ import nxt.locator
 import nxt.motor
 import pygame
 import sys
+from nxt.error import DirectProtocolError
+
 """ example that reads out the memory region used for the display content
 ("framebuffer") of a USB-connected NXT
 
@@ -12,12 +14,13 @@ probably still fine, but the glue on the ribbon cable usually isn't)
 this code basically reimplements what
 https://bricxcc.sourceforge.net/utilities.html -> "NeXTScreen"
 in a less obscure programming language ;-)
+
 """
 
 
-PIXEL_SIZE = 8
+PIXEL_SIZE = 6
 WINDOW_WIDTH = 100 * PIXEL_SIZE
-WINDOW_HEIGHT = 64 * PIXEL_SIZE
+WINDOW_HEIGHT = (64 + 32) * PIXEL_SIZE    # Additional 32 lines for the GUI-buttons
 
 MAIN_WINDOW_SURFACE = None
 FPS_CLOCK = pygame.time.Clock()
@@ -50,6 +53,13 @@ def initialize_pygame():
     global MAIN_WINDOW_SURFACE
     MAIN_WINDOW_SURFACE = pygame.display.set_mode(main_window_size)
     pygame.display.set_caption('NXT Screen')
+# paint the buttons...
+    rect_return = pygame.Rect((50-13)*PIXEL_SIZE, (64+2)*PIXEL_SIZE, 26*PIXEL_SIZE, 16*PIXEL_SIZE)
+    pygame.draw.rect(MAIN_WINDOW_SURFACE, pygame.Color('orange'), rect_return)
+    pygame.draw.polygon(MAIN_WINDOW_SURFACE, pygame.Color('antiquewhite3'), (((50-13-30)*PIXEL_SIZE,(64+2+8)*PIXEL_SIZE),((50-13-30+26)*PIXEL_SIZE,(64+2)*PIXEL_SIZE),((50-13-30+26)*PIXEL_SIZE,(64+2+16)*PIXEL_SIZE)))
+    pygame.draw.polygon(MAIN_WINDOW_SURFACE, pygame.Color('antiquewhite3'), (((50+13+30)*PIXEL_SIZE-1,(64+2+8)*PIXEL_SIZE),((50+13+30-26)*PIXEL_SIZE-1,(64+2)*PIXEL_SIZE),((50+13+30-26)*PIXEL_SIZE-1,(64+2+16)*PIXEL_SIZE)))
+    rect_exit = pygame.Rect((50-13)*PIXEL_SIZE, (64+20)*PIXEL_SIZE, 26*PIXEL_SIZE, 10*PIXEL_SIZE)
+    pygame.draw.rect(MAIN_WINDOW_SURFACE, pygame.Color('antiquewhite4'), rect_exit)
 
 
 def draw(pixels):
@@ -83,9 +93,26 @@ def main_loop():
                 if event.key == pygame.K_ESCAPE:
                     pygame.quit()
                     sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:      # interpret mouse-button clicks on the GUI buttons
+                if (50-13)*PIXEL_SIZE <= event.pos[0] <= (50-13+26)*PIXEL_SIZE and (64+2)*PIXEL_SIZE <= event.pos[1] <= (64+2+16)*PIXEL_SIZE:
+                    b.write_io_map(0x40001, 35, bytearray([0x80]))
+                    b.write_io_map(0x40001, 35, bytearray([0x80]))
+                if (50-13-30)*PIXEL_SIZE <= event.pos[0] <= (50-13-30+26)*PIXEL_SIZE and (64+2)*PIXEL_SIZE <= event.pos[1] <= (64+2+16)*PIXEL_SIZE:
+                    b.write_io_map(0x40001, 34, bytearray([0x80]))
+                    b.write_io_map(0x40001, 34, bytearray([0x80]))
+                if (50+13+30-26)*PIXEL_SIZE <= event.pos[0] <= (50+13+30)*PIXEL_SIZE and (64+2)*PIXEL_SIZE <= event.pos[1] <= (64+2+16)*PIXEL_SIZE:
+                    b.write_io_map(0x40001, 33, bytearray([0x80]))
+                    b.write_io_map(0x40001, 33, bytearray([0x80]))
+                if (50-13)*PIXEL_SIZE <= event.pos[0] <= (50-13+26)*PIXEL_SIZE and (64+20)*PIXEL_SIZE <= event.pos[1] <= (64+20+10)*PIXEL_SIZE:
+                    try:
+                        b.stop_program()
+                    except DirectProtocolError:
+                        b.write_io_map(0x40001, 32, bytearray([0x80]))
+                        b.write_io_map(0x40001, 32, bytearray([0x80]))
 
         # beep to let the user know that a screen refresh happended
-        b.play_tone(440, 25)
+        # removed beep as it annoyed me :-)
+#        b.play_tone(440, 25)
 
         p = NXT_get_display_data(b)
         draw(p)
@@ -95,7 +122,8 @@ def main_loop():
         # keep the refresh rate low, to not interfere with the NXP too much
         # since usb-commands keep the command processor busy, which might tripp
         # up the more timing critical bluetooth handling parts
-        FPS_CLOCK.tick(1)
+        # in my case 10 fps is still OK when connecting via USB:
+        FPS_CLOCK.tick(10)
 
 if __name__ == '__main__':
     initialize_pygame()
