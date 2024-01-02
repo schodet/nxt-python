@@ -15,9 +15,6 @@ this code basically reimplements what
 https://bricxcc.sourceforge.net/utilities.html -> "NeXTScreen"
 in a less obscure programming language ;-)
 
-arohrbacher, 2.1.2024: Added code to provide a GUI representing the NXT physical buttons so that the NXT 
-brick can be remotely controlled
-
 """
 
 
@@ -86,7 +83,6 @@ def main_loop():
     b.play_tone(440, 250)
 
     while True:
-        mouse = pygame.mouse.get_pos()
         for event in pygame.event.get():
             # react to titlebar 'X' beeing clicked
             if event.type == pygame.QUIT:
@@ -98,16 +94,16 @@ def main_loop():
                     pygame.quit()
                     sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN:      # interpret mouse-button clicks on the GUI buttons
-                if (50-13)*PIXEL_SIZE <= mouse[0] <= (50-13+26)*PIXEL_SIZE and (64+2)*PIXEL_SIZE <= mouse[1] <= (64+2+16)*PIXEL_SIZE:
+                if (50-13)*PIXEL_SIZE <= event.pos[0] <= (50-13+26)*PIXEL_SIZE and (64+2)*PIXEL_SIZE <= event.pos[1] <= (64+2+16)*PIXEL_SIZE:
                     b.write_io_map(0x40001, 35, bytearray([0x80]))
                     b.write_io_map(0x40001, 35, bytearray([0x80]))
-                if (50-13-30)*PIXEL_SIZE <= mouse[0] <= (50-13-30+26)*PIXEL_SIZE and (64+2)*PIXEL_SIZE <= mouse[1] <= (64+2+16)*PIXEL_SIZE:
+                if (50-13-30)*PIXEL_SIZE <= event.pos[0] <= (50-13-30+26)*PIXEL_SIZE and (64+2)*PIXEL_SIZE <= event.pos[1] <= (64+2+16)*PIXEL_SIZE:
                     b.write_io_map(0x40001, 34, bytearray([0x80]))
                     b.write_io_map(0x40001, 34, bytearray([0x80]))
-                if (50+13+30-26)*PIXEL_SIZE <= mouse[0] <= (50+13+30)*PIXEL_SIZE and (64+2)*PIXEL_SIZE <= mouse[1] <= (64+2+16)*PIXEL_SIZE:
+                if (50+13+30-26)*PIXEL_SIZE <= event.pos[0] <= (50+13+30)*PIXEL_SIZE and (64+2)*PIXEL_SIZE <= event.pos[1] <= (64+2+16)*PIXEL_SIZE:
                     b.write_io_map(0x40001, 33, bytearray([0x80]))
                     b.write_io_map(0x40001, 33, bytearray([0x80]))
-                if (50-13)*PIXEL_SIZE <= mouse[0] <= (50-13+26)*PIXEL_SIZE and (64+20)*PIXEL_SIZE <= mouse[1] <= (64+20+10)*PIXEL_SIZE:
+                if (50-13)*PIXEL_SIZE <= event.pos[0] <= (50-13+26)*PIXEL_SIZE and (64+20)*PIXEL_SIZE <= event.pos[1] <= (64+20+10)*PIXEL_SIZE:
                     try:
                         b.stop_program()
                     except DirectProtocolError:
