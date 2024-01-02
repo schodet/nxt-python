@@ -16,7 +16,7 @@ https://bricxcc.sourceforge.net/utilities.html -> "NeXTScreen"
 in a less obscure programming language ;-)
 
 arohrbacher, 2.1.2024: Added code to provide a GUI representing the NXT physical buttons so that the NXT 
-brick can be remote controlled
+brick can be remotely controlled
 
 """
 
@@ -86,6 +86,7 @@ def main_loop():
     b.play_tone(440, 250)
 
     while True:
+        mouse = pygame.mouse.get_pos()
         for event in pygame.event.get():
             # react to titlebar 'X' beeing clicked
             if event.type == pygame.QUIT:
