@@ -5,10 +5,10 @@ programming language. It can communicate using either USB or Bluetooth.
 
 NXT-Python for Python 2 is no longer supported.
 
-NXT-Python repository is on [Github][] with a mirror on [sourcehut][].
+NXT-Python repository is on [sourcehut][] with a mirror on [Github][].
 
-[Github]: https://github.com/schodet/nxt-python "NXT-Python repository on Github"
 [sourcehut]: https://sr.ht/~ni/nxt-python/ "NXT-Python repository on sourcehut"
+[Github]: https://github.com/schodet/nxt-python "NXT-Python repository on Github"
 
 ## Requirements
 

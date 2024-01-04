@@ -391,7 +391,7 @@ class AboutDialog(Gtk.AboutDialog):
         self.set_copyright(COPYRIGHT)
         self.set_comments("LEGO® MINDSTORMS NXT File Manager")
         self.set_license("Released under GPL v2 or later")
-        self.set_website("https://github.com/schodet/nxt-python/wiki")
+        self.set_website("https://sr.ht/~ni/nxt-python/")
         self.set_website_label("Wiki")
         self.set_authors(AUTHORS)
 

@@ -5,7 +5,9 @@ description = "LEGO Mindstorms NXT Control Package"
 authors = ["Nicolas Schodet <nico@ni.fr.eu.org>"]
 license = "GPL-3.0-or-later"
 readme = "README.md"
-homepage = "https://ni.srht.site/nxt-python/latest/"
+homepage = "https://sr.ht/~ni/nxt-python/"
+repository = "https://git.sr.ht/~ni/nxt-python"
+documentation = "https://ni.srht.site/nxt-python/latest/"
 packages = [{ include = "nxt" }]
 include = [
 	{ path = "logo.svg", format = "sdist" },
