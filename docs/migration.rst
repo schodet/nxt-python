@@ -181,6 +181,8 @@ From :mod:`nxt.error`:
   :exc:`DirectProtocolError` and :exc:`SystemProtocolError`.
 - :exc:`!FileNotFound` has been renamed to :exc:`FileNotFoundError`.
 - :exc:`!ModuleNotFound` has been renamed to :exc:`ModuleNotFoundError`.
+- New :exc:`EmptyMailboxError` and :exc:`NoActiveProgramError` have been added
+  as subclasses of :exc:`DirectProtocolError`.
 
 Sensors:
 

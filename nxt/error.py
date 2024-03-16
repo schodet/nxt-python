@@ -50,8 +50,20 @@ class DirectProtocolError(ProtocolError):
     pass
 
 
+class EmptyMailboxError(DirectProtocolError):
+    """Raised when trying to read from empty mailbox."""
+
+    pass
+
+
 class I2CError(DirectProtocolError):
     """Raised on I2C error on a sensor port."""
+
+    pass
+
+
+class NoActiveProgramError(DirectProtocolError):
+    """Raised when no program is running."""
 
     pass
 

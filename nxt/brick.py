@@ -342,7 +342,7 @@ class Brick:
     def stop_program(self):
         """Stop the running program on the brick.
 
-        :raises nxt.error.DirectProtocolError: When no program is running.
+        :raises nxt.error.NoActiveProgramError: When no program is running.
         """
         tgram = Telegram(Opcode.DIRECT_STOP_PROGRAM)
         self._cmd(tgram)
@@ -655,7 +655,7 @@ class Brick:
 
         :return: Program file name
         :rtype: str
-        :raises nxt.error.DirectProtocolError: When no program is running.
+        :raises nxt.error.NoActiveProgramError: When no program is running.
         """
         tgram = Telegram(Opcode.DIRECT_GET_CURR_PROGRAM)
         tgram = self._cmd(tgram)
@@ -670,7 +670,8 @@ class Brick:
         :param bool remove: Whether to remove the message from the mailbox.
         :return: The read message.
         :rtype: bytes
-        :raises nxt.error.DirectProtocolError: When mailbox is empty.
+        :raises nxt.error.EmptyMailboxError: When mailbox is empty.
+        :raises nxt.error.NoActiveProgramError: When no program is running.
         """
         tgram = Telegram(Opcode.DIRECT_MESSAGE_READ)
         tgram.add_u8(remote_inbox)

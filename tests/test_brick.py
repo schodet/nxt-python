@@ -303,6 +303,11 @@ class TestDirect:
         brick.stop_program()
         assert sock.mock_calls == sent_recved(bytes.fromhex("0001"))
 
+    def test_stop_program_fail(self, sock, brick):
+        sock.recv.return_value = bytes.fromhex("0201ec")
+        with pytest.raises(nxt.error.NoActiveProgramError):
+            brick.stop_program()
+
     def test_play_sound_file(self, sock, brick):
         brick.play_sound_file(True, "test.rso")
         assert sock.mock_calls == sent(bytes.fromhex("8002 01") + test_rso_bin)
@@ -462,6 +467,11 @@ class TestDirect:
         assert sock.mock_calls == sent_recved(bytes.fromhex("0013 0a 00 01"))
         assert local_inbox == 0
         assert message == bytes.fromhex("21222324252627")
+
+    def test_message_read_fail(self, sock, brick):
+        sock.recv.return_value = bytes.fromhex("021340 00 00") + bytes(59)
+        with pytest.raises(nxt.error.EmptyMailboxError):
+            local_inbox, message = brick.message_read(10, 0, True)
 
 
 class TestFilesModules:

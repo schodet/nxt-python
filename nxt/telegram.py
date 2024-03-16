@@ -88,7 +88,7 @@ class Opcode(enum.Enum):
 CODES = {
     0x00: None,
     0x20: nxt.error.I2CPendingError("pending communication transaction in progress"),
-    0x40: nxt.error.DirectProtocolError("specified mailbox queue is empty"),
+    0x40: nxt.error.EmptyMailboxError("specified mailbox queue is empty"),
     0x81: nxt.error.SystemProtocolError("no more handles"),
     0x82: nxt.error.SystemProtocolError("no space"),
     0x83: nxt.error.SystemProtocolError("no more files"),
@@ -118,7 +118,7 @@ CODES = {
     0xDE: nxt.error.DirectProtocolError("no free memory in communication buffer"),
     0xDF: nxt.error.DirectProtocolError("specified channel/connection is not valid"),
     0xE0: nxt.error.I2CError("specified channel/connection not configured or busy"),
-    0xEC: nxt.error.DirectProtocolError("no active program"),
+    0xEC: nxt.error.NoActiveProgramError("no active program"),
     0xED: nxt.error.DirectProtocolError("illegal size specified"),
     0xEE: nxt.error.DirectProtocolError("illegal mailbox queue ID specified"),
     0xEF: nxt.error.DirectProtocolError(
