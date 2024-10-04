@@ -296,7 +296,7 @@ class Color(BaseAnalogSensor):
 class Temperature(BaseDigitalSensor):
     """LEGO Mindstorms NXT temperature sensor, part number 62840."""
 
-    # This is actually a TI TMP275 chip: http://www.ti.com/product/tmp275
+    # This is actually a TI TMP275 chip: https://www.ti.com/product/tmp275
     I2C_DEV = 0x98
     I2C_ADDRESS = {"raw_value": (0x00, ">h")}
 

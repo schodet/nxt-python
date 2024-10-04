@@ -12,7 +12,7 @@ NXT-Python repository is on [sourcehut][] with a mirror on [Github][].
 
 ## Requirements
 
-- [Python 3.x](http://www.python.org)
+- [Python 3.x](https://www.python.org)
 - USB communication:
     - [PyUSB](https://github.com/pyusb/pyusb)
 - Bluetooth communication:
@@ -88,4 +88,4 @@ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License along with
-this program. If not, see <http://www.gnu.org/licenses/>.
+this program. If not, see <https://www.gnu.org/licenses/>.
