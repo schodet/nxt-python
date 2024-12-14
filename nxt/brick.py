@@ -130,7 +130,7 @@ class Brick:
         buffering=-1,
         encoding=None,
         errors=None,
-        newline=None
+        newline=None,
     ):
         """Open a file and return a corresponding file-like object.
 
@@ -1064,7 +1064,7 @@ class Brick:
         a5 = tgram.parse_u8()
         # a6 is not used, should be zero.
         tgram.parse_u8()
-        address = "%02X:%02X:%02X:%02X:%02X:%02X" % (a0, a1, a2, a3, a4, a5)
+        address = f"{a0:02X}:{a1:02X}:{a2:02X}:{a3:02X}:{a4:02X}:{a5:02X}"
         signal_strengths = (
             tgram.parse_u8(),
             tgram.parse_u8(),

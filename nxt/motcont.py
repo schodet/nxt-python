@@ -25,11 +25,11 @@ def _power(power):
     pw = abs(power)
     if power < 0:
         pw += 100
-    return "{:03}".format(pw)
+    return f"{pw:03}"
 
 
 def _tacho(tacholimit):
-    return "{:06}".format(tacholimit)
+    return f"{tacholimit:06}"
 
 
 class MotCont:

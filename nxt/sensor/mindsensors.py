@@ -818,9 +818,9 @@ class PS2(BaseDigitalSensor):
                 l1,
                 l2,
                 l3,
-            ) = [
+            ) = (
                 0 for i in range(14)
-            ]  # 14 zeros
+            )  # 14 zeros
 
         def __init__(self, buttons_1, buttons_2, left_x, left_y, right_x, right_y):
             self.leftstick = (left_x, left_y)

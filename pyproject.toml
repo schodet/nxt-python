@@ -26,7 +26,7 @@ include = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 pyusb = "^1.2.1"
 pybluez = { version = "^0.23", optional = true }
 

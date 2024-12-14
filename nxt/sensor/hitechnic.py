@@ -15,7 +15,6 @@
 # GNU General Public License for more details.
 
 from enum import Enum
-from typing import Dict, List
 
 from nxt.sensor import Mode, Type
 from nxt.sensor.analog import BaseAnalogSensor
@@ -629,7 +628,7 @@ class SuperPro(BaseDigitalSensor):
         PWM = 6  # TODO: Test. Documentation seems to imply this should work, but it
         # wasn't for me.
 
-    def get_analog(self) -> Dict[str, int]:
+    def get_analog(self) -> dict[str, int]:
         """
         Get analog input pins (A0-A3) result in raw bits
 
@@ -650,7 +649,7 @@ class SuperPro(BaseDigitalSensor):
             analog_raw_map[pin[1]] = analog_input
         return analog_raw_map
 
-    def get_analog_volts(self, voltage_reference: float = 3.3) -> Dict[str, float]:
+    def get_analog_volts(self, voltage_reference: float = 3.3) -> dict[str, float]:
         """
         Get analog input pins (A0-A3) results in volts. Resolution to ~3mV (voltage
         reference * (1/1023) volts)
@@ -668,15 +667,15 @@ class SuperPro(BaseDigitalSensor):
         return analog_voltage_map
 
     @staticmethod
-    def _byte_to_boolean_list(integer: int, reverse=False) -> List[bool]:
+    def _byte_to_boolean_list(integer: int, reverse=False) -> list[bool]:
         # Converts byte to boolean string, inverts string to correct bit order if
         # needed, converts chars to boolean list
         if reverse:
-            return [bit == "1" for bit in "{0:08b}".format(integer)[::-1]]
-        return [bit == "1" for bit in "{0:08b}".format(integer)]
+            return [bit == "1" for bit in f"{integer:08b}"[::-1]]
+        return [bit == "1" for bit in f"{integer:08b}"]
 
     @staticmethod
-    def _boolean_list_to_byte(boolean_list: List[bool], reverse=False) -> int:
+    def _boolean_list_to_byte(boolean_list: list[bool], reverse=False) -> int:
         if len(boolean_list) != 8:
             raise RuntimeError("List must be 8 booleans in length")
         if reverse:
@@ -687,7 +686,7 @@ class SuperPro(BaseDigitalSensor):
             output_byte += output
         return output_byte
 
-    def get_digital(self) -> Dict[str, bool]:
+    def get_digital(self) -> dict[str, bool]:
         """
         Get digital input pins (D0-D7)
 
@@ -697,10 +696,10 @@ class SuperPro(BaseDigitalSensor):
         boolean_list = self._byte_to_boolean_list(digital_in, reverse=True)
         digital_in_map = {}
         for x in range(0, 8):
-            digital_in_map["b{}".format(x)] = boolean_list[x]
+            digital_in_map[f"b{x}"] = boolean_list[x]
         return digital_in_map
 
-    def set_digital(self, pins: List[bool]):
+    def set_digital(self, pins: list[bool]):
         """
         Set digital output pins (D0-D7)
 
@@ -721,7 +720,7 @@ class SuperPro(BaseDigitalSensor):
             raise RuntimeError("Integer must be in range of 0 to 255 inclusive")
         self.set_digital(self._byte_to_boolean_list(integer, reverse=lsb))
 
-    def set_digital_modes(self, modes: List[bool]):
+    def set_digital_modes(self, modes: list[bool]):
         """
         Set digital pin mode (D0-D7)
 

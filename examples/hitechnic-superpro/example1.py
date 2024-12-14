@@ -22,7 +22,7 @@ with nxt.locator.find() as brick:
             # The original demo doesn't convert to volts, but I think displaying volts
             # to the user is better than bits.
             analog_value = pro.get_analog_volts()["a0"]
-            print("Analog 0: {}V".format(analog_value))
+            print(f"Analog 0: {analog_value}V")
             if analog_value > 3.3 / 2.0:
                 pro.set_digital_byte(0x01)
             else:

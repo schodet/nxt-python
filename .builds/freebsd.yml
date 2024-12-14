@@ -1,14 +1,13 @@
 image: freebsd/latest
 packages:
   - python3
-  - python38
   - python39
   - python310
   - python311
-  - py39-pytest
-  - py39-pyusb
-  - py39-pip
-  - py39-tox
+  - py311-pytest
+  - py311-pyusb
+  - py311-pip
+  - py311-tox
 sources:
   - https://git.sr.ht/~ni/nxt-python
 tasks:
@@ -17,5 +16,4 @@ tasks:
       python3 -m pytest
   - tox: |
       cd nxt-python
-      pip install 'virtualenv>=20.0.0'
       tox

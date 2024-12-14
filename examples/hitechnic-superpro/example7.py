@@ -30,7 +30,7 @@ with nxt.locator.find() as brick:
             # Read B0 (magnet signal is inverted, low = magnet, then write back B4 with
             # the value.
             hall_effect_sensor = pro.get_digital()["b0"]
-            print("Magnet: {}".format(not hall_effect_sensor))
+            print(f"Magnet: {not hall_effect_sensor}")
             pro.set_digital_byte((not hall_effect_sensor) << 4)
         except KeyboardInterrupt:
             break

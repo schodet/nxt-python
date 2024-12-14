@@ -23,7 +23,7 @@ with nxt.locator.find() as brick:
             # The original demo doesn't convert to volts, but I think displaying volts
             # to the user is better than bits.
             analog_value = pro.get_analog_volts()["a0"]
-            print("Analog 0: {}V".format(analog_value))
+            print(f"Analog 0: {analog_value}V")
             # Convert voltage to 6 divisions
             segmented = int((analog_value / 3.3) * 6)
             # This prevents 3.3V "exactly" from being no LED's lit.

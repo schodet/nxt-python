@@ -26,7 +26,7 @@ with nxt.locator.find() as brick:
         try:
             # Get brightness (measured in volts)
             analog_value = pro.get_analog_volts()["a0"]
-            print("Analog 0: {}V".format(analog_value))
+            print(f"Analog 0: {analog_value}V")
             # Sleep 0.1s to allow console to be read.
             sleep(0.1)
         except KeyboardInterrupt:

@@ -24,7 +24,7 @@ with nxt.locator.find() as brick:
         try:
             # Get distance (cm)
             distance_cm = ultrasonic.get_distance()
-            print("Distance: {}cm".format(distance_cm))
+            print(f"Distance: {distance_cm}cm")
             # Convert distance to 6 divisions
             segmented = int(distance_cm / 10.0)
             # This prevents longer distances from turning off the LED
