@@ -16,6 +16,7 @@
 import enum
 from io import BytesIO
 from struct import pack, unpack
+from typing import Optional
 
 import nxt.error
 
@@ -81,7 +82,7 @@ class Opcode(enum.Enum):
     SYSTEM_RENAMEFILE = 0xA3
     SYSTEM_BTFACTORYRESET = 0xA4
 
-    def is_system(self):
+    def is_system(self) -> bool:
         return (self.value & 0x80) != 0
 
 
@@ -136,7 +137,9 @@ class Telegram:
     TYPE_REPLY = 0x02
     TYPE_REPLY_NOT_REQUIRED = 0x80
 
-    def __init__(self, opcode, reply_req=True, pkt=None):
+    def __init__(
+        self, opcode: Opcode, reply_req: bool = True, pkt: Optional[bytes] = None
+    ) -> None:
         if pkt:
             self.pkt = BytesIO(pkt)
             pkt_type = self.parse_u8()
@@ -160,71 +163,71 @@ class Telegram:
             self.add_u8(typ)
             self.add_u8(opcode.value)
 
-    def bytes(self):
+    def to_bytes(self) -> bytes:
         return self.pkt.getvalue()
 
-    def add_bytes(self, b):
+    def add_bytes(self, b: bytes) -> None:
         self.pkt.write(b)
 
-    def add_string(self, size, v):
+    def add_string(self, size: int, v: str) -> None:
         b = v.encode("ascii")
         if len(b) > size - 1:
             raise ValueError("string too long")
         self.pkt.write(pack("%ds" % size, b))
 
-    def add_filename(self, fname):
+    def add_filename(self, fname: str) -> None:
         self.add_string(20, fname)
 
-    def add_bool(self, v):
+    def add_bool(self, v: bool) -> None:
         self.pkt.write(pack("<?", v))
 
-    def add_s8(self, v):
+    def add_s8(self, v: int) -> None:
         self.pkt.write(pack("<b", v))
 
-    def add_u8(self, v):
+    def add_u8(self, v: int) -> None:
         self.pkt.write(pack("<B", v))
 
-    def add_u16(self, v):
+    def add_u16(self, v: int) -> None:
         self.pkt.write(pack("<H", v))
 
-    def add_u32(self, v):
+    def add_u32(self, v: int) -> None:
         self.pkt.write(pack("<I", v))
 
-    def parse_bytes(self, size=-1):
+    def parse_bytes(self, size: int = -1) -> bytes:
         b = self.pkt.read()
         if size != -1:
             b = b[:size]
         return b
 
-    def parse_string(self, size=-1):
+    def parse_string(self, size: int = -1) -> str:
         b = self.pkt.read(size).rstrip(b"\0")
         return b.decode("ascii")
 
-    def parse_filename(self):
+    def parse_filename(self) -> str:
         return self.parse_string(20)
 
-    def parse_bool(self):
+    def parse_bool(self) -> bool:
         return unpack("<?", self.pkt.read(1))[0]
 
-    def parse_s8(self):
+    def parse_s8(self) -> int:
         return unpack("<b", self.pkt.read(1))[0]
 
-    def parse_u8(self):
+    def parse_u8(self) -> int:
         return unpack("<B", self.pkt.read(1))[0]
 
-    def parse_s16(self):
+    def parse_s16(self) -> int:
         return unpack("<h", self.pkt.read(2))[0]
 
-    def parse_u16(self):
+    def parse_u16(self) -> int:
         return unpack("<H", self.pkt.read(2))[0]
 
-    def parse_s32(self):
+    def parse_s32(self) -> int:
         return unpack("<i", self.pkt.read(4))[0]
 
-    def parse_u32(self):
+    def parse_u32(self) -> int:
         return unpack("<I", self.pkt.read(4))[0]
 
-    def check_status(self):
+    def check_status(self) -> None:
         status = self.parse_u8()
         if status:
             ex = CODES.get(status)

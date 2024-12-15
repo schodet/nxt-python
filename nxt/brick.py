@@ -15,8 +15,12 @@
 # GNU General Public License for more details.
 
 import io
+import sys
 import threading
 import time
+from collections.abc import Iterator
+from types import TracebackType
+from typing import IO, Any, Optional, cast
 
 import nxt.error
 import nxt.motor
@@ -27,22 +31,29 @@ from nxt.telegram import Opcode, Telegram
 __all__ = ["Brick"]
 
 
+# No Buffer before 3.12.
+if sys.version_info >= (3, 12):
+    from collections.abc import Buffer
+else:
+    from typing import Any as Buffer
+
+
 class RawFileReader(io.RawIOBase):
     """Implement RawIOBase for reading a file on the NXT brick."""
 
-    def __init__(self, brick, name):
+    def __init__(self, brick: "Brick", name: str) -> None:
         self._brick = brick
         self._handle, self._remaining = brick.file_open_read(name)
 
-    def close(self):
+    def close(self) -> None:
         if not self.closed:
             super().close()
             self._brick.file_close(self._handle)
 
-    def readable(self):
+    def readable(self) -> bool:
         return True
 
-    def readinto(self, b):
+    def readinto(self, b: Buffer) -> int:
         rsize = min(self._brick._sock.bsize, self._remaining, len(b))
         if rsize == 0:
             return 0
@@ -56,20 +67,20 @@ class RawFileReader(io.RawIOBase):
 class RawFileWriter(io.RawIOBase):
     """Implement RawIOBase for writing a file on the NXT brick."""
 
-    def __init__(self, brick, name, size):
+    def __init__(self, brick: "Brick", name: str, size: int) -> None:
         self._brick = brick
         self._handle = brick.file_open_write(name, size)
         self._remaining = size
 
-    def close(self):
+    def close(self) -> None:
         if not self.closed:
             super().close()
             self._brick.file_close(self._handle)
 
-    def writable(self):
+    def writable(self) -> bool:
         return True
 
-    def write(self, b):
+    def write(self, b: Buffer) -> int:
         if self.closed:
             raise ValueError("write to closed file")
         if self._remaining == 0:
@@ -93,59 +104,60 @@ class Brick:
     it with the ``with`` syntax to close the connection when done with it.
     """
 
-    def __init__(self, sock):
+    def __init__(self, sock) -> None:
         self._sock = sock
         self._lock = threading.Lock()
 
-    def play_tone_and_wait(self, frequency_hz, duration_ms):
+    def play_tone_and_wait(self, frequency_hz: int, duration_ms: int) -> None:
         """Play a tone and wait until finished.
 
-        :param int frequency_hz: Tone frequency in Hertz.
-        :param int duration_ms: Tone duration in milliseconds.
+        :param frequency_hz: Tone frequency in Hertz.
+        :param duration_ms: Tone duration in milliseconds.
         """
         self.play_tone(frequency_hz, duration_ms)
         time.sleep(duration_ms / 1000.0)
 
-    def close(self):
+    def close(self) -> None:
         """Disconnect from the NXT brick."""
         if self._sock is not None:
             self._sock.close()
             self._sock = None
 
-    def __enter__(self):
+    def __enter__(self) -> "Brick":
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(
+        self,
+        exc_type: Optional[type[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> None:
         self.close()
 
-    def __del__(self):
+    def __del__(self) -> None:
         self.close()
 
     def open_file(
         self,
-        name,
-        mode="r",
-        size=None,
+        name: str,
+        mode: str = "r",
+        size: Optional[int] = None,
         *,
-        buffering=-1,
-        encoding=None,
-        errors=None,
-        newline=None,
-    ):
+        buffering: int = -1,
+        encoding: Optional[str] = None,
+        errors: Optional[str] = None,
+        newline: Optional[str] = None,
+    ) -> io.IOBase:
         """Open a file and return a corresponding file-like object.
 
-        :param str name: Name of the file to open.
-        :param str mode: Specification of open mode.
-        :param int size: For writing, give the final size of the file.
-        :param int buffering: Buffering control.
+        :param name: Name of the file to open.
+        :param mode: Specification of open mode.
+        :param size: For writing, give the final size of the file.
+        :param buffering: Buffering control.
         :param encoding: Encoding for text mode.
-        :type encoding: str or None
         :param errors: Encoding error handling for text mode.
-        :type errors: str or None
         :param newline: Newline handling for text mode.
-        :type newline: str or None
         :return: A file-like object connected to the file on the NXT brick.
-        :rtype: io.IOBase
         :raises nxt.error.FileNotFoundError: When file does not exists.
         :raises nxt.error.FileExistsError: When file already exists.
         :raises nxt.error.SystemProtocolError: When no space is available.
@@ -199,6 +211,8 @@ class Brick:
                 encoding = "ascii"
         if buffering == -1:
             buffering = self._sock.bsize
+        raw: io.RawIOBase
+        buf: io.BufferedIOBase
         if rw == "r":
             if size is not None:
                 raise ValueError("size given for reading")
@@ -214,17 +228,18 @@ class Brick:
                 return raw
             buf = io.BufferedWriter(raw, buffering)
         if tb == "t":
-            return io.TextIOWrapper(buf, encoding, errors, newline, buffering == 1)
+            return io.TextIOWrapper(
+                cast(IO[bytes], buf), encoding, errors, newline, buffering == 1
+            )
         else:
             return buf
 
-    def find_files(self, pattern="*.*"):
+    def find_files(self, pattern: str = "*.*") -> Iterator[tuple[str, int]]:
         """Find all files matching a pattern.
 
-        :param str pattern: Pattern to match files against.
-        :return: An iterator on all matching files, returning file name and
-            file size as a tuple.
-        :rtype: Iterator[str, int]
+        :param pattern: Pattern to match files against.
+        :return: An iterator on all matching files, returning file name and file size as
+           a tuple.
 
         Accepted patterns are:
 
@@ -248,14 +263,13 @@ class Brick:
         finally:
             self.file_close(handle)
 
-    def find_modules(self, pattern="*.*"):
+    def find_modules(self, pattern: str = "*.*") -> Iterator[tuple[str, int, int, int]]:
         """Find all modules matching a pattern.
 
-        :param str pattern: Pattern to match modules against, use ``*.*``
-            (default) to match any module.
-        :return: An iterator on all matching modules, returning module name,
-            identifier, size and IO map size as a tuple.
-        :rtype: Iterator[str, int, int, int]
+        :param pattern: Pattern to match modules against, use ``*.*`` (default) to match
+           any module.
+        :return: An iterator on all matching modules, returning module name, identifier,
+           size and IO map size as a tuple.
         """
         try:
             handle, mname, mid, msize, miomap_size = self.module_find_first(pattern)
@@ -272,25 +286,28 @@ class Brick:
         finally:
             self.module_close(handle)
 
-    def get_motor(self, port):
+    def get_motor(self, port: nxt.motor.Port) -> nxt.motor.Motor:
         """Return a motor object connected to one of the brick output port.
 
-        :param nxt.motor.Port port: Output port identifier.
+        :param port: Output port identifier.
         :return: The motor object.
-        :rtype: nxt.motor.Motor
         """
         return nxt.motor.Motor(self, port)
 
-    def get_sensor(self, port, cls=None, *args, **kwargs):
+    def get_sensor(
+        self,
+        port: nxt.sensor.Port,
+        cls: Optional[type[nxt.sensor.Sensor]] = None,
+        *args: Any,
+        **kwargs: Any,
+    ) -> nxt.sensor.Sensor:
         """Return a sensor object connected to one of the brick input port.
 
-        :param nxt.sensor.Port port: Input port identifier.
+        :param port: Input port identifier.
         :param cls: Sensor class, or ``None`` to autodetect.
-        :type cls: typing.Type[nxt.sensor.Sensor] or None
         :param args: Additional constructor positional arguments when `cls` is given.
         :param kwargs: Additional constructor keyword arguments when `cls` is given.
         :return: A sensor object.
-        :rtype: nxt.sensor.Sensor
         :raises nxt.sensor.digital.SearchError: When sensor can not be identified.
 
         When `cls` is not given or ``None``, try to detect the sensor type and return
@@ -313,33 +330,38 @@ class Brick:
         else:
             return cls(self, port, *args, **kwargs)
 
-    def _cmd(self, tgram):
+    def _cmd(self, tgram: nxt.telegram.Telegram) -> nxt.telegram.Telegram:
         """Send a message to the NXT brick and read reply.
 
-        :param nxt.telegram.Telegram tgram: Message to send.
-        :return: Reply message after status has been checked, or ``None`` if no reply
-           requested.
-        :rtype: nxt.telegram.Telegram or None
+        :param tgram: Message to send.
+        :return: Reply message after status has been checked.
         """
-        reply_tgram = None
+        assert tgram.reply_req
         with self._lock:
-            self._sock.send(tgram.bytes())
-            if tgram.reply_req:
-                reply_tgram = Telegram(opcode=tgram.opcode, pkt=self._sock.recv())
-        if reply_tgram:
-            reply_tgram.check_status()
+            self._sock.send(tgram.to_bytes())
+            reply_tgram = Telegram(opcode=tgram.opcode, pkt=self._sock.recv())
+        reply_tgram.check_status()
         return reply_tgram
 
-    def start_program(self, name):
+    def _cmd_noreply(self, tgram: nxt.telegram.Telegram) -> None:
+        """Send a message to the NXT brick with no reply.
+
+        :param tgram: Message to send.
+        """
+        assert not tgram.reply_req
+        with self._lock:
+            self._sock.send(tgram.to_bytes())
+
+    def start_program(self, name: str) -> None:
         """Start a program on the brick.
 
-        :param str name: Program file name (example: ``"myprogram.rxe"``).
+        :param name: Program file name (example: ``"myprogram.rxe"``).
         """
         tgram = Telegram(Opcode.DIRECT_START_PROGRAM)
         tgram.add_filename(name)
         self._cmd(tgram)
 
-    def stop_program(self):
+    def stop_program(self) -> None:
         """Stop the running program on the brick.
 
         :raises nxt.error.NoActiveProgramError: When no program is running.
@@ -347,22 +369,22 @@ class Brick:
         tgram = Telegram(Opcode.DIRECT_STOP_PROGRAM)
         self._cmd(tgram)
 
-    def play_sound_file(self, loop, name):
+    def play_sound_file(self, loop: bool, name: str) -> None:
         """Play a sound file on the brick.
 
-        :param bool loop: Loop mode, play continuously.
-        :param str name: Sound file name.
+        :param loop: Loop mode, play continuously.
+        :param name: Sound file name.
         """
         tgram = Telegram(Opcode.DIRECT_PLAY_SOUND_FILE, reply_req=False)
         tgram.add_bool(loop)
         tgram.add_filename(name)
-        self._cmd(tgram)
+        self._cmd_noreply(tgram)
 
-    def play_tone(self, frequency_hz, duration_ms):
+    def play_tone(self, frequency_hz: int, duration_ms: int) -> None:
         """Play a tone on the brick, do not wait until finished.
 
-        :param int frequency_hz: Tone frequency in Hertz.
-        :param int duration_ms: Tone duration in milliseconds.
+        :param frequency_hz: Tone frequency in Hertz.
+        :param duration_ms: Tone duration in milliseconds.
 
         This function do not wait until finished, if you want to play several notes, you
         may need :func:`play_tone_and_wait`.
@@ -370,22 +392,29 @@ class Brick:
         tgram = Telegram(Opcode.DIRECT_PLAY_TONE, reply_req=False)
         tgram.add_u16(frequency_hz)
         tgram.add_u16(duration_ms)
-        self._cmd(tgram)
+        self._cmd_noreply(tgram)
 
     def set_output_state(
-        self, port, power, mode, regulation_mode, turn_ratio, run_state, tacho_limit
-    ):
+        self,
+        port: nxt.motor.Port,
+        power: int,
+        mode: nxt.motor.Mode,
+        regulation_mode: nxt.motor.RegulationMode,
+        turn_ratio: int,
+        run_state: nxt.motor.RunState,
+        tacho_limit: int,
+    ) -> None:
         """Set output port state on the brick.
 
-        :param nxt.motor.Port port: Output port identifier.
-        :param int power: Motor speed or power level (-100 to 100).
-        :param nxt.motor.Mode mode: Motor power mode.
-        :param nxt.motor.RegulationMode regulation_mode: Motor regulation mode.
-        :param int turn_ratio: Turn ratio (-100 to 100). Negative value shift power to
-           the left motor.
-        :param nxt.motor.RunState run_state: Motor run state.
-        :param int tacho_limit: Number of degrees the motor should rotate relative to
-           the current position.
+        :param port: Output port identifier.
+        :param power: Motor speed or power level (-100 to 100).
+        :param mode: Motor power mode.
+        :param regulation_mode: Motor regulation mode.
+        :param turn_ratio: Turn ratio (-100 to 100). Negative value shift power to the
+           left motor.
+        :param run_state: Motor run state.
+        :param tacho_limit: Number of degrees the motor should rotate relative to the
+           current position.
 
         .. warning:: This is a low level function, prefer to use
            :meth:`nxt.motor.Motor`, you can get one from :meth:`get_motor`.
@@ -398,14 +427,19 @@ class Brick:
         tgram.add_s8(turn_ratio)
         tgram.add_u8(run_state.value)
         tgram.add_u32(tacho_limit)
-        self._cmd(tgram)
+        self._cmd_noreply(tgram)
 
-    def set_input_mode(self, port, sensor_type, sensor_mode):
+    def set_input_mode(
+        self,
+        port: nxt.sensor.Port,
+        sensor_type: nxt.sensor.Type,
+        sensor_mode: nxt.sensor.Mode,
+    ) -> None:
         """Set input port mode on the brick.
 
-        :param nxt.sensor.Port port: Input port identifier.
-        :param nxt.sensor.Type sensor_type: Sensor type.
-        :param nxt.sensor.Mode sensor_mode: Sensor mode.
+        :param port: Input port identifier.
+        :param sensor_type: Sensor type.
+        :param sensor_mode: Sensor mode.
 
         .. warning:: This is a low level function, prefer to use a :mod:`nxt.sensor`
            class.
@@ -414,17 +448,28 @@ class Brick:
         tgram.add_u8(port.value)
         tgram.add_u8(sensor_type.value)
         tgram.add_u8(sensor_mode.value)
-        self._cmd(tgram)
+        self._cmd_noreply(tgram)
 
-    def get_output_state(self, port):
+    def get_output_state(
+        self, port: nxt.motor.Port
+    ) -> tuple[
+        nxt.motor.Port,
+        int,
+        nxt.motor.Mode,
+        nxt.motor.RegulationMode,
+        int,
+        nxt.motor.RunState,
+        int,
+        int,
+        int,
+        int,
+    ]:
         """Get output port state from the brick.
 
-        :param nxt.motor.Port port: Output port identifier.
+        :param port: Output port identifier.
         :return: A tuple with `port`, `power`, `mode`, `regulation_mode`, `turn_ratio`,
            `run_state`, `tacho_limit`, `tacho_count`, `block_tacho_count`, and
            `rotation_count`.
-        :rtype: (nxt.motor.Port, int, nxt.motor.Mode, nxt.motor.RegulationMode, int,
-           nxt.motor.RunState, int, int, int, int)
 
         Return value details:
 
@@ -470,15 +515,25 @@ class Brick:
             rotation_count,
         )
 
-    def get_input_values(self, port):
+    def get_input_values(
+        self, port: nxt.sensor.Port
+    ) -> tuple[
+        nxt.sensor.Port,
+        bool,
+        bool,
+        nxt.sensor.Type,
+        nxt.sensor.Mode,
+        int,
+        int,
+        int,
+        int,
+    ]:
         """Get input port values from the brick.
 
-        :param nxt.sensor.Port port: Input port identifier.
+        :param port: Input port identifier.
         :return: A tuple with `port`, `valid`, `calibrated`, `sensor_type`,
            `sensor_mode`, `raw_value`, `normalized_value`, `scaled_value`, and
            `calibrated_value`. `rotation_count`.
-        :rtype: (nxt.sensor.Port, bool, bool, nxt.sensor.Type, nxt.sensor.Mode, int,
-           int, int, int)
 
         Return value details:
 
@@ -520,10 +575,10 @@ class Brick:
             calibrated_value,
         )
 
-    def reset_input_scaled_value(self, port):
+    def reset_input_scaled_value(self, port: nxt.sensor.Port) -> None:
         """Reset scaled value for an input port on the brick.
 
-        :param nxt.sensor.Port port: Input port identifier.
+        :param port: Input port identifier.
 
         This can be used to reset accumulated value for some sensor modes.
 
@@ -534,11 +589,11 @@ class Brick:
         tgram.add_u8(port.value)
         self._cmd(tgram)
 
-    def message_write(self, inbox, message):
+    def message_write(self, inbox: int, message: bytes) -> None:
         """Send a message to a brick mailbox.
 
-        :param int inbox: Mailbox number (0 to 19).
-        :param bytes message: Message to send (58 bytes maximum).
+        :param inbox: Mailbox number (0 to 19).
+        :param message: Message to send (58 bytes maximum).
         """
         if len(message) > 58:
             raise ValueError("message too long")
@@ -549,12 +604,12 @@ class Brick:
         tgram.add_u8(0)
         self._cmd(tgram)
 
-    def reset_motor_position(self, port, relative):
+    def reset_motor_position(self, port: nxt.motor.Port, relative: bool) -> None:
         """Reset block or program motor position for a brick output port.
 
-        :param nxt.motor.Port port: Output port identifier.
-        :param bool relative: If ``True``, reset block position, if ``False``, reset
-           program position.
+        :param port: Output port identifier.
+        :param relative: If ``True``, reset block position, if ``False``, reset program
+           position.
 
         .. warning:: This is a low level function, prefer to use
            :meth:`nxt.motor.Motor`, you can get one from :meth:`get_motor`.
@@ -564,39 +619,36 @@ class Brick:
         tgram.add_bool(relative)
         self._cmd(tgram)
 
-    def get_battery_level(self):
+    def get_battery_level(self) -> int:
         """Get brick battery voltage.
 
         :return: Battery voltage in millivolt.
-        :rtype: int
         """
         tgram = Telegram(Opcode.DIRECT_GET_BATT_LVL)
         tgram = self._cmd(tgram)
         millivolts = tgram.parse_u16()
         return millivolts
 
-    def stop_sound_playback(self):
+    def stop_sound_playback(self) -> None:
         """Stop currently running sound file on the brick."""
         tgram = Telegram(Opcode.DIRECT_STOP_SOUND)
         self._cmd(tgram)
 
-    def keep_alive(self):
+    def keep_alive(self) -> int:
         """Reset the brick standby timer.
 
         :return: Sleep timeout in milliseconds.
-        :rtype: int
         """
         tgram = Telegram(Opcode.DIRECT_KEEP_ALIVE)
         tgram = self._cmd(tgram)
         sleep_timeout = tgram.parse_u32()
         return sleep_timeout
 
-    def ls_get_status(self, port):
+    def ls_get_status(self, port: nxt.sensor.Port) -> int:
         """Get status of last low-speed transaction to a brick input port.
 
-        :param nxt.sensor.Port port: Input port identifier.
+        :param port: Input port identifier.
         :return: Number of bytes to read as a result of the transaction.
-        :rtype: int
         :raises nxt.error.I2CPendingError: When transaction is still in progress.
         :raises nxt.error.DirectProtocolError: When there is an error on the bus.
 
@@ -609,12 +661,12 @@ class Brick:
         size = tgram.parse_u8()
         return size
 
-    def ls_write(self, port, tx_data, rx_bytes):
+    def ls_write(self, port: nxt.sensor.Port, tx_data: bytes, rx_bytes: int) -> None:
         """Write data to a brick input port using low speed transaction.
 
-        :param nxt.sensor.Port port: Input port identifier.
-        :param bytes tx_data: Data to send.
-        :param int rx_bytes: Number of bytes to receive.
+        :param port: Input port identifier.
+        :param tx_data: Data to send.
+        :param rx_bytes: Number of bytes to receive.
 
         Function returns immediately. Transaction status can be retrieved using
         :meth:`ls_get_status` and result must be read using :meth:`ls_read`.
@@ -629,12 +681,11 @@ class Brick:
         tgram.add_bytes(tx_data)
         self._cmd(tgram)
 
-    def ls_read(self, port):
+    def ls_read(self, port: nxt.sensor.Port) -> bytes:
         """Read result of low speed transaction.
 
-        :param nxt.sensor.Port port: Input port identifier.
+        :param port: Input port identifier.
         :return: Data received.
-        :rtype: bytes
         :raises nxt.error.I2CPendingError: When transaction is still in progress.
         :raises nxt.error.DirectProtocolError: When there is an error on the bus.
 
@@ -650,11 +701,10 @@ class Brick:
         rx_data = tgram.parse_bytes(size)
         return rx_data
 
-    def get_current_program_name(self):
+    def get_current_program_name(self) -> str:
         """Return name of program currently running on the brick.
 
         :return: Program file name
-        :rtype: str
         :raises nxt.error.NoActiveProgramError: When no program is running.
         """
         tgram = Telegram(Opcode.DIRECT_GET_CURR_PROGRAM)
@@ -662,14 +712,15 @@ class Brick:
         name = tgram.parse_filename()
         return name
 
-    def message_read(self, remote_inbox, local_inbox, remove):
+    def message_read(
+        self, remote_inbox: int, local_inbox: int, remove: bool
+    ) -> tuple[int, bytes]:
         """Read a message from a brick mailbox.
 
-        :param int remote_inbox: Mailbox number (0 to 19).
-        :param int local_inbox: Local mailbox, not used by brick.
-        :param bool remove: Whether to remove the message from the mailbox.
-        :return: The read message.
-        :rtype: bytes
+        :param remote_inbox: Mailbox number (0 to 19).
+        :param local_inbox: Local mailbox number, not used by brick.
+        :param remove: Whether to remove the message from the mailbox.
+        :return: A tuple with the local mailbox number and the read message.
         :raises nxt.error.EmptyMailboxError: When mailbox is empty.
         :raises nxt.error.NoActiveProgramError: When no program is running.
         """
@@ -683,12 +734,11 @@ class Brick:
         message = tgram.parse_bytes(size)
         return local_inbox, message
 
-    def file_open_read(self, name):
+    def file_open_read(self, name: str) -> tuple[int, int]:
         """Open file for reading.
 
-        :param str name: File name.
+        :param name: File name.
         :return: The file handle and the file size.
-        :rtype: (int, int)
         :raises nxt.error.FileNotFoundError: When file does not exists.
 
         .. warning:: This is a low level function, prefer to use :meth:`open_file`.
@@ -700,13 +750,12 @@ class Brick:
         size = tgram.parse_u32()
         return handle, size
 
-    def file_open_write(self, name, size):
+    def file_open_write(self, name: str, size: int) -> int:
         """Open file for writing.
 
-        :param str name: File name.
-        :param int size: Final file size.
+        :param name: File name.
+        :param size: Final file size.
         :return: The file handle.
-        :rtype: int
         :raises nxt.error.FileExistsError: When file already exists.
         :raises nxt.error.SystemProtocolError: When no space is available.
 
@@ -719,13 +768,12 @@ class Brick:
         handle = tgram.parse_u8()
         return handle
 
-    def file_read(self, handle, size):
+    def file_read(self, handle: int, size: int) -> tuple[int, bytes]:
         """Read data from open file.
 
-        :param int handle: Open file handle.
-        :param int size: Number of bytes to read.
+        :param handle: Open file handle.
+        :param size: Number of bytes to read.
         :return: The file handle and the read data.
-        :rtype: (int, bytes)
 
         .. warning:: This is a low level function, prefer to use :meth:`open_file`.
         """
@@ -738,13 +786,12 @@ class Brick:
         data = tgram.parse_bytes(size)
         return handle, data
 
-    def file_write(self, handle, data):
+    def file_write(self, handle: int, data: bytes) -> tuple[int, int]:
         """Write data to open file.
 
-        :param int handle: Open file handle.
-        :param bytes data: Data to write.
+        :param handle: Open file handle.
+        :param data: Data to write.
         :return: The file handle and the number of bytes written.
-        :rtype: (int, int)
 
         .. warning:: This is a low level function, prefer to use :meth:`open_file`.
         """
@@ -756,12 +803,11 @@ class Brick:
         size = tgram.parse_u16()
         return handle, size
 
-    def file_close(self, handle):
+    def file_close(self, handle: int) -> int:
         """Close open file.
 
-        :param int handle: Open file handle.
+        :param handle: Open file handle.
         :return: The closed file handle.
-        :rtype: int
 
         .. warning:: This is a low level function, prefer to use :meth:`open_file`.
         """
@@ -771,12 +817,11 @@ class Brick:
         handle = tgram.parse_u8()
         return handle
 
-    def file_delete(self, name):
+    def file_delete(self, name: str) -> str:
         """Delete a file on the brick.
 
-        :param str name: File name.
+        :param name: File name.
         :return: The deleted file name.
-        :rtype: str
         :raises nxt.error.FileNotFoundError: When file does not exists.
         """
         tgram = Telegram(Opcode.SYSTEM_DELETE)
@@ -785,12 +830,11 @@ class Brick:
         name = tgram.parse_filename()
         return name
 
-    def file_find_first(self, pattern):
+    def file_find_first(self, pattern: str) -> tuple[int, str, int]:
         """Start finding files matching a pattern.
 
-        :param str pattern: Pattern to match files against.
+        :param pattern: Pattern to match files against.
         :return: A handle for the search, first file found name and size.
-        :rtype: (int, str, int)
         :raises nxt.error.FileNotFoundError: When no file is found.
 
         .. warning:: This is a low level function, prefer to use :meth:`find_files`.
@@ -803,12 +847,11 @@ class Brick:
         size = tgram.parse_u32()
         return handle, name, size
 
-    def file_find_next(self, handle):
+    def file_find_next(self, handle: int) -> tuple[int, str, int]:
         """Continue finding files.
 
-        :param int handle: Handle open with :meth:`file_find_first`.
+        :param handle: Handle open with :meth:`file_find_first`.
         :return: The handle, next file found name and size.
-        :rtype: (int, str, int)
         :raises nxt.error.FileNotFoundError: When no more file is found.
 
         .. warning:: This is a low level function, prefer to use :meth:`find_files`.
@@ -821,12 +864,11 @@ class Brick:
         size = tgram.parse_u32()
         return handle, name, size
 
-    def get_firmware_version(self):
+    def get_firmware_version(self) -> tuple[tuple[int, int], tuple[int, int]]:
         """Get firmware version information.
 
         :return: Protocol and firmware versions, as two tuples with major and minor for
            each version.
-        :rtype: ((int, int), (int, int))
         """
         tgram = Telegram(Opcode.SYSTEM_VERSIONS)
         tgram = self._cmd(tgram)
@@ -838,13 +880,12 @@ class Brick:
         fw_version = (fw_major, fw_minor)
         return prot_version, fw_version
 
-    def file_open_write_linear(self, name, size):
+    def file_open_write_linear(self, name: str, size: int) -> int:
         """Open file for writing, reserve a linear space.
 
-        :param str name: File name.
-        :param int size: Final file size.
+        :param name: File name.
+        :param size: Final file size.
         :return: The file handle.
-        :rtype: int
         :raises nxt.error.FileExistsError: When file already exists.
         :raises nxt.error.SystemProtocolError: When no space is available.
 
@@ -861,13 +902,12 @@ class Brick:
         handle = tgram.parse_u8()
         return handle
 
-    def file_open_write_data(self, name, size):
+    def file_open_write_data(self, name: str, size: int) -> int:
         """Open file for writing, using data mode.
 
-        :param str name: File name.
-        :param int size: Maximum file size.
+        :param name: File name.
+        :param size: Maximum file size.
         :return: The file handle.
-        :rtype: int
         :raises nxt.error.FileExistsError: When file already exists.
         :raises nxt.error.SystemProtocolError: When no space is available.
 
@@ -884,12 +924,11 @@ class Brick:
         handle = tgram.parse_u8()
         return handle
 
-    def file_open_append_data(self, name):
+    def file_open_append_data(self, name: str) -> tuple[int, int]:
         """Open file for appending, using data mode.
 
-        :param str name: File name.
+        :param name: File name.
         :return: The file handle and available size
-        :rtype: (int, int)
         :raises nxt.error.FileNotFoundError: When file does not exists.
         :raises nxt.error.SystemProtocolError: When file is full or file is not a data
            file.
@@ -907,13 +946,12 @@ class Brick:
         available_size = tgram.parse_u32()
         return handle, available_size
 
-    def module_find_first(self, pattern):
+    def module_find_first(self, pattern: str) -> tuple[int, str, int, int, int]:
         """Start finding modules matching a pattern.
 
-        :param str pattern: Pattern to match modules against.
+        :param pattern: Pattern to match modules against.
         :return: A handle for the search, first module found name, identifier, size and
            IO map size.
-        :rtype: (int, str, int, int, int)
         :raises nxt.error.ModuleNotFoundError: When no module is found.
 
         .. warning:: This is a low level function, prefer to use :meth:`find_modules`.
@@ -928,12 +966,11 @@ class Brick:
         mod_iomap_size = tgram.parse_u16()
         return handle, name, mod_id, mod_size, mod_iomap_size
 
-    def module_find_next(self, handle):
+    def module_find_next(self, handle: int) -> tuple[int, str, int, int, int]:
         """Continue finding modules.
 
-        :param int handle: Handle open with :meth:`module_find_first`.
+        :param handle: Handle open with :meth:`module_find_first`.
         :return: The handle, next module found name, identifier, size and IO map size.
-        :rtype: (int, str, int, int, int)
         :raises nxt.error.ModuleNotFoundError: When no more module is found.
 
         .. warning:: This is a low level function, prefer to use :meth:`find_modules`.
@@ -948,12 +985,11 @@ class Brick:
         mod_iomap_size = tgram.parse_u16()
         return handle, name, mod_id, mod_size, mod_iomap_size
 
-    def module_close(self, handle):
+    def module_close(self, handle: int) -> int:
         """Close module search.
 
-        :param int handle: Open module handle.
+        :param handle: Open module handle.
         :return: The closed module handle.
-        :rtype: int
 
         .. warning:: This is a low level function, prefer to use :meth:`find_modules`.
         """
@@ -963,14 +999,13 @@ class Brick:
         handle = tgram.parse_u8()
         return handle
 
-    def read_io_map(self, mod_id, offset, size):
+    def read_io_map(self, mod_id: int, offset: int, size: int) -> tuple[int, bytes]:
         """Read module IO map on the brick.
 
-        :param int mod_id: Module identifier.
-        :param int offset: Offset in IO map.
-        :param int size: Number of bytes to read.
+        :param mod_id: Module identifier.
+        :param offset: Offset in IO map.
+        :param size: Number of bytes to read.
         :return: Module identifier and read data.
-        :rtype: (int, bytes)
 
         Module identifier can be found using :meth:`find_modules`. You need to know the
         structure of the module IO map. You can find it by reading the firmware source
@@ -986,14 +1021,13 @@ class Brick:
         data = tgram.parse_bytes(size)
         return mod_id, data
 
-    def write_io_map(self, mod_id, offset, data):
+    def write_io_map(self, mod_id: int, offset: int, data: bytes) -> tuple[int, int]:
         """Write module IO map on the brick.
 
-        :param int mod_id: Module identifier.
-        :param int offset: Offset in IO map.
-        :param bytes data: Data to write.
+        :param mod_id: Module identifier.
+        :param offset: Offset in IO map.
+        :param data: Data to write.
         :return: Module identifier and written size.
-        :rtype: (int, int)
 
         Module identifier can be found using :meth:`find_modules`. You need to know the
         structure of the module IO map. You can find it by reading the firmware source
@@ -1009,13 +1043,12 @@ class Brick:
         size = tgram.parse_u16()
         return mod_id, size
 
-    def boot(self, *, sure=False):
+    def boot(self, *, sure: bool = False) -> bytes:
         """Erase NXT brick firmware and go to SAM-BA boot mode.
 
-        :param bool sure: Set to ``True`` if you are really sure. Must be a keyword
+        :param sure: Set to ``True`` if you are really sure. Must be a keyword
            parameter.
         :return: Brick response, should be ``"Yes\0"``.
-        :rtype: bytes
 
         This only works on USB connection.
 
@@ -1034,21 +1067,20 @@ class Brick:
         resp = tgram.parse_bytes()
         return resp
 
-    def set_brick_name(self, name):
+    def set_brick_name(self, name: str) -> None:
         """Set brick name.
 
-        :param str name: New brick name.
+        :param name: New brick name.
         """
         tgram = Telegram(Opcode.SYSTEM_SETBRICKNAME)
         tgram.add_string(15, name)
         self._cmd(tgram)
 
-    def get_device_info(self):
+    def get_device_info(self) -> tuple[str, str, tuple[int, int, int, int], int]:
         """Get brick information.
 
         :return: The brick name, Bluetooth address, Bluetooth signal strengths and free
            user flash.
-        :rtype: (str, str, (int, int, int, int), int)
 
         Bluetooth address uses this notation: ``00:16:53:xx:xx:xx``, where `xx` is the
         brick unique address part (`00:16:53` is the LEGO OUI used for the NXT bricks).
@@ -1074,17 +1106,16 @@ class Brick:
         user_flash = tgram.parse_u32()
         return name, address, signal_strengths, user_flash
 
-    def delete_user_flash(self):
+    def delete_user_flash(self) -> None:
         """Erase the brick user flash."""
         tgram = Telegram(Opcode.SYSTEM_DELETEUSERFLASH)
         self._cmd(tgram)
 
-    def poll_command_length(self, buf_num):
+    def poll_command_length(self, buf_num: int) -> tuple[int, int]:
         """Get number of bytes available in brick poll buffer.
 
-        :param int buf_num: Buffer number, 0 for USB, 1 for high speed.
+        :param buf_num: Buffer number, 0 for USB, 1 for high speed.
         :return: Buffer number and number of available bytes.
-        :rtype: (int, int)
         """
         tgram = Telegram(Opcode.SYSTEM_POLLCMDLEN)
         tgram.add_u8(buf_num)
@@ -1093,13 +1124,12 @@ class Brick:
         size = tgram.parse_u8()
         return buf_num, size
 
-    def poll_command(self, buf_num, size):
+    def poll_command(self, buf_num: int, size: int) -> tuple[int, bytes]:
         """Get bytes from brick poll buffer.
 
-        :param int buf_num: Buffer number, 0 for USB, 1 for high speed.
-        :param int size: Number of bytes to read.
+        :param buf_num: Buffer number, 0 for USB, 1 for high speed.
+        :param size: Number of bytes to read.
         :return: Buffer number and read bytes.
-        :rtype: (int, bytes)
         """
         tgram = Telegram(Opcode.SYSTEM_POLLCMD)
         tgram.add_u8(buf_num)
@@ -1110,7 +1140,7 @@ class Brick:
         command = tgram.parse_bytes(size)
         return buf_num, command
 
-    def bluetooth_factory_reset(self):
+    def bluetooth_factory_reset(self) -> None:
         """Reset brick Bluetooth to factory settings.
 
         This only works on USB connection.

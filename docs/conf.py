@@ -65,3 +65,7 @@ html_copy_source = False
 # -- Options for autodoc -----------------------------------------------------
 
 autodoc_member_order = "bysource"
+
+# -- Options for autodoc typehints -------------------------------------------
+
+typehints_fully_qualified = True

@@ -20,10 +20,15 @@ If you want to make a command line tool, :func:`add_arguments` and
 :func:`find_with_options` will make it easy to allow choosing a brick from the command
 line.
 """
+import argparse
 import configparser
 import importlib
 import logging
 import os
+from collections.abc import Iterable, Iterator, MutableMapping
+from typing import Callable, Literal, Optional, Union, overload
+
+import nxt.brick
 
 __all__ = ["find", "add_arguments", "find_with_options", "BrickNotFoundError"]
 
@@ -36,7 +41,7 @@ class BrickNotFoundError(Exception):
     pass
 
 
-def _get_default_backends(**filters):
+def _get_default_backends(**filters: Union[str, int, None]) -> list[str]:
     """Get default backends names.
 
     :param filters: Additional filter keywords or backends parameters, used to select
@@ -51,13 +56,11 @@ def _get_default_backends(**filters):
     return backends
 
 
-def _get_backends(backends):
+def _get_backends(backends: list[Union[str, object]]) -> Iterator[object]:
     """Get backends objects.
 
     :param backends: Specify backends to use.
-    :type backends: list[str or object]
     :return: An iterator on the backends object list.
-    :rtype: Iterator[object]
     """
     for backend in backends:
         if isinstance(backend, str):
@@ -69,16 +72,16 @@ def _get_backends(backends):
             yield backend
 
 
-def _get_config(config="default", config_filenames=None):
+def _get_config(
+    config: Optional[str] = "default",
+    config_filenames: Optional[Iterable[Union[str, bytes, os.PathLike]]] = None,
+) -> Optional[MutableMapping[str, str]]:
     """Read configuration file and get requested configuration.
 
     :param config: Name of the configuration file section to use, or ``None`` to disable
        configuration reading.
-    :type config: str or None
     :param config_filenames: Configuration file paths, or ``None`` for default.
-    :type config_filenames: Iterable[str or bytes or os.PathLike] or None
-    :return: Configuration section or None.
-    :rtype: MutableMapping[str, str]
+    :return: Configuration section or ``None``.
     """
     if config is None:
         return None
@@ -97,36 +100,59 @@ def _get_config(config="default", config_filenames=None):
     return parser[config]
 
 
+@overload
 def find(
     *,
-    find_all=False,
-    backends=None,
-    custom_match=None,
-    config="default",
-    config_filenames=None,
-    name=None,
-    host=None,
-    **filters,
-):
+    find_all: Literal[False] = False,
+    backends: Optional[Iterable[Union[str, object]]] = None,
+    custom_match: Optional[Callable[[nxt.brick.Brick], bool]] = None,
+    config: Optional[str] = "default",
+    config_filenames: Optional[Iterable[Union[str, bytes, os.PathLike]]] = None,
+    name: Optional[str] = None,
+    host: Optional[str] = None,
+    **filters: Union[str, int, None],
+) -> nxt.brick.Brick:
+    ...
+
+
+@overload
+def find(
+    *,
+    find_all: Literal[True],
+    backends: Optional[Iterable[Union[str, object]]] = None,
+    custom_match: Optional[Callable[[nxt.brick.Brick], bool]] = None,
+    config: Optional[str] = "default",
+    config_filenames: Optional[Iterable[Union[str, bytes, os.PathLike]]] = None,
+    name: Optional[str] = None,
+    host: Optional[str] = None,
+    **filters: Union[str, int, None],
+) -> Iterator[nxt.brick.Brick]:
+    ...
+
+
+def find(
+    *,
+    find_all: bool = False,
+    backends: Optional[Iterable[Union[str, object]]] = None,
+    custom_match: Optional[Callable[[nxt.brick.Brick], bool]] = None,
+    config: Optional[str] = "default",
+    config_filenames: Optional[Iterable[Union[str, bytes, os.PathLike]]] = None,
+    name: Optional[str] = None,
+    host: Optional[str] = None,
+    **filters: Union[str, int, None],
+) -> Union[nxt.brick.Brick, Iterator[nxt.brick.Brick]]:
     """Find a NXT brick and return it.
 
-    :param bool find_all: ``True`` to return an iterator over all bricks found.
+    :param find_all: ``True`` to return an iterator over all bricks found.
     :param backends: Specify backends to use, use ``None`` for default.
-    :type backends: Iterable[str or object] or None
     :param custom_match: Function to filter bricks found.
-    :type custom_match: Callable or None
     :param config: Name of the configuration file section to use, or ``None`` to disable
        configuration reading.
-    :type config: str or None
     :param config_filenames: Configuration file paths, or ``None`` for default.
-    :type config_filenames: Iterable[str or bytes or os.PathLike] or None
     :param name: Brick name (example: ``"NXT"``).
-    :type name: str or None
     :param host: Bluetooth address (example: ``"00:16:53:01:02:03"``).
-    :type host: str or None
     :param filters: Additional filter keywords or backends parameters.
     :return: The found brick, or an iterator if `find_all` is ``True``
-    :rtype: nxt.brick.Brick or Iterator[nxt.brick.Brick]
     :raises BrickNotFoundError: if no brick is found and `find_all` is ``False``.
 
     Use this function to find a NXT brick. You can pass arguments to match a specific
@@ -216,11 +242,11 @@ def find(
         return brick
 
 
-def add_arguments(parser):
+def add_arguments(parser: argparse.ArgumentParser) -> None:
     """Add options to an :mod:`argparse` parser to allow configuration from the command
     line.
 
-    :param argparse.ArgumentParser parser: An :mod:`argparse` parser.
+    :param parser: An :mod:`argparse` parser.
 
     This can be used to easily design a command line interface. Use it with
     :func:`find_with_options`.
@@ -260,7 +286,23 @@ def add_arguments(parser):
     parser.add_argument("--filename", help="device file name (example: /dev/rfcomm0)")
 
 
-def find_with_options(options, *, find_all=False):
+@overload
+def find_with_options(
+    options: argparse.Namespace, *, find_all: Literal[False] = False
+) -> nxt.brick.Brick:
+    ...
+
+
+@overload
+def find_with_options(
+    options: argparse.Namespace, *, find_all: Literal[True]
+) -> Iterator[nxt.brick.Brick]:
+    ...
+
+
+def find_with_options(
+    options: argparse.Namespace, *, find_all: bool = False
+) -> Union[nxt.brick.Brick, Iterator[nxt.brick.Brick]]:
     """Find a NXT brick and return it, using options from command line.
 
     :param argparse.Namespace options: Options returned by
@@ -286,4 +328,8 @@ def find_with_options(options, *, find_all=False):
         v = getattr(options, k)
         if v is not None:
             kwargs[k] = v
-    return find(find_all=find_all, **kwargs)
+    # Split to satisfy type checking.
+    if find_all:
+        return find(find_all=True, **kwargs)
+    else:
+        return find(find_all=False, **kwargs)
