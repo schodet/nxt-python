@@ -49,6 +49,9 @@ tox = "^3.28.0"
 [tool.poetry.group.nxt-screen.dependencies]
 pygame = "^2.1"
 
+[tool.poetry.group.nxt-screenshot.dependencies]
+pillow = "^9.4.0"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
