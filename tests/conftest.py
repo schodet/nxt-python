@@ -21,7 +21,7 @@ def pytest_addoption(parser):
     parser.addoption(
         "--run-nxt",
         action="append",
-        choices=("usb", "bluetooth", "devfile", "socket"),
+        choices=("usb", "bluetooth", "devfile", "socket", "btsocket"),
         default=[],
         help="run tests needing a real NXT connected over given interface",
     )

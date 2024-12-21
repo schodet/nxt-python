@@ -265,7 +265,7 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         "--backend",
         dest="backends",
         action="append",
-        choices=("usb", "bluetooth", "socket", "devfile"),
+        choices=("usb", "bluetooth", "socket", "devfile", "btsocket"),
         help="enable backend, can be given several times",
     )
     parser.add_argument("--config", help="name of configuration file section to use")

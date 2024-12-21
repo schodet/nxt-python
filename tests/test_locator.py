@@ -45,8 +45,19 @@ def mbackend_socket():
     return make_backend_mock()
 
 
+@pytest.fixture
+def mbackend_btsocket():
+    return make_backend_mock()
+
+
 @pytest.fixture(autouse=True)
-def mimportlib(mbackend_usb, mbackend_bluetooth, mbackend_devfile, mbackend_socket):
+def mimportlib(
+    mbackend_usb,
+    mbackend_bluetooth,
+    mbackend_devfile,
+    mbackend_socket,
+    mbackend_btsocket,
+):
     def import_module(name):
         if name == "nxt.backend.usb":
             return mbackend_usb
@@ -56,6 +67,8 @@ def mimportlib(mbackend_usb, mbackend_bluetooth, mbackend_devfile, mbackend_sock
             return mbackend_devfile
         if name == "nxt.backend.socket":
             return mbackend_socket
+        if name == "nxt.backend.btsocket":
+            return mbackend_btsocket
         raise ImportError("no such module")
 
     with patch("nxt.locator.importlib") as m:
@@ -165,17 +178,19 @@ def test_find_config_backends(
     mbackend_bluetooth,
     mbackend_devfile,
     mbackend_socket,
+    mbackend_btsocket,
     mconfigparser,
     mbrick,
 ):
-    mbackend_socket.get_backend().find.return_value = [mbrick]
+    mbackend_btsocket.get_backend().find.return_value = [mbrick]
     parser = mconfigparser.ConfigParser.return_value
-    parser.__getitem__.return_value = dict(backends="devfile socket")
+    parser.__getitem__.return_value = dict(backends="devfile socket btsocket")
     assert nxt.locator.find() is mbrick
     assert not mbackend_usb.get_backend().find.called
     assert not mbackend_bluetooth.get_backend().find.called
     assert mbackend_devfile.get_backend().find.called
     assert mbackend_socket.get_backend().find.called
+    assert mbackend_btsocket.get_backend().find.called
 
 
 def test_find_config_backends_override(

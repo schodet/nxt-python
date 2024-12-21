@@ -24,6 +24,12 @@ Device file
 .. automodule:: nxt.backend.devfile
    :members:
 
+Bluetooth Socket
+----------------
+
+.. automodule:: nxt.backend.btsocket
+   :members:
+
 Socket
 ------
 
