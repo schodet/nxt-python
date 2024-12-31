@@ -4,7 +4,6 @@ import sys
 import pygame
 
 import nxt.locator
-import nxt.motor
 from nxt.error import DirectProtocolError
 
 """ example that reads out the memory region used for the display content
