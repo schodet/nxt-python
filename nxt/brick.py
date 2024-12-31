@@ -356,6 +356,9 @@ class Brick:
         """Start a program on the brick.
 
         :param name: Program file name (example: ``"myprogram.rxe"``).
+
+        .. warning:: When starting or stopping a program, the NXT firmware resets every
+           sensors and motors.
         """
         tgram = Telegram(Opcode.DIRECT_START_PROGRAM)
         tgram.add_filename(name)
@@ -365,6 +368,9 @@ class Brick:
         """Stop the running program on the brick.
 
         :raises nxt.error.NoActiveProgramError: When no program is running.
+
+        .. warning:: When starting or stopping a program, the NXT firmware resets every
+           sensors and motors.
         """
         tgram = Telegram(Opcode.DIRECT_STOP_PROGRAM)
         self._cmd(tgram)

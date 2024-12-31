@@ -196,6 +196,9 @@ class MotCont:
         It needs to already be present on the brick's flash and named
         ``MotorControlXX.rxe``, where `XX` is the version number passed as the version
         argument.
+
+        .. warning:: When starting or stopping a program, the NXT firmware resets every
+           sensors and motors.
         """
         try:
             self._brick.stop_program()
@@ -209,5 +212,8 @@ class MotCont:
         """Stop the MotorControl program.
 
         All this actually does is to stop the currently running program.
+
+        .. warning:: When starting or stopping a program, the NXT firmware resets every
+           sensors and motors.
         """
         self._brick.stop_program()
