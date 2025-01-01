@@ -13,39 +13,40 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+import time
+from dataclasses import dataclass
+
 import nxt.sensor
 
 
+class InvalidReading(Exception):
+    """Exception raised on timeout trying to get valid readings."""
+
+    pass
+
+
+@dataclass
 class RawReading:
     """A object holding the raw sensor values for a sensor."""
 
-    def __init__(self, values):
-        (
-            self.port,
-            self.valid,
-            self.calibrated,
-            self.sensor_type,
-            self.mode,
-            self.raw_value,
-            self.normalized_value,
-            self.scaled_value,
-            self.calibrated_value,
-        ) = values
-
-    def __repr__(self):
-        return str(
-            (
-                self.port,
-                self.valid,
-                self.calibrated,
-                self.sensor_type,
-                self.mode,
-                self.raw_value,
-                self.normalized_value,
-                self.scaled_value,
-                self.calibrated_value,
-            )
-        )
+    #: Input port identifier.
+    port: nxt.sensor.Port
+    #: ``True`` if the value is valid, else ``False``.
+    valid: bool
+    #: Always ``False``, there is no calibration in NXT firmware.
+    calibrated: bool
+    #: Sensor type.
+    sensor_type: nxt.sensor.Type
+    #: Sensor mode.
+    sensor_mode: nxt.sensor.Mode
+    #: Raw analog to digital converter value.
+    raw_value: int
+    #: Normalized value.
+    normalized_value: int
+    #: Scaled value.
+    scaled_value: int
+    #: Always normalized value, there is no calibration in NXT firmware.
+    calibrated_value: int
 
 
 class BaseAnalogSensor(nxt.sensor.Sensor):
@@ -57,7 +58,25 @@ class BaseAnalogSensor(nxt.sensor.Sensor):
         :return: An object with the read values.
         :rtype: RawReading
         """
-        return RawReading(self._brick.get_input_values(self._port))
+        return RawReading(*self._brick.get_input_values(self._port))
+
+    def get_valid_input_values(self):
+        """Wait until input is valid, then get raw sensor readings.
+
+        :return: An object with the read values.
+        :rtype: RawReading
+        :raises InvalidReading: On timeout trying to get valid readings.
+        """
+        tries = 10
+        tries_delay_s = 0.1
+        readings = self.get_input_values()
+        while not readings.valid:
+            tries -= 1
+            if tries == 0:
+                raise InvalidReading()
+            time.sleep(tries_delay_s)
+            readings = self.get_input_values()
+        return readings
 
     def reset_input_scaled_value(self):
         """Reset sensor scaled value.

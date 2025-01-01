@@ -50,18 +50,63 @@ class TestGeneric:
         assert v.valid is True
         assert v.calibrated is False
         assert v.sensor_type == Type.SWITCH
-        assert v.mode == Mode.BOOL
+        assert v.sensor_mode == Mode.BOOL
         assert v.raw_value == 1
         assert v.normalized_value == 2
         assert v.scaled_value == 3
         assert v.calibrated_value == 4
-        assert str(v).startswith("(")
+        assert str(v).startswith("RawReading(")
         s.reset_input_scaled_value()
         assert mbrick.mock_calls == [
             call.set_input_mode(Port.S1, Type.SWITCH, Mode.BOOL),
             call.get_input_values(Port.S1),
             call.reset_input_scaled_value(Port.S1),
         ]
+
+    def test_analog_retry(self, mbrick, mtime):
+        s = mbrick.get_sensor(Port.S1, nxt.sensor.analog.BaseAnalogSensor)
+        mbrick.get_input_values.side_effect = [
+            (Port.S1, False, False, Type.SWITCH, Mode.BOOL, 1, 2, 3, 4),
+            (Port.S1, False, False, Type.SWITCH, Mode.BOOL, 1, 2, 3, 4),
+            (Port.S1, True, False, Type.SWITCH, Mode.BOOL, 1, 2, 3, 4),
+        ]
+        s.set_input_mode(Type.SWITCH, Mode.BOOL)
+        v = s.get_valid_input_values()
+        assert v.port == Port.S1
+        assert v.valid is True
+        assert v.calibrated is False
+        assert v.sensor_type == Type.SWITCH
+        assert v.sensor_mode == Mode.BOOL
+        assert v.raw_value == 1
+        assert v.normalized_value == 2
+        assert v.scaled_value == 3
+        assert v.calibrated_value == 4
+        assert mbrick.mock_calls == [
+            call.set_input_mode(Port.S1, Type.SWITCH, Mode.BOOL),
+            call.get_input_values(Port.S1),
+            call.get_input_values(Port.S1),
+            call.get_input_values(Port.S1),
+        ]
+        assert mtime.sleep.mock_calls == [
+            call(0.1),
+            call(0.1),
+        ]
+
+    def test_analog_retry_fail(self, mbrick, mtime):
+        retries = 10
+        s = mbrick.get_sensor(Port.S1, nxt.sensor.analog.BaseAnalogSensor)
+        mbrick.get_input_values.side_effect = retries * [
+            (Port.S1, False, False, Type.SWITCH, Mode.BOOL, 1, 2, 3, 4),
+        ]
+        s.set_input_mode(Type.SWITCH, Mode.BOOL)
+        with pytest.raises(nxt.sensor.analog.InvalidReading):
+            s.get_valid_input_values()
+        assert mbrick.mock_calls == [
+            call.set_input_mode(Port.S1, Type.SWITCH, Mode.BOOL),
+        ] + retries * [
+            call.get_input_values(Port.S1),
+        ]
+        assert mtime.sleep.mock_calls == (retries - 1) * [call(0.1)]
 
     def test_touch(self, mbrick):
         assert (

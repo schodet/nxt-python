@@ -60,9 +60,13 @@ def mtime():
     mtime.time.side_effect = timef
     mtime.sleep.side_effect = sleepf
 
-    with patch("nxt.brick.time", new=mtime), patch(
-        "nxt.motcont.time", new=mtime
-    ), patch("nxt.motor.time", new=mtime), patch("nxt.sensor.digital.time", new=mtime):
+    with (
+        patch("nxt.brick.time", new=mtime),
+        patch("nxt.motcont.time", new=mtime),
+        patch("nxt.motor.time", new=mtime),
+        patch("nxt.sensor.analog.time", new=mtime),
+        patch("nxt.sensor.digital.time", new=mtime),
+    ):
         yield mtime
 
 

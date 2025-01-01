@@ -34,7 +34,7 @@ class Touch(BaseAnalogSensor):
         :return: ``True`` if the sensor is pressed, else ``False``.
         :rtype: bool
         """
-        return bool(self.get_input_values().scaled_value)
+        return bool(self.get_valid_input_values().scaled_value)
 
     get_sample = is_pressed
 
@@ -70,7 +70,7 @@ class Light(BaseAnalogSensor):
         :return: Detected light level between 0 and 1023.
         :rtype: int
         """
-        return self.get_input_values().scaled_value
+        return self.get_valid_input_values().scaled_value
 
     get_sample = get_lightness
 
@@ -103,7 +103,7 @@ class Sound(BaseAnalogSensor):
         :return: Detected sound level between 0 and 1023.
         :rtype: int
         """
-        return self.get_input_values().scaled_value
+        return self.get_valid_input_values().scaled_value
 
     get_sample = get_loudness
 
@@ -266,7 +266,7 @@ class Color(BaseAnalogSensor):
         :return: Light color, one of the Type.COLOR_* values.
         :rtype: Type
         """
-        return self.get_input_values().sensor_type
+        return self.get_valid_input_values().sensor_type
 
     def get_reflected_light(self, color):
         """Get detected light level.
@@ -276,7 +276,7 @@ class Color(BaseAnalogSensor):
         :rtype: int
         """
         self.set_light_color(color)
-        return self.get_input_values().scaled_value
+        return self.get_valid_input_values().scaled_value
 
     def get_color(self):
         """Get detected color.
@@ -288,7 +288,7 @@ class Color(BaseAnalogSensor):
         determine color).
         """
         self.get_reflected_light(Type.COLOR_FULL)
-        return self.DetectedColor(self.get_input_values().scaled_value)
+        return self.DetectedColor(self.get_valid_input_values().scaled_value)
 
     get_sample = get_color
 

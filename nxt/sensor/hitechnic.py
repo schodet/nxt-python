@@ -352,7 +352,7 @@ class EOPD(BaseAnalogSensor):
     def get_raw_value(self):
         """Unscaled value read from sensor."""
 
-        return self._MAX_DISTANCE - self.get_input_values().raw_value
+        return self._MAX_DISTANCE - self.get_valid_input_values().raw_value
 
     def get_processed_value(self):
         """Derived from the square root of the raw value."""
@@ -496,7 +496,7 @@ class Gyro(BaseAnalogSensor):
         self.offset = 0
 
     def get_rotation_speed(self):
-        return self.get_input_values().scaled_value - self.offset
+        return self.get_valid_input_values().scaled_value - self.offset
 
     def set_zero(self, value):
         self.offset = value

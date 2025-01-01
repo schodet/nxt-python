@@ -62,7 +62,7 @@ class SumoEyes(BaseAnalogSensor):
 
     def get_sample(self):
         """Returns the processed meaningful values of the sensor"""
-        return self.Reading(self.get_input_values())
+        return self.Reading(self.get_valid_input_values())
 
 
 class Compassv2(BaseDigitalSensor):
