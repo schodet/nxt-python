@@ -9,10 +9,12 @@ Work in progress...
 .. automodule:: nxt.sensor.analog
    :members:
    :undoc-members:
+   :show-inheritance:
 
 .. automodule:: nxt.sensor.digital
    :members:
    :undoc-members:
+   :show-inheritance:
 
 .. toctree::
    :maxdepth: 2
