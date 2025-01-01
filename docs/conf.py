@@ -39,7 +39,6 @@ needs_sphinx = "3.4"
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
-    "sphinx_autodoc_typehints",
 ]
 
 intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}
@@ -65,7 +64,4 @@ html_copy_source = False
 # -- Options for autodoc -----------------------------------------------------
 
 autodoc_member_order = "bysource"
-
-# -- Options for autodoc typehints -------------------------------------------
-
-typehints_fully_qualified = True
+autodoc_typehints = "description"

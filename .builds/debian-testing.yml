@@ -4,7 +4,6 @@ packages:
   - python3-bluetooth
   - python3-sphinx
   - python3-sphinx-rtd-theme
-  - python3-sphinx-autodoc-typehints
   - python3-pytest
   - python3-poetry
 sources:
