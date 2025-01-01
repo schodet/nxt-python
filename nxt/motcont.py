@@ -115,15 +115,24 @@ class MotCont:
         smoothstart: bool = False,
         brake: bool = False,
     ) -> None:
-        """Send a CONTROLLED_MOTORCMD to MotorControl.
+        """Send a controlled motor command to MotorControl.
 
         :param ports: Port or ports to control, use one of the port identifiers, or
            an iterable returning one or two of them.
         :param power: Speed or power, -100 to 100.
-        :param tacholimit: Position to drive to, 1 to 999999, or 0 for unlimited.
+        :param tacholimit: Position to drive to, 1 to 999999.
         :param speedreg: ``True`` to enable regulation.
         :param smoothstart: ``True`` to enable smooth start.
         :param brake: ``True`` to hold brake at end of movement.
+
+        The motors on the selected ports must be idle, i.e. they can not be carrying out
+        any other movement commands. If this should happen, the NXT will indicate this
+        error by a signal (high and low beep) and will drop the message. To find out if
+        a motor is ready to accept new commands, use the :meth:`is_ready` method. It is
+        also possible to stop the motor before using :meth:`set_output_state` method.
+
+        In certain situations, :meth:`set_output_state` method should be used instead.
+        See :meth:`set_output_state` for more details.
         """
         self._interval_is_ready()
         ports, strports = self._decode_ports(ports, 2)
@@ -173,13 +182,29 @@ class MotCont:
         tacholimit: int,
         speedreg: bool = True,
     ) -> None:
-        """Send a CLASSIC_MOTORCMD to MotorControl.
+        """Send a classic motor command to MotorControl.
 
         :param ports: Port or ports to control, use one of the port identifiers, or
            an iterable returning one or two of them.
         :param power: Speed or power, -100 to 100.
         :param tacholimit: Position to drive to, 1 to 999999, or 0 for unlimited.
         :param speedreg: ``True`` to enable regulation.
+
+        This is similar to the regular :meth:`nxt.brick.Brick.set_output_state` method,
+        but informs the MotorControl program to avoid any unwanted side effect.
+
+        When to use :meth:`set_output_state` instead of :meth:`cmd`:
+
+        - when tacholimit is 0 for unlimited movement,
+        - or when the motor must coast (spin freely) after tacholimit has been reached
+          (it will overshoot then),
+        - or when you want to be able to change the power of a running motor at runtime.
+
+        Also use this method to stop a currently running motor:
+
+        - To stop and let a motor spin freely (coasting), use `power` 0 and no
+          regulation.
+        - To stop and hold the current position (brake), use `power` 0 with regulation.
         """
         self._interval_is_ready()
         ports, strports = self._decode_ports(ports, 2)
