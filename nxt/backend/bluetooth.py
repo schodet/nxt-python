@@ -122,6 +122,8 @@ class Backend:
             else:
                 devhost, devname = dev, None
             if (host is None or devhost == host) and (name is None or devname == name):
+                if type(devhost) is bytes:
+                    devhost = devhost.decode('utf8')
                 sock = BluetoothSock(self._bluetooth, devhost)
                 try:
                     brick = sock.connect()
