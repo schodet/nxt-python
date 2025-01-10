@@ -266,23 +266,33 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         dest="backends",
         action="append",
         choices=("usb", "bluetooth", "socket", "devfile"),
+        metavar="NAME",
         help="enable backend, can be given several times",
     )
-    parser.add_argument("--config", help="name of configuration file section to use")
+    parser.add_argument(
+        "--config", metavar="NAME", help="name of configuration file section to use"
+    )
     parser.add_argument(
         "--config-filename",
         dest="config_filenames",
         action="append",
+        metavar="PATH",
         help="configuration life path, can be given several times",
     )
     parser.add_argument("--name", help="NXT brick name (example: NXT)")
     parser.add_argument(
-        "--host", help="NXT brick Bluetooth address (example: 00:16:53:01:02:03)"
+        "--host",
+        metavar="ADDRESS",
+        help="NXT brick Bluetooth address (example: 00:16:53:01:02:03)",
     )
     parser.add_argument(
-        "--server-host", help="server address or name (example: localhost)"
+        "--server-host",
+        metavar="HOST",
+        help="server address or name (example: localhost)",
     )
-    parser.add_argument("--server-port", type=int, help="server port (example: 2727)")
+    parser.add_argument(
+        "--server-port", type=int, metavar="PORT", help="server port (example: 2727)"
+    )
     parser.add_argument("--filename", help="device file name (example: /dev/rfcomm0)")
 
 

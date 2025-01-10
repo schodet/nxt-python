@@ -81,7 +81,7 @@ class SocketSock:
 class Backend:
     """Socket backend.
 
-    To be used with ``nxt_server`` script to access a NXT brick over the network.
+    To be used with ``nxt-server`` script to access a NXT brick over the network.
     """
 
     def find(self, server_host="localhost", server_port=2727, **kwargs):

@@ -18,6 +18,7 @@ mirrored on `NXT-Python repository on Github`_.
    installation
    handbook/index
    api/index
+   commands/index
    migration
    about
 

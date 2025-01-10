@@ -1,0 +1,14 @@
+Are you looking for scripts that were located in this directory? They are now
+part of the nxt package and generated on installation.
+
+If NXT-Python is installed on your system, you can run them by typing their
+names (nxt-push, nxt-server, nxt-screenshot or nxt-test).
+
+If NXT-Python is not installed, the easiest way to run them is by using poetry
+from somewhere in the source directory like this for example:
+
+    poetry run nxt-test
+
+You can get help with:
+
+    poetry run nxt-test --help

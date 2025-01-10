@@ -8,11 +8,11 @@ Install NXT-Python with :command:`pip`::
 To check that NXT-Python is correctly installed, connect your NXT brick using
 a USB cable, and run::
 
-    nxt_test
+    nxt-test
 
 In case of problem, enable debugging for extra diagnostics::
 
-    nxt_test --log-level=debug
+    nxt-test --log-level=debug
 
 
 USB

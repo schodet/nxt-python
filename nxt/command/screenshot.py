@@ -1,8 +1,5 @@
-#!/usr/bin/env python3
-#
-"""Capture the NXT screen content."""
-#
-# Copyright (C) 2010  Nicolas Schodet
+# nxt.command.screenshot module -- Capture the NXT screen content
+# Copyright (C) 2010-2025  Nicolas Schodet
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,6 +10,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+"""Screen capture utility for the NXT brick."""
 
 import argparse
 import logging
@@ -32,13 +30,23 @@ DISPLAY_HEIGHT = 64
 IOM_CHUNK = 32
 
 
-def screenshot(b):
+def get_parser() -> argparse.ArgumentParser:
+    """Return argument parser."""
+    p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument("image", help="image file name to write to")
+    nxt.locator.add_arguments(p)
+    levels = ("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL")
+    p.add_argument("--log-level", type=str.upper, choices=levels, help="set log level")
+    return p
+
+
+def screenshot(b: nxt.brick.Brick) -> Image.Image:
     """Take a screenshot, return a PIL image.
 
     See https://ni.fr.eu.org/lego/nxt_screenshot/ for explanations.
     """
     # Read pixels.
-    pixels = []
+    pixels = bytes()
     for i in range(0, DISPLAY_WIDTH * DISPLAY_HEIGHT // 8, IOM_CHUNK):
         mod_id, contents = b.read_io_map(
             DISPLAY_MODULE_ID, DISPLAY_SCREEN_OFFSET + i, IOM_CHUNK
@@ -68,17 +76,18 @@ def screenshot(b):
     return pilimage
 
 
-if __name__ == "__main__":
-    p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("image", help="image file name to write to")
-    nxt.locator.add_arguments(p)
-    levels = ("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL")
-    p.add_argument("--log-level", type=str.upper, choices=levels, help="set log level")
-    options = p.parse_args()
+def run() -> None:
+    """Run command."""
+    options = get_parser().parse_args()
 
     if options.log_level:
         logging.basicConfig(level=options.log_level)
 
+    print("Finding brick...")
     with nxt.locator.find_with_options(options) as brick:
         image = screenshot(brick)
         image.save(options.image)
+
+
+if __name__ == "__main__":
+    run()

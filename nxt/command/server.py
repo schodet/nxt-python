@@ -1,18 +1,17 @@
-#!/usr/bin/env python3
-#
-# nxt_server program -- Serve an interface to the NXT brick
+# nxt.command.server module -- Serve an interface to the NXT brick
 # Copyright (C) 2011  zonedabone, Marcus Wanner
 # Copyright (C) 2021  Nicolas Schodet
 #
-# This program is free software; you can redistribute it and/or modify
+# This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
+# the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+"""Network server for the NXT brick."""
 
 import argparse
 import logging
@@ -22,9 +21,21 @@ import traceback
 import nxt.locator
 
 
-def serve(brick, channel, details):
+def get_parser() -> argparse.ArgumentParser:
+    """Return argument parser."""
+    p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument("-p", "--port", type=int, default=2727, help="bind port")
+    nxt.locator.add_arguments(p)
+    levels = ("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL")
+    p.add_argument("--log-level", type=str.upper, choices=levels, help="set log level")
+    return p
+
+
+def serve(
+    brick: nxt.brick.Brick, channel: socket.socket, details: tuple[str, int]
+) -> None:
     """Handles serving the client."""
-    print("Connection started (" + details[0] + ")")
+    print(f"Connection from {details[0]}.")
     run = True
     try:
         while run:
@@ -44,33 +55,35 @@ def serve(brick, channel, details):
                 run = False
             else:
                 raise RuntimeError("Bad protocol")
-    except:  # noqa: E722
+    except Exception:
         traceback.print_exc()
     finally:
         channel.close()
-        print("Connection Finished")
+        print("Connection closed.")
 
 
-if __name__ == "__main__":
-    p = argparse.ArgumentParser(description="Command server for NXT brick")
-    p.add_argument("-p", "--port", type=int, default=2727, help="bind port")
-    nxt.locator.add_arguments(p)
-    levels = ("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL")
-    p.add_argument("--log-level", type=str.upper, choices=levels, help="set log level")
-    options = p.parse_args()
+def run() -> None:
+    """Run command."""
+    options = get_parser().parse_args()
 
     if options.log_level:
         logging.basicConfig(level=options.log_level)
 
-    print("Connecting to NXT...")
+    print("Finding brick...")
     with nxt.locator.find_with_options(options) as brick:
-        print("Brick found.")
-
-        print("Starting server...")
+        print(f"Brick found, starting server on port {options.port}.")
+        print("Use Ctrl-C to interrupt.")
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server.bind(("", options.port))
         server.listen(1)
-        # Have the server serve "forever":
-        while True:
-            channel, details = server.accept()
-            serve(brick, channel, details)
+        try:
+            # Have the server serve "forever":
+            while True:
+                channel, details = server.accept()
+                serve(brick, channel, details)
+        except KeyboardInterrupt:
+            pass
+
+
+if __name__ == "__main__":
+    run()

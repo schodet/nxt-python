@@ -8,7 +8,7 @@ whole program lifetime.
 
 Communication is done through USB or Bluetooth. You can also relay
 communication over the network through another computer running the
-:command:`nxt_server` program which is part of NXT-Python.
+:command:`nxt-server` program which is part of NXT-Python.
 
 
 The Brick Object

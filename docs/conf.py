@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.abspath(".."))
 # -- Project information -----------------------------------------------------
 
 project = "NXT-Python"
-copyright = "2021, Nicolas Schodet"
+copyright = "2021-2025, Nicolas Schodet"
 author = "Nicolas Schodet"
 
 # The full version, including alpha/beta/rc tags
@@ -60,6 +60,44 @@ html_theme = "sphinx_rtd_theme"
 html_logo = "../logo.svg"
 html_favicon = "favicon.ico"
 html_copy_source = False
+
+# -- Options for Man pages output --------------------------------------------
+
+man_pages_authors = [
+    "This program is part of NXT-Python which is currently maintained by"
+    " Nicolas Schodet.",
+]
+
+man_pages = [
+    (
+        "commands/nxt-push",
+        "nxt-push",
+        "Push files to a NXT brick",
+        man_pages_authors,
+        1,
+    ),
+    (
+        "commands/nxt-screenshot",
+        "nxt-screenshot",
+        "Capture screen utility for the NXT brick",
+        man_pages_authors,
+        1,
+    ),
+    (
+        "commands/nxt-server",
+        "nxt-server",
+        "Network server for the NXT brick",
+        man_pages_authors,
+        1,
+    ),
+    (
+        "commands/nxt-test",
+        "nxt-test",
+        "Test the NXT-Python setup",
+        man_pages_authors,
+        1,
+    ),
+]
 
 # -- Options for autodoc -----------------------------------------------------
 

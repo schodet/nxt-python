@@ -1,55 +1,68 @@
-#!/usr/bin/env python3
-#
-# nxt_push program -- Push a file to a LEGO Mindstorms NXT brick
+# nxt.command.push module -- Push a file to the NXT brick
 # Copyright (C) 2006  Douglas P Lau
 # Copyright (C) 2010  rhn
+# Copyright (C) 2025  Nicolas Schodet
 #
-# This program is free software; you can redistribute it and/or modify
+# This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
+# the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+"""Push files to a NXT brick."""
 
 import argparse
 import logging
+import os.path
 
 import nxt.locator
 from nxt.error import FileNotFoundError
 
 
-def _write_file(b, fname, data):
-    print("Pushing %s (%d bytes) ..." % (fname, len(data)), end=" ", flush=True)
-    with b.open_file(fname, "wb", len(data)) as w:
-        w.write(data)
-    print("wrote %d bytes" % len(data))
-
-
-def write_file(b, fname):
+def write_file(b: nxt.brick.Brick, fname: str) -> None:
+    """Write file to NXT brick from file system."""
+    oname = os.path.basename(fname)
+    # Read input file.
     with open(fname, "rb") as f:
         data = f.read()
+    # Remove existing file.
     try:
-        b.file_delete(fname)
-        print("Overwriting %s on NXT" % fname)
+        b.file_delete(oname)
+        print(f"Overwriting {oname} on NXT")
     except FileNotFoundError:
         pass
-    _write_file(b, fname, data)
+    # Write new file.
+    print(f"Pushing {oname} ({len(data)} bytes) ...", end=" ", flush=True)
+    with b.open_file(oname, "wb", len(data)) as w:
+        w.write(data)
+    print("done.")
 
 
-if __name__ == "__main__":
-    p = argparse.ArgumentParser(description="Push files to a LEGO Mindstorms NXT brick")
+def get_parser() -> argparse.ArgumentParser:
+    """Return argument parser."""
+    p = argparse.ArgumentParser(description=__doc__)
     nxt.locator.add_arguments(p)
     levels = ("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL")
     p.add_argument("--log-level", type=str.upper, choices=levels, help="set log level")
     p.add_argument("file", nargs="+", help="file to transfer")
-    options = p.parse_args()
+    return p
+
+
+def run() -> None:
+    """Run command."""
+    options = get_parser().parse_args()
 
     if options.log_level:
         logging.basicConfig(level=options.log_level)
 
+    print("Finding brick...")
     with nxt.locator.find_with_options(options) as brick:
         for filename in options.file:
             write_file(brick, filename)
+
+
+if __name__ == "__main__":
+    run()

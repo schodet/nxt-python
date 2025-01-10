@@ -6,6 +6,7 @@ packages:
   - python311
   - py311-pytest
   - py311-pyusb
+  - py311-pillow
   - py311-pip
   - py311-tox
 sources:
