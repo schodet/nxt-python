@@ -32,3 +32,13 @@ Those options are common to programs using NXT-Python.
 --filename FILENAME
    Device filename (for example: :file:`/dev/rfcomm0`), when using
    `~nxt.backend.devfile` backend.
+
+.. only:: man
+
+   See :manpage:`nxt-python.conf(5)` documentation for better explanation of
+   the options to find the NXT brick.
+
+.. only:: not man
+
+   See :doc:`configuration file </config>` documentation for better
+   explanation of the options to find the NXT brick.

@@ -70,6 +70,13 @@ man_pages_authors = [
 
 man_pages = [
     (
+        "config",
+        "nxt-python.conf",
+        "NXT-Python configuration file",
+        man_pages_authors,
+        5,
+    ),
+    (
         "commands/nxt-push",
         "nxt-push",
         "Push files to a NXT brick",
