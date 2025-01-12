@@ -7,9 +7,15 @@ packages:
   - python3-sphinx-rtd-theme
   - python3-pytest
   - python3-poetry
+  - python3.12
+  - python3.13
+  - tox
 sources:
   - https://git.sr.ht/~ni/nxt-python
 tasks:
   - test: |
       cd nxt-python
       python3 -m pytest
+  - tox: |
+      cd nxt-python
+      tox
