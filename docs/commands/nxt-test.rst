@@ -19,8 +19,8 @@ Synopsis
 Description
 -----------
 
-:command:`nxt-test` tests connection with a NXT brick. It allows to debug the
-NXT-Python setup.
+:command:`nxt-test` tests connection with a NXT brick. It allows one to debug
+the NXT-Python setup.
 
 The NXT brick can be connected using USB, Bluetooth or over the network.
 

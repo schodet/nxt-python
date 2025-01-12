@@ -4,8 +4,8 @@ Configuration files
 Description
 -----------
 
-The NXT-Python configuration files allow to define the NXT bricks you want to
-connect to, so that you do not need to give the needed argument for every
+The NXT-Python configuration files allow you to define the NXT bricks you want
+to connect to, so that you do not need to give the needed argument for every
 scripts.
 
 You can place a :file:`.nxt-python.conf` in your home directory, or in the
