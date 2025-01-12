@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nxt-python"
-version = "3.5.0"
+version = "3.5.1"
 description = "LEGO Mindstorms NXT Control Package"
 authors = ["Nicolas Schodet <nico@ni.fr.eu.org>"]
 license = "GPL-3.0-or-later"
